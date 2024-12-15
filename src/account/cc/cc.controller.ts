@@ -24,7 +24,7 @@ import { GetAllCcDto } from './dto/get-all-cc.dto';
 import { GetSingleCcDto } from './dto/get-single-cc.dto';
 
 @ApiBearerAuth()
-@ApiTags('Cc')
+@ApiTags('Account - Cc')
 @Controller('account/cc')
 export class CcController {
   constructor(private readonly ccService: CcService) {}

@@ -6,6 +6,8 @@ import { CcModule } from './account/cc/cc.module';
 import { ManagerModule } from './account/manager/manager.module';
 import { VendorModule } from './account/vendor/vendor.module';
 import { DriverModule } from './account/driver/driver.module';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -25,10 +27,19 @@ import { DriverModule } from './account/driver/driver.module';
       }),
       inject: [ConfigService],
     }),
+    JwtModule.registerAsync({
+      global:true,
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: '30d' },
+      }),
+      inject: [ConfigService],
+    }),
     CcModule,
     ManagerModule,
     VendorModule,
     DriverModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

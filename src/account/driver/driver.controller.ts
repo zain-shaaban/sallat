@@ -27,7 +27,7 @@ import { GetSingleDriverDto } from './dto/get-single-driver.dto';
 import { GetAllDriversDto } from './dto/get-all-drivers.dto';
 
 @ApiBearerAuth()
-@ApiTags('Driver')
+@ApiTags('Account - Driver')
 @Controller('account/driver')
 export class DriverController {
   constructor(private readonly driverService: DriverService) {}

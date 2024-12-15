@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -18,6 +19,7 @@ export class CreateDriverDtoRequest {
   @ApiProperty({ example: 'example@gmail.com' })
   @IsString()
   @IsNotEmpty()
+  @IsEmail()
   @MaxLength(200)
   email: string;
 

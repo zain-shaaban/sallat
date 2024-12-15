@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -19,6 +20,7 @@ export class CreateVendorDtoRequest {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
+  @IsEmail()
   email: string;
 
   @ApiProperty({

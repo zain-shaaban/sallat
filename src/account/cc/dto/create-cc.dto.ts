@@ -6,6 +6,7 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  IsEmail
 } from 'class-validator';
 
 export class CreateCcDtoRequest {
@@ -19,6 +20,7 @@ export class CreateCcDtoRequest {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
+  @IsEmail()
   email: string;
 
   @ApiProperty({

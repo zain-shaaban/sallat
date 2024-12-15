@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -20,6 +21,7 @@ export class CreateManagerDtoRequest {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
+  @IsEmail()
   email: string;
 
   @ApiProperty({

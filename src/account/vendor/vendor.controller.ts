@@ -27,7 +27,7 @@ import { GetAllVendorsDto } from './dto/get-all-vendors.dto';
 import { GetSingleVendorDto } from './dto/get-single-vendor.dto';
 
 @ApiBearerAuth()
-@ApiTags('Vendor')
+@ApiTags('Account - Vendor')
 @Controller('account/vendor')
 export class VendorController {
   constructor(private readonly vendorService: VendorService) {}

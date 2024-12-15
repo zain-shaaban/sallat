@@ -10,7 +10,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
-import { CreateManagerDtoRequest, CreateManagerDtoResponse } from './dto/create-manager.dto';
+import {
+  CreateManagerDtoRequest,
+  CreateManagerDtoResponse,
+} from './dto/create-manager.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
 import { asyncHandler } from 'src/common/utils/async-handler';
 import {
@@ -24,7 +27,7 @@ import { GetAllManagersDto } from './dto/get-all-managers';
 import { GetSingleManagerDto } from './dto/get-single-manager.dto';
 
 @ApiBearerAuth()
-@ApiTags('Manager')
+@ApiTags('Account - Manager')
 @Controller('account/manager')
 export class ManagerController {
   constructor(private readonly managerService: ManagerService) {}
@@ -150,7 +153,9 @@ export class ManagerController {
     @Param('managerID', ParseIntPipe) managerID: number,
     @Body() updateManagerDto: UpdateManagerDto,
   ) {
-    return await asyncHandler(this.managerService.update(managerID, updateManagerDto));
+    return await asyncHandler(
+      this.managerService.update(managerID, updateManagerDto),
+    );
   }
 
   @ApiResponse({
