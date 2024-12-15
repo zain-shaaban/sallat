@@ -27,12 +27,17 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Sallat API')
+    .addServer('https://sallat.onrender.com')
     .setDescription('Straightforward API documentation for Sallat')
     .setVersion('1.0')
     .build();
   const documentFactory = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('docs', app, documentFactory);
+  SwaggerModule.setup('docs', app, documentFactory, {
+    swaggerOptions: {
+      defaultModelsExpandDepth: -1,
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
