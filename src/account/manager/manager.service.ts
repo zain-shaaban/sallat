@@ -10,7 +10,7 @@ export class ManagerService {
   constructor(@InjectModel(Manager) private managerModel: typeof Manager) {}
 
   async create(createManagerDto: CreateManagerDtoRequest) {
-    let { name, email, password, phoneNumber, salary, superAdmin } =
+    let { name, email, password, phoneNumber, salary} =
       createManagerDto;
     password = bcrypt.hashSync(password, bcrypt.genSaltSync());
     const { managerID } = await this.managerModel.create({
@@ -19,7 +19,7 @@ export class ManagerService {
       password,
       phoneNumber,
       salary,
-      superAdmin,
+      superAdmin:false
     });
     return { managerID };
   }
@@ -40,11 +40,11 @@ export class ManagerService {
   }
 
   async update(managerID: number, updateManagerDto: UpdateManagerDto) {
-    let { name, email, password, phoneNumber, salary, superAdmin } =
+    let { name, email, password, phoneNumber, salary } =
       updateManagerDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
     const updatedManager = await this.managerModel.update(
-      { name, email, password, phoneNumber, salary, superAdmin },
+      { name, email, password, phoneNumber, salary },
       { where: { managerID } },
     );
     if (updatedManager[0] === 0) throw new NotFoundException();

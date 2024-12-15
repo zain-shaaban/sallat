@@ -42,11 +42,6 @@ export class CreateManagerDtoRequest {
   @IsOptional()
   @IsNumber()
   salary?: number;
-
-  @ApiProperty({ example: false })
-  @IsOptional()
-  @IsBoolean()
-  superAdmin: boolean;
 }
 
 class CreateManagerData {

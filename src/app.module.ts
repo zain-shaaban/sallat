@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import dbConfig from './config/db.config';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -22,7 +22,6 @@ import { DriverModule } from './account/driver/driver.module';
         retryAttempts: 2,
         synchronize: true,
         logging: false,
-       // sync: { alter: true },
       }),
       inject: [ConfigService],
     }),
