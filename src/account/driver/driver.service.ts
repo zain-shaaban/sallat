@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDriverDtoRequest } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 import { InjectModel } from '@nestjs/sequelize';
@@ -31,7 +28,7 @@ export class DriverService {
     const allDrivers = await this.driverModel.findAll({
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
-    return { NumberOfDivers: allDrivers.length, allDrivers };
+    return allDrivers;
   }
 
   async findOne(driverID: number) {
@@ -39,7 +36,7 @@ export class DriverService {
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
     if (!driver) throw new NotFoundException();
-    return { driver };
+    return driver;
   }
 
   async update(driverID: number, updateDriverDto: UpdateDriverDto) {

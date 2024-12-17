@@ -28,7 +28,7 @@ export class ManagerService {
     const allManagers = await this.managerModel.findAll({
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
-    return { NumberOfDivers: allManagers.length, allManagers };
+    return allManagers;
   }
 
   async findOne(managerID: number) {
@@ -36,7 +36,7 @@ export class ManagerService {
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
     if (!manager) throw new NotFoundException();
-    return { manager };
+    return manager;
   }
 
   async update(managerID: number, updateManagerDto: UpdateManagerDto) {

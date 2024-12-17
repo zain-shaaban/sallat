@@ -26,7 +26,7 @@ export class CcService {
     const allCc = await this.ccModel.findAll({
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
-    return { NumberOfDivers: allCc.length, allCc };
+    return allCc;
   }
 
   async findOne(ccID: number) {
@@ -34,7 +34,7 @@ export class CcService {
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
     if (!cc) throw new NotFoundException();
-    return { cc };
+    return cc;
   }
 
   async update(ccID: number, updateCcDto: UpdateCcDto) {

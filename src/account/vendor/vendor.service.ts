@@ -26,7 +26,7 @@ export class VendorService {
     const allVendors = await this.vendorModel.findAll({
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
-    return { NumberOfDivers: allVendors.length, allVendors };
+    return allVendors;
   }
 
   async findOne(vendorID: number) {
@@ -34,7 +34,7 @@ export class VendorService {
       attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
     });
     if (!vendor) throw new NotFoundException();
-    return { vendor };
+    return vendor;
   }
 
   async update(vendorID: number, updateVendorDto: UpdateVendorDto) {

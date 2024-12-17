@@ -41,7 +41,7 @@ export class AuthService {
     if (!manager) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, manager.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ managerID: manager.id });
+    const accessToken = this.jwtService.sign({ managerID: manager.managerID });
     return { accessToken };
   }
   async driverLogin(loginDto: LoginRequestDto) {
@@ -50,7 +50,7 @@ export class AuthService {
     if (!driver) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, driver.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ driverID: driver.id });
+    const accessToken = this.jwtService.sign({ driverID: driver.driverID });
     return { accessToken };
   }
   async vendorLogin(loginDto: LoginRequestDto) {
@@ -59,7 +59,7 @@ export class AuthService {
     if (!vendor) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, vendor.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ vendorID: vendor.id });
+    const accessToken = this.jwtService.sign({ vendorID: vendor.vendorID });
     return { accessToken };
   }
   async ccLogin(loginDto: LoginRequestDto) {
@@ -68,7 +68,7 @@ export class AuthService {
     if (!cc) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, cc.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ ccID: cc.id });
+    const accessToken = this.jwtService.sign({ ccID: cc.ccID });
     return { accessToken };
   }
 }
