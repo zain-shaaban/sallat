@@ -8,6 +8,7 @@ import { VendorModule } from './account/vendor/vendor.module';
 import { DriverModule } from './account/driver/driver.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { JwtModule } from '@nestjs/jwt';
     VendorModule,
     DriverModule,
     AuthModule,
+    CategoryModule,
   ],
 })
 export class AppModule {}
