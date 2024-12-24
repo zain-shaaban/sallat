@@ -9,6 +9,8 @@ import { DriverModule } from './account/driver/driver.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './category/category.module';
+import { DriverSokcetModule } from './sockets/driver-sokcet/driver-sokcet.module';
+import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
 
 @Module({
   imports: [
@@ -29,7 +31,7 @@ import { CategoryModule } from './category/category.module';
       inject: [ConfigService],
     }),
     JwtModule.registerAsync({
-      global:true,
+      global: true,
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
         signOptions: { expiresIn: '30d' },
@@ -42,6 +44,8 @@ import { CategoryModule } from './category/category.module';
     DriverModule,
     AuthModule,
     CategoryModule,
+    DriverSokcetModule,
+    AdminSocketModule,
   ],
 })
 export class AppModule {}
