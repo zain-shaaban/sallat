@@ -12,6 +12,13 @@ import { Vendor } from 'src/account/vendor/entities/vendor.entity';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
+export enum Role {
+  Driver = 'driver',
+  Manager = 'manager',
+  Vendor = 'vendor',
+  CC = 'cc',
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -23,13 +30,13 @@ export class AuthService {
   ) {}
   async login(loginDto: LoginRequestDto, type: string) {
     switch (type) {
-      case 'manager':
+      case Role.Manager:
         return await this.managerLogin(loginDto);
-      case 'driver':
+      case Role.Driver:
         return await this.driverLogin(loginDto);
-      case 'vendor':
+      case Role.Vendor:
         return await this.vendorLogin(loginDto);
-      case 'cc':
+      case Role.CC:
         return await this.ccLogin(loginDto);
       default:
         throw new NotFoundException();
@@ -71,4 +78,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign({ ccID: cc.ccID });
     return { accessToken };
   }
+}
+function SetMetadata(arg0: string, roles: string[]) {
+  throw new Error('Function not implemented.');
 }
