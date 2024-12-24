@@ -32,7 +32,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
 
   @SubscribeMessage('setFrequency')
   setNewFrequency(@MessageBody() newFrequency:number){
-    frequency=newFrequency;
+    frequency=+newFrequency;
     this.io.server.of('/driver').emit('frequency',{frequency})
   }
 }
