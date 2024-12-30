@@ -87,7 +87,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   constructor(private readonly pathService: PathService) {}
 
   handleConnection(client: Socket) {
-    client.emit('onConnection', { locations, frequency, time,driverConnection:connection });
+    client.emit('onConnection', { locations, frequency, time,threshold,driverConnection:connection });
   }
 
   @SubscribeMessage('clearPath')
@@ -117,8 +117,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
 
   @SubscribeMessage('savePath')
   async savePath() {
-    await mapMatching();
-    await routing();
+    await Promise.all([routing(),mapMatching()])
     const savedPath = {
       date: new Date().getTime(),
       routedPath,
