@@ -11,6 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './category/category.module';
 import { DriverSokcetModule } from './sockets/driver-sokcet/driver-sokcet.module';
 import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
+import { PathModule } from './path/path.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
     CategoryModule,
     DriverSokcetModule,
     AdminSocketModule,
+    PathModule,
   ],
 })
 export class AppModule {}
