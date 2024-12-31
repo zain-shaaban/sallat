@@ -93,6 +93,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   @SubscribeMessage('clearPath')
   clearArrayOfLocations() {
     locations.length = 0;
+    this.io.server.of('/driver').emit('clearPath',locations)
   }
 
   @SubscribeMessage('setFrequency')
