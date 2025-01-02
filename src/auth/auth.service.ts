@@ -48,7 +48,10 @@ export class AuthService {
     if (!manager) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, manager.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ managerID: manager.managerID });
+    const accessToken = this.jwtService.sign({
+      id: manager.managerID,
+      role: Role.Manager,
+    });
     return { accessToken };
   }
   async driverLogin(loginDto: LoginRequestDto) {
@@ -57,7 +60,10 @@ export class AuthService {
     if (!driver) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, driver.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ driverID: driver.driverID });
+    const accessToken = this.jwtService.sign({
+      id: driver.driverID,
+      role: Role.Driver,
+    });
     return { accessToken };
   }
   async vendorLogin(loginDto: LoginRequestDto) {
@@ -66,7 +72,10 @@ export class AuthService {
     if (!vendor) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, vendor.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ vendorID: vendor.vendorID });
+    const accessToken = this.jwtService.sign({
+      id: vendor.vendorID,
+      role: Role.Vendor,
+    });
     return { accessToken };
   }
   async ccLogin(loginDto: LoginRequestDto) {
@@ -75,10 +84,7 @@ export class AuthService {
     if (!cc) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, cc.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
-    const accessToken = this.jwtService.sign({ ccID: cc.ccID });
+    const accessToken = this.jwtService.sign({ id: cc.ccID, role: Role.CC });
     return { accessToken };
   }
-}
-function SetMetadata(arg0: string, roles: string[]) {
-  throw new Error('Function not implemented.');
 }
