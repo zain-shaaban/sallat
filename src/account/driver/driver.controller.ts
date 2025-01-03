@@ -40,6 +40,15 @@ export class DriverController {
     description: 'The driver has been successfully added',
   })
   @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'validation error',
+      },
+    },
+  })
+  @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid or missing token',
     schema: {
@@ -135,6 +144,15 @@ export class DriverController {
       example: {
         status: false,
         message: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'validation error',
       },
     },
   })

@@ -12,6 +12,7 @@ import { CategoryModule } from './category/category.module';
 import { DriverSokcetModule } from './sockets/driver-sokcet/driver-sokcet.module';
 import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
 import { PathModule } from './path/path.module';
+import { TripModule } from './trip/trip.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { PathModule } from './path/path.module';
     DriverSokcetModule,
     AdminSocketModule,
     PathModule,
+    TripModule,
   ],
 })
 export class AppModule {}

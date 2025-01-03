@@ -39,6 +39,15 @@ export class VendorController {
     description: 'The vendor has been successfully added',
   })
   @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'validation error',
+      },
+    },
+  })
+  @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid or missing token',
     schema: {
@@ -134,6 +143,15 @@ export class VendorController {
       example: {
         status: false,
         message: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'validation error',
       },
     },
   })
