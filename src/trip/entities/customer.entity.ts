@@ -24,7 +24,6 @@ export class Customer extends Model {
   @Column({ type: DataType.STRING, allowNull: false })
   customerName: string;
 
-  @Unique
   @Column({ type: DataType.STRING, allowNull: false })
   customerPhoneNumber: string;
 

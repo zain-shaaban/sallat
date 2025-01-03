@@ -24,7 +24,6 @@ export class VendorOrder extends Model {
   @Column({ type: DataType.STRING, allowNull: false })
   vendorName: string;
 
-  @Unique
   @Column({ type: DataType.STRING, allowNull: false })
   vendorPhoneNumber: string;
 
