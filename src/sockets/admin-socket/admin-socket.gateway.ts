@@ -20,7 +20,7 @@ type timeFormat = {
   endTime: number;
 };
 
-let rawPath = [...locations];
+let rawPath = locations;
 
 let matchedPath = [];
 let routedPath = [];
