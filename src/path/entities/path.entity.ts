@@ -16,7 +16,10 @@ export class Path extends Model {
   @Column(DataType.INTEGER)
   pathID: number;
 
-  @Column(DataType.TEXT)
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+  })
   path: string;
 
   @Column(DataType.BIGINT)
