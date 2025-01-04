@@ -6,7 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
-import polyline from '@mapbox/polyline';
+import * as polyline from '@mapbox/polyline';
 import { getPathLength } from 'geolib';
 import { PathService } from 'src/path/path.service';
 import { connection } from '../driver-sokcet/driver-sokcet.gateway';
@@ -128,12 +128,12 @@ export class AdminSocketGateway implements OnGatewayConnection {
         estimated: estimatedDistance,
         raw: getPathLength(
           rawPath.map((point) => {
-            return { latitude: point[0], longitude: point[1] };
+            return { latitude: point.lat, longitude: point.lng };
           }),
         ),
         matched: matchedDistance,
       },
-      time: { estimated: estimatedTime, actual: time.endTime - time.startTime },
+      time: { estimated: estimatedTime, actual: (time.endTime - time.startTime)/1000 },
     };
     await this.pathService.create(JSON.stringify(savedPath));
   }

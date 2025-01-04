@@ -16,7 +16,14 @@ export class Path extends Model {
   @Column(DataType.INTEGER)
   pathID: number;
 
-  @Column(DataType.TEXT)
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    get() {
+      const value = this.getDataValue('path');
+      return value ? JSON.parse(value) : {};
+    },
+  })
   path: string;
 
   @Column(DataType.BIGINT)

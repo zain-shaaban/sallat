@@ -27,9 +27,13 @@ export class VendorOrder extends Model {
   @Column({ type: DataType.STRING, allowNull: false })
   vendorPhoneNumber: string;
 
-  @Column({ type: DataType.JSON, allowNull: false ,    get() {
-    const value = this.getDataValue('vendorLocation');
-    return value ? JSON.parse(value) : {};
-  },})
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    get() {
+      const value = this.getDataValue('vendorLocation');
+      return value ? JSON.parse(value) : {};
+    },
+  })
   vendorLocation: location;
 }
