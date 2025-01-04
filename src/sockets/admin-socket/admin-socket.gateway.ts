@@ -135,6 +135,6 @@ export class AdminSocketGateway implements OnGatewayConnection {
       },
       time: { estimated: estimatedTime, actual: (time.endTime - time.startTime)/1000 },
     };
-    await this.pathService.create(JSON.stringify(savedPath));
+    await this.pathService.create(savedPath);
   }
 }

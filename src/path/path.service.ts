@@ -6,7 +6,7 @@ import { Path } from './entities/path.entity';
 export class PathService {
   constructor(@InjectModel(Path) private pathModel:typeof Path){}
 
-  async create(path:string) {
+  async create(path:any) {
     return await this.pathModel.create({path,date:new Date().getTime()});
   }
 
