@@ -1,8 +1,12 @@
-import { Controller, Post, Body, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpStatus, Get } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { asyncHandler } from 'src/common/utils/async-handler';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  CustomerSearchDtoRequest,
+  CustomerSearchDtoResponse,
+} from './dto/customer-search.dto';
 
 @Controller('trip')
 export class TripController {
@@ -30,16 +34,49 @@ export class TripController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
   @Post('submit')
   async createTrip(@Body() createTripDto: CreateTripDto) {
     return await asyncHandler(this.tripService.createNewTrip(createTripDto));
+  }
+
+  @ApiOperation({ summary: 'Get a single customer by his phone number' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Customer found successfully',
+    type: CustomerSearchDtoResponse,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Wrong Phone Number',
+    schema: {
+      example: {
+        status: false,
+        message: 'not found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'invalid or missing token',
+    schema: {
+      example: {
+        status: false,
+        message: 'invalid token',
+      },
+    },
+  })
+  @Get('customerSearch')
+  async customerSearch(@Body() customerSearchDto: CustomerSearchDtoRequest) {
+    return await asyncHandler(
+      this.tripService.customerSearch(customerSearchDto.phoneNumber),
+    );
   }
 }

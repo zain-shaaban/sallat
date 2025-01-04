@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
 import { Customer } from './entities/customer.entity';
 import { VendorOrder } from './entities/vendor-order.entity';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CustomerSearchDtoResponse } from './dto/customer-search.dto';
 
 @Injectable()
 export class TripService {
@@ -122,5 +124,14 @@ export class TripService {
       { vendorName, vendorPhoneNumber, vendorLocation },
       { where: { vendorID } },
     );
+  }
+
+  async customerSearch(phoneNumber: string) {
+    const customer = await this.customerModel.findOne({
+      attributes: ['customerID', 'customerName', 'customerLocation'],
+      where: { customerPhoneNumber: phoneNumber },
+    });
+    if (!customer) throw new NotFoundException();
+    return customer;
   }
 }

@@ -50,11 +50,11 @@ export class DriverController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -70,11 +70,11 @@ export class DriverController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -101,17 +101,17 @@ export class DriverController {
     schema: {
       example: {
         status: false,
-        message: 'Not Found',
+        message: 'not found',
       },
     },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -143,7 +143,7 @@ export class DriverController {
     schema: {
       example: {
         status: false,
-        message: 'Not Found',
+        message: 'not found',
       },
     },
   })
@@ -158,11 +158,11 @@ export class DriverController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -200,17 +200,17 @@ export class DriverController {
     schema: {
       example: {
         status: false,
-        message: 'Not Found',
+        message: 'not found',
       },
     },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })

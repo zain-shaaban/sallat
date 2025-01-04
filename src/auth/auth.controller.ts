@@ -22,11 +22,11 @@ export class AuthController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid email or password',
+    description: 'invalid email or password',
     schema: {
       example: {
         status: false,
-        message: 'Wrong credentials',
+        message: 'wrong credentials',
       },
     },
   })

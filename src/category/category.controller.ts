@@ -26,11 +26,11 @@ export class CategoryController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -51,11 +51,11 @@ export class CategoryController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -77,11 +77,11 @@ export class CategoryController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -103,11 +103,11 @@ export class CategoryController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })

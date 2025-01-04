@@ -5,7 +5,7 @@ import {
   PrimaryKey,
   Table,
   Unique,
-  Model
+  Model,
 } from 'sequelize-typescript';
 
 @Table({ tableName: 'trip', timestamps: false })
@@ -37,7 +37,14 @@ export class Trip extends Model {
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   partnership: boolean;
 
-  @Column({ type: DataType.JSON, defaultValue: [] })
+  @Column({
+    type: DataType.JSON,
+    defaultValue: [],
+    get() {
+      const value = this.getDataValue('itemTypes');
+      return value ? JSON.parse(value) : [];
+    },
+  })
   itemTypes: string[];
 
   @Column(DataType.STRING)

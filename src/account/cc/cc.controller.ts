@@ -46,11 +46,11 @@ export class CcController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -66,11 +66,11 @@ export class CcController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -97,17 +97,17 @@ export class CcController {
     schema: {
       example: {
         status: false,
-        message: 'Not Found',
+        message: 'not found',
       },
     },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -139,7 +139,7 @@ export class CcController {
     schema: {
       example: {
         status: false,
-        message: 'Not Found',
+        message: 'not found',
       },
     },
   })
@@ -154,11 +154,11 @@ export class CcController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
@@ -194,17 +194,17 @@ export class CcController {
     schema: {
       example: {
         status: false,
-        message: 'Not Found',
+        message: 'not found',
       },
     },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'invalid or missing token',
     schema: {
       example: {
         status: false,
-        message: 'Invalid token',
+        message: 'invalid token',
       },
     },
   })
