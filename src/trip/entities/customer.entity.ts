@@ -28,7 +28,7 @@ export class Customer extends Model {
   customerPhoneNumber: string;
 
   @Column({
-    type: DataType.JSON,
+    type:DataType.STRING,
     allowNull: false,
     get() {
       const value = this.getDataValue('customerLocation');

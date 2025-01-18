@@ -56,8 +56,6 @@ export class CreateTripDto {
 
   @ApiProperty({ type: location })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => location)
   vendorLocation: location;
 
   @ApiProperty({ type: 'string', example: 'example example' })
@@ -74,8 +72,6 @@ export class CreateTripDto {
 
   @ApiProperty({ type: location })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => location)
   customerLocation: location;
 
   @ApiProperty({ type: 'array', example: ['شاورما', 'بطاطا مقلية كاسة'] })

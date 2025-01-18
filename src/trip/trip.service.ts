@@ -1,11 +1,9 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
 import { Customer } from './entities/customer.entity';
 import { VendorOrder } from './entities/vendor-order.entity';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CustomerSearchDtoResponse } from './dto/customer-search.dto';
 
 @Injectable()
 export class TripService {
@@ -84,7 +82,7 @@ export class TripService {
     const { customerID } = await this.customerModel.create({
       customerName,
       customerPhoneNumber,
-      customerLocation,
+      customerLocation: JSON.stringify(customerLocation),
     });
     return customerID;
   }
@@ -97,7 +95,7 @@ export class TripService {
     const { vendorID } = await this.vendorModel.create({
       vendorName,
       vendorPhoneNumber,
-      vendorLocation,
+      vendorLocation: JSON.stringify(vendorLocation),
     });
     return vendorID;
   }
@@ -105,13 +103,18 @@ export class TripService {
   async updateCustomer(
     customerID: number,
     customerName: string,
-    customerPhoneNumver: string,
+    customerPhoneNumber: string,
     customerLocation: object,
   ) {
-    await this.customerModel.update(
-      { customerName, customerPhoneNumver, customerLocation },
+    const customerUpdated = await this.customerModel.update(
+      {
+        customerName,
+        customerPhoneNumber,
+        customerLocation: JSON.stringify(customerLocation),
+      },
       { where: { customerID } },
     );
+    if (customerUpdated[0] == 0) throw new NotFoundException();
   }
 
   async updateVendor(
@@ -120,10 +123,15 @@ export class TripService {
     vendorPhoneNumber: string,
     vendorLocation: object,
   ) {
-    await this.vendorModel.update(
-      { vendorName, vendorPhoneNumber, vendorLocation },
+    const vendorUpdated = await this.vendorModel.update(
+      {
+        vendorName,
+        vendorPhoneNumber,
+        vendorLocation: JSON.stringify(vendorLocation),
+      },
       { where: { vendorID } },
     );
+    if (vendorUpdated[0] == 0) throw new NotFoundException();
   }
 
   async customerSearch(phoneNumber: string) {
