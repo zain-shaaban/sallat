@@ -66,7 +66,7 @@ export class TripService {
       driverID,
       vendorID,
       customerID,
-      itemTypes,
+      itemTypes:JSON.stringify(itemTypes),
       description,
       approxDistance,
       approxPrice,

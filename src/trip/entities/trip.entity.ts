@@ -48,7 +48,7 @@ export class Trip extends Model {
 
   @ApiProperty({ type: 'array', example: ['شاورما', 'بطاطا مقلية'] })
   @Column({
-    type: DataType.JSON,
+    type: DataType.STRING,
     defaultValue: [],
     get() {
       const value = this.getDataValue('itemTypes');
