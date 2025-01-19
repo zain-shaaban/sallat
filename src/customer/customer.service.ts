@@ -66,4 +66,11 @@ export class CustomerService {
     if (deletedCustomer == 0) throw new NotFoundException();
     return null;
   }
+
+  async findOnMap() {
+    const allCustomersOnMap = await this.customerModel.findAll({
+      attributes: ['customerID', 'name', 'location'],
+    });
+    return allCustomersOnMap;
+  }
 }

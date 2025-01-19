@@ -25,6 +25,7 @@ import {
 import { GetAllCustomersDto } from './dto/get-all-customers.dto';
 import { GetSingleCustomerDto } from './dto/get-single-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { GetAllCustomersOnMapDto } from './dto/get-all-customers-on-map.dto';
 
 @ApiBearerAuth()
 @ApiTags('Customer')
@@ -80,43 +81,6 @@ export class CustomerController {
   @Get('')
   async findAll() {
     return await asyncHandler(this.customerService.findAll());
-  }
-
-  @ApiOperation({ summary: 'Get a single customer by his ID' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Driver found successfully',
-    type: GetSingleCustomerDto,
-  })
-  @ApiParam({
-    name: 'customerID',
-    description: 'The ID of the customer',
-    type: Number,
-    example: 20,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Wrong ID',
-    schema: {
-      example: {
-        status: false,
-        message: 'not found',
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
-    schema: {
-      example: {
-        status: false,
-        message: 'invalid token',
-      },
-    },
-  })
-  @Get('/:customerID')
-  async findOne(@Param('customerID', ParseIntPipe) customerID: number) {
-    return await asyncHandler(this.customerService.findOne(customerID));
   }
 
   @ApiResponse({
@@ -176,6 +140,26 @@ export class CustomerController {
     );
   }
 
+  @ApiOperation({ summary: 'Get all customers on map' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: GetAllCustomersOnMapDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'invalid or missing token',
+    schema: {
+      example: {
+        status: false,
+        message: 'invalid token',
+      },
+    },
+  })
+  @Get('onMap')
+  async findAllOnMap() {
+    return await asyncHandler(this.customerService.findOnMap());
+  }
+
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Customer deleted successfully',
@@ -217,5 +201,42 @@ export class CustomerController {
   @Delete('delete/:customerID')
   async remove(@Param('customerID', ParseIntPipe) customerID: number) {
     return await asyncHandler(this.customerService.remove(customerID));
+  }
+
+  @ApiOperation({ summary: 'Get a single customer by his ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Driver found successfully',
+    type: GetSingleCustomerDto,
+  })
+  @ApiParam({
+    name: 'customerID',
+    description: 'The ID of the customer',
+    type: Number,
+    example: 20,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Wrong ID',
+    schema: {
+      example: {
+        status: false,
+        message: 'not found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'invalid or missing token',
+    schema: {
+      example: {
+        status: false,
+        message: 'invalid token',
+      },
+    },
+  })
+  @Get('/:customerID')
+  async findOne(@Param('customerID', ParseIntPipe) customerID: number) {
+    return await asyncHandler(this.customerService.findOne(customerID));
   }
 }
