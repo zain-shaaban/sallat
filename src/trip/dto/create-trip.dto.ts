@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
@@ -8,7 +7,6 @@ import {
   IsString,
   Max,
   MaxLength,
-  ValidateNested,
 } from 'class-validator';
 
 class location {

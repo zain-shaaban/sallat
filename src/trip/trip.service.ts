@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
-import { Customer } from './entities/customer.entity';
+import { Customer } from '../customer/entities/customer.entity';
 import { VendorOrder } from './entities/vendor-order.entity';
 
 @Injectable()
@@ -80,9 +80,9 @@ export class TripService {
     customerLocation: object,
   ) {
     const { customerID } = await this.customerModel.create({
-      customerName,
-      customerPhoneNumber,
-      customerLocation: JSON.stringify(customerLocation),
+      name:customerName,
+      phoneNumber:customerPhoneNumber,
+      location:JSON.stringify(customerLocation),
     });
     return customerID;
   }
@@ -108,9 +108,9 @@ export class TripService {
   ) {
     const customerUpdated = await this.customerModel.update(
       {
-        customerName,
-        customerPhoneNumber,
-        customerLocation: JSON.stringify(customerLocation),
+        name:customerName,
+        phoneNumber:customerPhoneNumber,
+        location: JSON.stringify(customerLocation),
       },
       { where: { customerID } },
     );
