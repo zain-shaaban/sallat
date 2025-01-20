@@ -66,7 +66,7 @@ export class TripService {
       driverID,
       vendorID,
       customerID,
-      itemTypes:JSON.stringify(itemTypes),
+      itemTypes: JSON.stringify(itemTypes),
       description,
       approxDistance,
       approxPrice,
@@ -80,9 +80,9 @@ export class TripService {
     customerLocation: object,
   ) {
     const { customerID } = await this.customerModel.create({
-      name:customerName,
-      phoneNumber:customerPhoneNumber,
-      location:JSON.stringify(customerLocation),
+      name: customerName,
+      phoneNumber: customerPhoneNumber,
+      location: JSON.stringify(customerLocation),
     });
     return customerID;
   }
@@ -93,8 +93,8 @@ export class TripService {
     vendorLocation: object,
   ) {
     const { vendorID } = await this.vendorModel.create({
-      name:vendorName,
-      phoneNumber:vendorPhoneNumber,
+      name: vendorName,
+      phoneNumber: vendorPhoneNumber,
       location: JSON.stringify(vendorLocation),
     });
     return vendorID;
@@ -106,15 +106,16 @@ export class TripService {
     customerPhoneNumber: string,
     customerLocation: object,
   ) {
-    const customerUpdated = await this.customerModel.update(
+    const customer = await this.customerModel.findByPk(customerID);
+    if (!customer) throw new NotFoundException();
+    await this.customerModel.update(
       {
-        name:customerName,
-        phoneNumber:customerPhoneNumber,
+        name: customerName,
+        phoneNumber: customerPhoneNumber,
         location: JSON.stringify(customerLocation),
       },
       { where: { customerID } },
     );
-    if (customerUpdated[0] == 0) throw new NotFoundException();
   }
 
   async updateVendor(
@@ -123,15 +124,16 @@ export class TripService {
     vendorPhoneNumber: string,
     vendorLocation: object,
   ) {
-    const vendorUpdated = await this.vendorModel.update(
+    const vendor = await this.vendorModel.findByPk(vendorID);
+    if (!vendor) throw new NotFoundException();
+    await this.vendorModel.update(
       {
-        name:vendorName,
-        phoneNumber:vendorPhoneNumber,
+        name: vendorName,
+        phoneNumber: vendorPhoneNumber,
         location: JSON.stringify(vendorLocation),
       },
       { where: { vendorID } },
     );
-    if (vendorUpdated[0] == 0) throw new NotFoundException();
   }
 
   async customerSearch(phoneNumber: string) {
