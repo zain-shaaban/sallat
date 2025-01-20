@@ -4,7 +4,7 @@ import dbConfig from './config/db.config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { CcModule } from './account/cc/cc.module';
 import { ManagerModule } from './account/manager/manager.module';
-import { VendorModule } from './account/vendor/vendor.module';
+import { AccountVendorModule } from './account/vendor/vendor.module';
 import { DriverModule } from './account/driver/driver.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
@@ -14,6 +14,7 @@ import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
 import { PathModule } from './path/path.module';
 import { TripModule } from './trip/trip.module';
 import { CustomerModule } from './customer/customer.module';
+import { VendorModule } from './vendor/vendor.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { CustomerModule } from './customer/customer.module';
     PathModule,
     TripModule,
     CustomerModule,
+    AccountVendorModule,
   ],
 })
 export class AppModule {}

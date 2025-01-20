@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Vendor } from '../entities/vendor.entity';
+import { Vendor } from '../../../vendor/entities/vendor.entity';
 
 export class GetAllVendorsDto {
   @ApiProperty({ example: true })

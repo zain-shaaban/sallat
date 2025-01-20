@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVendorDtoRequest } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { InjectModel } from '@nestjs/sequelize';
-import { Vendor } from './entities/vendor.entity';
 import * as bcrypt from 'bcryptjs';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
 
 @Injectable()
 export class VendorService {

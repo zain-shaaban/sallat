@@ -1,14 +1,13 @@
 import { Global, Module } from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import { VendorController } from './vendor.controller';
-import { SequelizeModule } from '@nestjs/sequelize';
-import { Vendor } from './entities/vendor.entity';
+import { VendorModule } from 'src/vendor/vendor.module';
 
 @Global()
 @Module({
-  imports: [SequelizeModule.forFeature([Vendor])],
+  imports: [VendorModule],
   controllers: [VendorController],
   providers: [VendorService],
-  exports:[SequelizeModule.forFeature([Vendor])]
+  exports:[VendorModule]
 })
-export class VendorModule {}
+export class AccountVendorModule {}

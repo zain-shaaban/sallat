@@ -3,14 +3,14 @@ import { CreateTripDto } from './dto/create-trip.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
 import { Customer } from '../customer/entities/customer.entity';
-import { VendorOrder } from './entities/vendor-order.entity';
+import { Vendor } from '../vendor/entities/vendor.entity';
 
 @Injectable()
 export class TripService {
   constructor(
     @InjectModel(Trip) private readonly tripModel: typeof Trip,
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
-    @InjectModel(VendorOrder) private readonly vendorModel: typeof VendorOrder,
+    @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
   ) {}
 
   async createNewTrip(createTripDto: CreateTripDto) {
@@ -93,9 +93,9 @@ export class TripService {
     vendorLocation: object,
   ) {
     const { vendorID } = await this.vendorModel.create({
-      vendorName,
-      vendorPhoneNumber,
-      vendorLocation: JSON.stringify(vendorLocation),
+      name:vendorName,
+      phoneNumber:vendorPhoneNumber,
+      location: JSON.stringify(vendorLocation),
     });
     return vendorID;
   }
@@ -125,9 +125,9 @@ export class TripService {
   ) {
     const vendorUpdated = await this.vendorModel.update(
       {
-        vendorName,
-        vendorPhoneNumber,
-        vendorLocation: JSON.stringify(vendorLocation),
+        name:vendorName,
+        phoneNumber:vendorPhoneNumber,
+        location: JSON.stringify(vendorLocation),
       },
       { where: { vendorID } },
     );

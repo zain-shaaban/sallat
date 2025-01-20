@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Cc } from 'src/account/cc/entities/cc.entity';
 import { Driver } from 'src/account/driver/entities/driver.entity';
 import { Manager } from 'src/account/manager/entities/manager.entity';
-import { Vendor } from 'src/account/vendor/entities/vendor.entity';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 

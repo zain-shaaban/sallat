@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 class location {
   @ApiProperty({ type: 'number', example: 65.565656 })
   lat: number;
@@ -7,9 +8,9 @@ class location {
   lng: number;
 }
 
-class GetCustomersOnMapData {
+class GetVendorsOnMapData {
   @ApiProperty({ type:'number',example: 52})
-  customerID: number;
+  vendorID: number;
 
   @ApiProperty({type:'string', example: 'example example' })
   name: string;
@@ -18,10 +19,10 @@ class GetCustomersOnMapData {
   location: location;
 }
 
-export class GetAllCustomersOnMapDto {
+export class GetAllVendorsOnMapDto {
   @ApiProperty({ example: true })
   status: boolean;
 
-  @ApiProperty({ type: GetCustomersOnMapData, isArray: true })
-  data: GetCustomersOnMapData[];
+  @ApiProperty({ type: GetVendorsOnMapData, isArray: true })
+  data: GetVendorsOnMapData[];
 }

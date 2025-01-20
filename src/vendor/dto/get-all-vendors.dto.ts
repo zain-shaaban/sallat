@@ -8,27 +8,33 @@ class location {
   lng: number;
 }
 
-export class GetCustomerData {
-  @ApiProperty({type:'number', example: 30 })
-  customerID: number;
+export class GetVendorData {
+  @ApiProperty({ type:'number',example: 20 })
+  vendorID: number;
 
-  @ApiProperty({ type:'string',example: '0999888777' })
+  @ApiProperty({ example: '0999888777' })
   phoneNumber: string;
 
-  @ApiProperty({ type:'string',example: 'example example' })
+  @ApiProperty({ example: 'example example' })
   name: string;
 
   @ApiProperty({ type: location })
   location: location;
 
+  @ApiProperty({type:'boolean',example:false})
+  partner:boolean
+
+  @ApiProperty({type:'string',example:'example@gmail.com'})
+  email:string
+
   @ApiProperty({ type: Trip, isArray: true })
   trips: Trip[];
 }
 
-export class GetAllCustomersDto {
+export class GetAllVendorsDto2 {
   @ApiProperty({ example: true })
   status: boolean;
 
-  @ApiProperty({ type: GetCustomerData, isArray: true })
-  data: GetCustomerData[];
+  @ApiProperty({ type: GetVendorData, isArray: true })
+  data: GetVendorData[];
 }
