@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
 import { Customer } from '../customer/entities/customer.entity';
 import { Vendor } from '../vendor/entities/vendor.entity';
-import { readyTrips } from 'src/sockets/admin-socket/admin-socket.gateway';
+import {
+  AdminSocketGateway,
+  readyTrips,
+} from 'src/sockets/admin-socket/admin-socket.gateway';
 
 @Injectable()
 export class TripService {
@@ -12,6 +15,7 @@ export class TripService {
     @InjectModel(Trip) private readonly tripModel: typeof Trip,
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
     @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
+    @Inject() private readonly adminGateway: AdminSocketGateway,
   ) {}
 
   async createNewTrip(createTripDto: CreateTripDto) {
@@ -72,8 +76,9 @@ export class TripService {
       approxDistance,
       approxPrice,
     });
-    readyTrips.push(trip)
-    return { tripID:trip.tripID };
+    readyTrips.push(trip);
+    this.adminGateway.submitNewTrip(trip);
+    return { tripID: trip.tripID };
   }
 
   async createNewCustomer(

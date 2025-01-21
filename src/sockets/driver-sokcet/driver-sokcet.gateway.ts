@@ -8,7 +8,14 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
-import { ongoingTrips } from '../admin-socket/admin-socket.gateway';
+import {
+  AdminSocketGateway,
+  ongoingTrips,
+  readyTrips,
+  pendingTrips,
+  moveTripFromReadyToPending,
+} from '../admin-socket/admin-socket.gateway';
+import { forwardRef, Inject } from '@nestjs/common';
 
 export let onlineDrivers: any[] = [];
 
@@ -24,12 +31,14 @@ export class DriverSocketGateway
   @WebSocketServer()
   io: Namespace;
 
+  constructor(@Inject(forwardRef(() => AdminSocketGateway)) private readonly adminSocketGateway: AdminSocketGateway){}
+
   handleConnection(client: Socket) {
-    const { driverID, lng,lat } = client.handshake.query;
+    const { driverID, lng, lat } = client.handshake.query;
     onlineDrivers.push({
       socketID: client.id,
       driverID,
-      location:{lng:Number(lng),lat:Number(lat)},
+      location: { lng: Number(lng), lat: Number(lat) },
       available: true,
     });
     this.io.server.of('/admin').emit('driverConnection', { onlineDrivers });
@@ -44,8 +53,11 @@ export class DriverSocketGateway
   }
 
   @SubscribeMessage('sendLocation')
-  handleLocationUpdate(@ConnectedSocket() client: Socket, @MessageBody() location: string) {
-    location=JSON.parse(location)
+  handleLocationUpdate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() location: string,
+  ) {
+    location = JSON.parse(location);
     const socketID = client.id;
     const oneDriver = onlineDrivers.find(
       (driver) => driver.socketID == socketID,
@@ -62,5 +74,12 @@ export class DriverSocketGateway
     this.io.server
       .of('/admin')
       .emit('location', { driverID: oneDriver.driverID, location });
+  }
+
+  @SubscribeMessage('rejectTrip')
+  caseRejectTrip(@MessageBody() tripID: number) {
+    const oneTrip = readyTrips.find((trip) => trip.tripID == tripID);
+    moveTripFromReadyToPending(oneTrip);
+    this.adminSocketGateway.sendTripsToAdmins();
   }
 }
