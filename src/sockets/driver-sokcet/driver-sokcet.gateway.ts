@@ -5,15 +5,12 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
-import {
-  frequency,
-  locations,
-  threshold,
-  time,
-} from '../admin-socket/admin-socket.gateway';
-export let connection: boolean = false;
+import { ongoingTrips } from '../admin-socket/admin-socket.gateway';
+
+export let onlineDrivers: any[] = [];
 
 @WebSocketGateway({
   namespace: 'driver',
@@ -28,20 +25,42 @@ export class DriverSocketGateway
   io: Namespace;
 
   handleConnection(client: Socket) {
-    connection = true;
-    this.io.server.of('/admin').emit('driverConnection', { connection });
-    client.emit('onConnection', { frequency, threshold, time });
+    const { driverID, lng,lat } = client.handshake.query;
+    onlineDrivers.push({
+      socketID: client.id,
+      driverID,
+      location:{lng:Number(lng),lat:Number(lat)},
+      available: true,
+    });
+    this.io.server.of('/admin').emit('driverConnection', { onlineDrivers });
   }
 
-  handleDisconnect() {
-    connection = false;
-    this.io.server.of('/admin').emit('driverConnection', { connection });
+  handleDisconnect(client: Socket) {
+    const driverToDelete = onlineDrivers.find(
+      (driver) => driver.socketID == client.id,
+    );
+    onlineDrivers = onlineDrivers.filter((driver) => driver != driverToDelete);
+    this.io.server.of('/admin').emit('driverConnection', { onlineDrivers });
   }
 
   @SubscribeMessage('sendLocation')
-  handleLocationUpdate(@MessageBody() location: string) {
-    const adminNamespace = this.io.server.of('/admin');
-    adminNamespace.emit('location', { location });
-    locations.push(location);
+  handleLocationUpdate(@ConnectedSocket() client: Socket, @MessageBody() location: string) {
+    location=JSON.parse(location)
+    const socketID = client.id;
+    const oneDriver = onlineDrivers.find(
+      (driver) => driver.socketID == socketID,
+    );
+    if (oneDriver) {
+      oneDriver.location = location;
+      if (oneDriver.available == false) {
+        const oneTrip = ongoingTrips.find(
+          (trip) => trip.driverID == oneDriver.driverID,
+        );
+        oneTrip.path.push(location);
+      }
+    }
+    this.io.server
+      .of('/admin')
+      .emit('location', { driverID: oneDriver.driverID, location });
   }
 }

@@ -43,8 +43,8 @@ export class Driver extends Model {
   password: string;
 
   @ApiProperty({type:'number',example:332211})
-  @Column(DataType.INTEGER)
-  assignedVehicleNumber: number;
+  @Column(DataType.STRING)
+  assignedVehicleNumber: string;
 
   @ApiProperty({type:'number',example:1500000.00})
   @Column(DataType.FLOAT)

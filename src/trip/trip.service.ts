@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
 import { Customer } from '../customer/entities/customer.entity';
 import { Vendor } from '../vendor/entities/vendor.entity';
+import { readyTrips } from 'src/sockets/admin-socket/admin-socket.gateway';
 
 @Injectable()
 export class TripService {
@@ -62,7 +63,7 @@ export class TripService {
       }
     }
 
-    const { tripID } = await this.tripModel.create({
+    const trip = await this.tripModel.create({
       driverID,
       vendorID,
       customerID,
@@ -71,7 +72,8 @@ export class TripService {
       approxDistance,
       approxPrice,
     });
-    return { tripID };
+    readyTrips.push(trip)
+    return { tripID:trip.tripID };
   }
 
   async createNewCustomer(

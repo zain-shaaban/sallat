@@ -9,11 +9,14 @@ import { Namespace, Socket } from 'socket.io';
 import * as polyline from '@mapbox/polyline';
 import { getPathLength } from 'geolib';
 import { PathService } from 'src/path/path.service';
-import { connection } from '../driver-sokcet/driver-sokcet.gateway';
+import { onlineDrivers } from '../driver-sokcet/driver-sokcet.gateway';
 
 export let locations: any[] = [];
 export let frequency: number = 5;
 export let threshold: number = 5;
+export let readyTrips: any[] = [];
+export let ongoingTrips: any[] = [];
+export let pendingTrips: any[] = [];
 
 type timeFormat = {
   startTime: number;
@@ -87,19 +90,15 @@ export class AdminSocketGateway implements OnGatewayConnection {
   constructor(private readonly pathService: PathService) {}
 
   handleConnection(client: Socket) {
-    client.emit('onConnection', { locations, frequency, time,threshold,driverConnection:connection });
+    client.emit('onConnection', {
+      onlineDrivers
+    });
   }
 
   @SubscribeMessage('clearPath')
   clearArrayOfLocations() {
     locations.length = 0;
-    this.io.server.of('/driver').emit('clearPath')
-  }
-
-  @SubscribeMessage('setFrequency')
-  setNewFrequency(@MessageBody() newFrequency: number) {
-    frequency = +newFrequency;
-    this.io.server.of('/driver').emit('frequency', { frequency });
+    this.io.server.of('/driver').emit('clearPath');
   }
 
   @SubscribeMessage('setPathControl')
@@ -110,15 +109,9 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.io.server.of('/driver').emit('pathControl', { pathControl });
   }
 
-  @SubscribeMessage('setThreshold')
-  setNewThreShold(@MessageBody() newThreShold: number) {
-    threshold = +newThreShold;
-    this.io.server.of('/driver').emit('threshold', { threshold });
-  }
-
   @SubscribeMessage('savePath')
   async savePath() {
-    await Promise.all([routing(),mapMatching()])
+    await Promise.all([routing(), mapMatching()]);
     const savedPath = {
       date: new Date().getTime(),
       routedPath,
@@ -133,7 +126,10 @@ export class AdminSocketGateway implements OnGatewayConnection {
         ),
         matched: matchedDistance,
       },
-      time: { estimated: estimatedTime, actual: (time.endTime - time.startTime)/1000 },
+      time: {
+        estimated: estimatedTime,
+        actual: (time.endTime - time.startTime) / 1000,
+      },
     };
     await this.pathService.create(savedPath);
   }

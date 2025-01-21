@@ -41,8 +41,8 @@ export class CreateDriverDtoRequest {
 
   @ApiProperty({ example: 332211, required: false })
   @IsOptional()
-  @IsNumber()
-  assignedVehicleNumber?: number;
+  @IsString()
+  assignedVehicleNumber?: string;
 
   @ApiProperty({ example: 1500000.0, required: false })
   @IsOptional()
