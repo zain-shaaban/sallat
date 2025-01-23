@@ -59,7 +59,7 @@ export class DriverSocketGateway
   @SubscribeMessage('sendLocation')
   handleLocationUpdate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() location: string,
+    @MessageBody() location: {lng:number,lat:number},
   ) {
     const socketID = client.id;
     const oneDriver = onlineDrivers.find(
