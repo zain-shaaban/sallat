@@ -23,8 +23,7 @@ class location {
 export class CreateVendorDtoRequest2 {
   @ApiProperty({ example: '0999888777' })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
+  @IsOptional()
   phoneNumber: string;
 
   @ApiProperty({ example: 'example example' })

@@ -59,11 +59,11 @@ export class DriverSocketGateway
   @SubscribeMessage('sendLocation')
   handleLocationUpdate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() location: {lng:number,lat:number},
+    @MessageBody() location: { lng: number; lat: number },
   ) {
-    const socketID = client.id;
+    const driverID = this.getDriverID(client);
     const oneDriver = onlineDrivers.find(
-      (driver) => driver.socketID == socketID,
+      (driver) => driver.driverID == driverID,
     );
     if (oneDriver) {
       oneDriver.location = location;
@@ -80,13 +80,15 @@ export class DriverSocketGateway
   }
 
   @SubscribeMessage('rejectTrip')
-  caseRejectTrip(@MessageBody() driverID: number) {
+  caseRejectTrip(@ConnectedSocket() client:Socket) {
+    const driverID=this.getDriverID(client)
     const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
     this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
   }
 
   @SubscribeMessage('acceptTrip')
-  caseAcceptTrip(@MessageBody() driverID: number) {
+  caseAcceptTrip(@ConnectedSocket() client: Socket) {
+    const driverID=this.getDriverID(client)
     onlineDrivers = onlineDrivers.map((driver) => {
       if (driver.driverID == driverID && driver.available == true)
         driver.available = false;
@@ -96,8 +98,15 @@ export class DriverSocketGateway
     this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
   }
 
+  // @SubscribeMessage('cancelTrip')
+  // canselTripByDriver(@ConnectedSocket() client: Socket) {
+  //   const driverID=this.getDriverID(client);
+  //   console.log(driverID)
+  // }
+
   @SubscribeMessage('endTrip')
-  async endTrip(@MessageBody() driverID: number) {
+  async endTrip(@ConnectedSocket() client: Socket) {
+    const driverID=this.getDriverID(client)
     onlineDrivers = onlineDrivers.map((driver) => {
       if (driver.driverID == driverID && driver.available == false)
         driver.available = true;
@@ -110,5 +119,9 @@ export class DriverSocketGateway
       { where: { tripID: trip.tripID } },
     );
     this.adminSocketGateway.removeTripFromOnGoing(trip);
+  }
+
+  getDriverID(client:Socket){
+    return Number(client.handshake.query.driverID)
   }
 }
