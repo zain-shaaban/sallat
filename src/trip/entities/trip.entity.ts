@@ -91,7 +91,11 @@ export class Trip extends Model {
 
   @ApiProperty({
     type: 'array',
-    example: ['654651.3232', '656565.6562', '59999.32'],
+    example: [
+      { lng: 111.111, lat: 112.222 },
+      { lng: 888.888, lat: 999.999 },
+      { lng: 555.555, lat: 333.333 },
+    ],
   })
   @Column({ type: DataType.JSON, defaultValue: [] })
   path: string[];
