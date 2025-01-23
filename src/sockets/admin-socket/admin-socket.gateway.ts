@@ -86,15 +86,16 @@ export class AdminSocketGateway implements OnGatewayConnection {
   @SubscribeMessage('savePath')
   async savePath() {}
 
-  @SubscribeMessage('acceptTrip')
-  caseAcceptTrip(){
-
+  @SubscribeMessage('resetEnvironment')
+  resetAllVariables() {
+    readyTrips.length = 0;
+    ongoingTrips.length = 0;
+    pendingTrips.length = 0;
+    onlineDrivers.length = 0;
   }
 
-
-
   submitNewTrip(trip: Trip) {
-    this.sendTripsToAdmins()
+    this.sendTripsToAdmins();
     const driverID = trip.driverID;
     const driver = onlineDrivers.find(
       (driver) => driver.driverID == driverID && driver.available == true,
@@ -104,20 +105,20 @@ export class AdminSocketGateway implements OnGatewayConnection {
     }
   }
 
-  sendTripsToAdmins(){
+  sendTripsToAdmins() {
     this.io.server
-    .of('/admin')
-    .emit('tripUpdate', { readyTrips, pendingTrips, ongoingTrips });
+      .of('/admin')
+      .emit('tripUpdate', { readyTrips, pendingTrips, ongoingTrips });
   }
 }
 
-export function moveTripFromReadyToPending(trip:Trip){
+export function moveTripFromReadyToPending(trip: Trip) {
   readyTrips = readyTrips.filter((trip) => trip != trip);
   trip.driverID = null;
   pendingTrips.push(trip);
 }
 
-export function moveTripFromReadyToOnGoing(trip:Trip){
+export function moveTripFromReadyToOnGoing(trip: Trip) {
   readyTrips = readyTrips.filter((trip) => trip != trip);
   ongoingTrips.push(trip);
 }
