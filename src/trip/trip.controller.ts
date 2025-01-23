@@ -1,10 +1,9 @@
-import { Controller, Post, Body, HttpStatus, Get } from '@nestjs/common';
+import { Controller, Post, Body, HttpStatus, Get, Param } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { asyncHandler } from 'src/common/utils/async-handler';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import {
-  CustomerSearchDtoRequest,
   CustomerSearchDtoResponse,
 } from './dto/customer-search.dto';
 
@@ -48,6 +47,12 @@ export class TripController {
   }
 
   @ApiOperation({ summary: 'Get a single customer by his phone number' })
+  @ApiParam({
+    name:'phoneNumber',
+    type:String,
+    description:'Customer number to find his trips',
+    example:'+9639998877'
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Customer found successfully',
@@ -73,10 +78,10 @@ export class TripController {
       },
     },
   })
-  @Get('customerSearch')
-  async customerSearch(@Body() customerSearchDto: CustomerSearchDtoRequest) {
+  @Get('customerSearch/:phoneNumber')
+  async customerSearch(@Param('phoneNumber') phoneNumber: string) {
     return await asyncHandler(
-      this.tripService.customerSearch(customerSearchDto.phoneNumber),
+      this.tripService.customerSearch(phoneNumber),
     );
   }
 }

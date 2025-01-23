@@ -1,13 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
-
-export class CustomerSearchDtoRequest {
-  @ApiProperty({ type: 'string', example: '+96399887766' })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
-  phoneNumber: string;
-}
 
 class location {
   @ApiProperty({ type: 'number', example: 65.565656 })
@@ -19,11 +10,11 @@ class location {
 
 export class CustomerSearchDtoResponse {
   @ApiProperty({ type: location })
-  customerLocation: location;
+  location: location;
 
   @ApiProperty({ type: 'number', example: 50 })
   customerID: number;
 
   @ApiProperty({ type: 'string', example: 'example example' })
-  customerName: string;
+  name: string;
 }

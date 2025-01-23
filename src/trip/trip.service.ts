@@ -145,8 +145,8 @@ export class TripService {
 
   async customerSearch(phoneNumber: string) {
     const customer = await this.customerModel.findOne({
-      attributes: ['customerID', 'customerName', 'customerLocation'],
-      where: { customerPhoneNumber: phoneNumber },
+      attributes: ['customerID', 'name', 'location'],
+      where: { phoneNumber},
     });
     if (!customer) throw new NotFoundException();
     return customer;
