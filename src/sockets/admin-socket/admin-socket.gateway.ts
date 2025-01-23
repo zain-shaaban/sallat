@@ -94,8 +94,33 @@ export class AdminSocketGateway implements OnGatewayConnection {
     onlineDrivers.length = 0;
   }
 
+  @SubscribeMessage('assignNewDriver')
+  assignNewDriver(
+    @MessageBody() idPairs: { driverID: string; tripID: string },
+  ) {
+    const trip = pendingTrips.find((trip) => trip.tripID == idPairs.tripID);
+    if (trip) {
+      trip.driverID = idPairs.driverID;
+      pendingTrips = pendingTrips.filter(
+        (trip) => trip.tripID != idPairs.tripID,
+      );
+      readyTrips.push(trip);
+      this.sendTripToDriver(trip);
+    }
+  }
+
   submitNewTrip(trip: Trip) {
     this.sendTripsToAdmins();
+    this.sendTripToDriver(trip);
+  }
+
+  sendTripsToAdmins() {
+    this.io.server
+      .of('/admin')
+      .emit('tripUpdate', { readyTrips, pendingTrips, ongoingTrips });
+  }
+
+  sendTripToDriver(trip: Trip) {
     const driverID = trip.driverID;
     const driver = onlineDrivers.find(
       (driver) => driver.driverID == driverID && driver.available == true,
@@ -103,12 +128,6 @@ export class AdminSocketGateway implements OnGatewayConnection {
     if (this.io.server.of('/driver').sockets.get(driver?.socketID)) {
       this.io.server.of('/driver').to(driver.socketID).emit('newTrip', trip);
     }
-  }
-
-  sendTripsToAdmins() {
-    this.io.server
-      .of('/admin')
-      .emit('tripUpdate', { readyTrips, pendingTrips, ongoingTrips });
   }
 }
 
