@@ -12,10 +12,10 @@ import {
   AdminSocketGateway,
   ongoingTrips,
   readyTrips,
-  pendingTrips,
-  moveTripFromReadyToPending,
 } from '../admin-socket/admin-socket.gateway';
 import { forwardRef, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Trip } from 'src/trip/entities/trip.entity';
 
 export let onlineDrivers: any[] = [];
 
@@ -31,7 +31,11 @@ export class DriverSocketGateway
   @WebSocketServer()
   io: Namespace;
 
-  constructor(@Inject(forwardRef(() => AdminSocketGateway)) private readonly adminSocketGateway: AdminSocketGateway){}
+  constructor(
+    @Inject(forwardRef(() => AdminSocketGateway))
+    private readonly adminSocketGateway: AdminSocketGateway,
+    @InjectModel(Trip) private readonly tripModel: typeof Trip,
+  ) {}
 
   handleConnection(client: Socket) {
     const { driverID, lng, lat } = client.handshake.query;
@@ -57,7 +61,6 @@ export class DriverSocketGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() location: string,
   ) {
-    location = JSON.parse(location);
     const socketID = client.id;
     const oneDriver = onlineDrivers.find(
       (driver) => driver.socketID == socketID,
@@ -77,9 +80,35 @@ export class DriverSocketGateway
   }
 
   @SubscribeMessage('rejectTrip')
-  caseRejectTrip(@MessageBody() tripID: number) {
-    const oneTrip = readyTrips.find((trip) => trip.tripID == tripID);
-    moveTripFromReadyToPending(oneTrip);
-    this.adminSocketGateway.sendTripsToAdmins();
+  caseRejectTrip(@MessageBody() driverID: number) {
+    const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
+    this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
+  }
+
+  @SubscribeMessage('acceptTrip')
+  caseAcceptTrip(@MessageBody() driverID: number) {
+    onlineDrivers = onlineDrivers.map((driver) => {
+      if (driver.driverID == driverID && driver.available == true)
+        driver.available = false;
+      return driver;
+    });
+    const trip = readyTrips.find((trip) => trip.driverID == driverID);
+    this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
+  }
+
+  @SubscribeMessage('endTrip')
+  async endTrip(@MessageBody() driverID: number) {
+    onlineDrivers = onlineDrivers.map((driver) => {
+      if (driver.driverID == driverID && driver.available == false)
+        driver.available = true;
+      return driver;
+    });
+    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+    trip.driverID = Number(trip.driverID);
+    await this.tripModel.update(
+      { driverID: trip.driverID, success: true, path: trip.path },
+      { where: { tripID: trip.tripID } },
+    );
+    this.adminSocketGateway.removeTripFromOnGoing(trip);
   }
 }

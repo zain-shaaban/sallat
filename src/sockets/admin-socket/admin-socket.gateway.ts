@@ -95,9 +95,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('assignNewDriver')
-  assignNewDriver(
-    @MessageBody() idPairs: { driverID: string; tripID: string },
-  ) {
+  assignNewDriver(@MessageBody() idPairs: any) {
     const trip = pendingTrips.find((trip) => trip.tripID == idPairs.tripID);
     if (trip) {
       trip.driverID = idPairs.driverID;
@@ -105,7 +103,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
         (trip) => trip.tripID != idPairs.tripID,
       );
       readyTrips.push(trip);
-      this.sendTripsToAdmins()
+      this.sendTripsToAdmins();
       this.sendTripToDriver(trip);
     }
   }
@@ -130,15 +128,22 @@ export class AdminSocketGateway implements OnGatewayConnection {
       this.io.server.of('/driver').to(driver.socketID).emit('newTrip', trip);
     }
   }
-}
 
-export function moveTripFromReadyToPending(trip: Trip) {
-  readyTrips = readyTrips.filter((trip) => trip != trip);
-  trip.driverID = null;
-  pendingTrips.push(trip);
-}
+  moveTripFromReadyToPending(trip: Trip) {
+    readyTrips = readyTrips.filter((trip) => trip != trip);
+    trip.driverID = null;
+    pendingTrips.push(trip);
+    this.sendTripsToAdmins();
+  }
 
-export function moveTripFromReadyToOnGoing(trip: Trip) {
-  readyTrips = readyTrips.filter((trip) => trip != trip);
-  ongoingTrips.push(trip);
+  moveTripFromReadyToOnGoing(trip: Trip) {
+    readyTrips = readyTrips.filter((trip) => trip != trip);
+    ongoingTrips.push(trip);
+    this.sendTripsToAdmins();
+  }
+
+  removeTripFromOnGoing(trip: Trip) {
+    ongoingTrips = ongoingTrips.filter((trip) => trip != trip);
+    this.sendTripsToAdmins();
+  }
 }
