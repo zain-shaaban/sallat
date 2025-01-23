@@ -143,12 +143,31 @@ export class TripService {
     );
   }
 
+  async findAll() {
+    const allTrips = await this.tripModel.findAll();
+    return allTrips;
+  }
+
   async customerSearch(phoneNumber: string) {
     const customer = await this.customerModel.findOne({
       attributes: ['customerID', 'name', 'location'],
-      where: { phoneNumber},
+      where: { phoneNumber },
     });
     if (!customer) throw new NotFoundException();
     return customer;
+  }
+
+  async findOne(tripID: number) {
+    const trip = await this.tripModel.findByPk(tripID);
+    if (!trip) throw new NotFoundException();
+    return trip;
+  }
+
+  async remove(tripID: number) {
+    const deletedTrip = await this.tripModel.destroy({
+      where: { tripID },
+    });
+    if (deletedTrip == 0) throw new NotFoundException();
+    return null;
   }
 }
