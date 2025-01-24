@@ -34,48 +34,55 @@ export class TripService {
       approxDistance,
       approxPrice,
     } = createTripDto;
+    let customer: Customer;
+    let vendor: Vendor;
     if (vendorName || vendorPhoneNumber || vendorLocation) {
       if (vendorID) {
-        await this.updateVendor(
+        vendor = await this.updateVendor(
           vendorID,
           vendorName,
           vendorPhoneNumber,
           vendorLocation,
         );
       } else {
-        vendorID = await this.createNewVendor(
+        vendor = await this.createNewVendor(
           vendorName,
           vendorPhoneNumber,
           vendorLocation,
         );
       }
-    }
+    } else vendor = await this.getVendor(vendorID);
     if (customerName || customerPhoneNumber || customerLocation) {
       if (customerID) {
-        await this.updateCustomer(
+        customer = await this.updateCustomer(
           customerID,
           customerName,
           customerPhoneNumber,
           customerLocation,
         );
       } else {
-        customerID = await this.createNewCustomer(
+        customer = await this.createNewCustomer(
           customerName,
           customerPhoneNumber,
           customerLocation,
         );
       }
-    }
+    } else customer = await this.getCustomer(customerID);
 
-    const trip = await this.tripModel.create({
+    let trip: any = await this.tripModel.create({
       driverID,
-      vendorID,
-      customerID,
+      vendorID: vendor.vendorID,
+      customerID: customer.customerID,
       itemTypes: JSON.stringify(itemTypes),
       description,
       approxDistance,
       approxPrice,
     });
+    trip = trip.toJSON();
+    trip.customer = customer.toJSON();
+    trip.vendor = vendor.toJSON();
+    delete trip.customerID;
+    delete trip.vendorID;
     readyTrips.push(trip);
     this.adminGateway.submitNewTrip(trip);
     return { tripID: trip.tripID };
@@ -86,12 +93,12 @@ export class TripService {
     customerPhoneNumber: string,
     customerLocation: object,
   ) {
-    const { customerID } = await this.customerModel.create({
+    const customer = await this.customerModel.create({
       name: customerName,
       phoneNumber: customerPhoneNumber,
       location: JSON.stringify(customerLocation),
     });
-    return customerID;
+    return customer;
   }
 
   async createNewVendor(
@@ -99,12 +106,12 @@ export class TripService {
     vendorPhoneNumber: string,
     vendorLocation: object,
   ) {
-    const { vendorID } = await this.vendorModel.create({
+    const vendor = await this.vendorModel.create({
       name: vendorName,
       phoneNumber: vendorPhoneNumber,
       location: JSON.stringify(vendorLocation),
     });
-    return vendorID;
+    return vendor;
   }
 
   async updateCustomer(
@@ -123,6 +130,7 @@ export class TripService {
       },
       { where: { customerID } },
     );
+    return customer;
   }
 
   async updateVendor(
@@ -141,6 +149,15 @@ export class TripService {
       },
       { where: { vendorID } },
     );
+    return vendor;
+  }
+
+  async getVendor(vendorID: number) {
+    return await this.vendorModel.findByPk(vendorID);
+  }
+
+  async getCustomer(customerID: number) {
+    return await this.customerModel.findByPk(customerID);
   }
 
   async findAll() {

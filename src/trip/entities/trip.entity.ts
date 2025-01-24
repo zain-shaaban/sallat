@@ -57,6 +57,17 @@ export class Trip extends Model {
   })
   itemTypes: string[];
 
+  @ApiProperty({type:Object,description:'Custom object with flexible structure'})
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    get() {
+      const value = this.getDataValue('tripState');
+      return value ? JSON.parse(value) : {};
+    },
+  })
+  tripState: object;
+
   @ApiProperty({ type: 'string', example: 'كتر كتشب' })
   @Column(DataType.STRING)
   description: string;

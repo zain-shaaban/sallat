@@ -16,6 +16,8 @@ import {
 import { forwardRef, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from 'src/trip/entities/trip.entity';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { Customer } from 'src/customer/entities/customer.entity';
 
 export let onlineDrivers: any[] = [];
 
@@ -35,6 +37,8 @@ export class DriverSocketGateway
     @Inject(forwardRef(() => AdminSocketGateway))
     private readonly adminSocketGateway: AdminSocketGateway,
     @InjectModel(Trip) private readonly tripModel: typeof Trip,
+    @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
+    @InjectModel(Customer) private readonly customerModel: typeof Customer,
   ) {}
 
   handleConnection(client: Socket) {
@@ -80,22 +84,53 @@ export class DriverSocketGateway
   }
 
   @SubscribeMessage('rejectTrip')
-  caseRejectTrip(@ConnectedSocket() client:Socket) {
-    const driverID=this.getDriverID(client)
+  caseRejectTrip(@ConnectedSocket() client: Socket) {
+    const driverID = this.getDriverID(client);
     const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
     this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
   }
 
   @SubscribeMessage('acceptTrip')
-  caseAcceptTrip(@ConnectedSocket() client: Socket) {
-    const driverID=this.getDriverID(client)
+  caseAcceptTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() startTripData: any,
+  ) {
+    const startTrip = {
+      location: startTripData.location,
+      time: startTripData.time,
+    };
+    const driverID = this.getDriverID(client);
     onlineDrivers = onlineDrivers.map((driver) => {
       if (driver.driverID == driverID && driver.available == true)
         driver.available = false;
       return driver;
     });
     const trip = readyTrips.find((trip) => trip.driverID == driverID);
+    trip.tripState = {
+      startTrip: startTrip,
+      onVendor: {},
+      leftVendor: {},
+      onCustomer: {},
+    };
     this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
+  }
+
+  @SubscribeMessage('changeState')
+  changeState(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() changeStateData: any,
+  ) {
+    const driverID = this.getDriverID(client);
+    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+    if (changeStateData.stateName == 'onVendor') {
+      if (trip.vendor.location.approximate == true) {
+        trip.vendor.location = changeStateData.stateData.location;
+      }
+      if (trip.vendor.location.approximate == false) {
+        changeStateData.stateData.location = trip.vendor.location;
+      }
+      trip.tripState.onVendor = changeStateData.stateData;
+    } else trip.tripState.leftVendor = changeStateData.stateData;
   }
 
   // @SubscribeMessage('cancelTrip')
@@ -105,23 +140,48 @@ export class DriverSocketGateway
   // }
 
   @SubscribeMessage('endTrip')
-  async endTrip(@ConnectedSocket() client: Socket) {
-    const driverID=this.getDriverID(client)
+  async endTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() endStateData: any,
+  ) {
+    const driverID = this.getDriverID(client);
     onlineDrivers = onlineDrivers.map((driver) => {
       if (driver.driverID == driverID && driver.available == false)
         driver.available = true;
       return driver;
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+    if (trip.customer.location.approximate == true) {
+      trip.customer.location = endStateData.location;
+    }
+    if (trip.customer.location.approximate == false) {
+      endStateData.location = trip.customer.location;
+    }
+    trip.tripState.onCustomer = endStateData;
     trip.driverID = Number(trip.driverID);
     await this.tripModel.update(
-      { driverID: trip.driverID, success: true, path: trip.path },
+      {
+        driverID: trip.driverID,
+        success: true,
+        path: trip.path,
+        tripState: JSON.stringify(trip.tripState),
+      },
       { where: { tripID: trip.tripID } },
+    );
+    await this.vendorModel.update(
+      { location: JSON.stringify(trip.vendor.location) },
+      { where: { vendorID: trip.vendor.vendorID } },
+    );
+    await this.customerModel.update(
+      {
+        location: JSON.stringify(trip.customer.location),
+      },
+      { where: { customerID: trip.customer.customerID } },
     );
     this.adminSocketGateway.removeTripFromOnGoing(trip);
   }
 
-  getDriverID(client:Socket){
-    return Number(client.handshake.query.driverID)
+  getDriverID(client: Socket) {
+    return Number(client.handshake.query.driverID);
   }
 }

@@ -136,14 +136,14 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.sendTripsToAdmins();
   }
 
-  moveTripFromReadyToOnGoing(trip: Trip) {
-    readyTrips = readyTrips.filter((trip) => trip != trip);
-    ongoingTrips.push(trip);
+  moveTripFromReadyToOnGoing(myTrip: Trip) {
+    readyTrips = readyTrips.filter((trip) => trip.tripID != myTrip.tripID);
+    ongoingTrips.push(myTrip);
     this.sendTripsToAdmins();
   }
 
-  removeTripFromOnGoing(trip: Trip) {
-    ongoingTrips = ongoingTrips.filter((trip) => trip != trip);
+  removeTripFromOnGoing(myTrip: Trip) {
+    ongoingTrips = ongoingTrips.filter((trip) => trip.tripID != myTrip.tripID);
     this.sendTripsToAdmins();
   }
 }

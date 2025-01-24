@@ -16,6 +16,6 @@ import { AdminSocketModule } from 'src/sockets/admin-socket/admin-socket.module'
   ],
   controllers: [TripController],
   providers: [TripService],
-  exports: [SequelizeModule.forFeature([Trip])],
+  exports: [SequelizeModule.forFeature([Trip]),forwardRef(()=>CustomerModule),forwardRef(()=>VendorModule)],
 })
 export class TripModule {}
