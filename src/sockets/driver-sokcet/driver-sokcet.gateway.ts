@@ -133,11 +133,16 @@ export class DriverSocketGateway
     } else trip.tripState.leftVendor = changeStateData.stateData;
   }
 
-  // @SubscribeMessage('cancelTrip')
-  // canselTripByDriver(@ConnectedSocket() client: Socket) {
-  //   const driverID=this.getDriverID(client);
-  //   console.log(driverID)
-  // }
+  @SubscribeMessage('cancelTrip')
+  canselTripByDriver(@ConnectedSocket() client: Socket) {
+    const driverID = this.getDriverID(client);
+    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+    this.adminSocketGateway.moveTripFromOngoingToPending(trip);
+    onlineDrivers = onlineDrivers.filter(
+      (driver) => driver.driverID != driverID,
+    );
+    client.disconnect();
+  }
 
   @SubscribeMessage('endTrip')
   async endTrip(

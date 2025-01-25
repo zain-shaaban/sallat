@@ -129,21 +129,37 @@ export class AdminSocketGateway implements OnGatewayConnection {
     }
   }
 
-  moveTripFromReadyToPending(trip: Trip) {
-    readyTrips = readyTrips.filter((trip) => trip != trip);
-    trip.driverID = null;
-    pendingTrips.push(trip);
+  moveTripFromReadyToPending(myTrip: Trip) {
+    readyTrips = readyTrips.filter(
+      (trip: Trip) => trip.driverID != myTrip.driverID,
+    );
+    myTrip.driverID = null;
+    pendingTrips.push(myTrip);
     this.sendTripsToAdmins();
   }
 
   moveTripFromReadyToOnGoing(myTrip: Trip) {
-    readyTrips = readyTrips.filter((trip) => trip.tripID != myTrip.tripID);
+    readyTrips = readyTrips.filter(
+      (trip: Trip) => trip.tripID != myTrip.tripID,
+    );
     ongoingTrips.push(myTrip);
     this.sendTripsToAdmins();
   }
 
   removeTripFromOnGoing(myTrip: Trip) {
-    ongoingTrips = ongoingTrips.filter((trip) => trip.tripID != myTrip.tripID);
+    ongoingTrips = ongoingTrips.filter(
+      (trip: Trip) => trip.tripID != myTrip.tripID,
+    );
+    this.sendTripsToAdmins();
+  }
+  moveTripFromOngoingToPending(myTrip) {
+    ongoingTrips = ongoingTrips.filter(
+      (trip) => trip.driverID != myTrip.driverID,
+    );
+    myTrip.driverID = null;
+    myTrip.path = [];
+    myTrip.tripState={};
+    pendingTrips.push(myTrip);
     this.sendTripsToAdmins();
   }
 }
