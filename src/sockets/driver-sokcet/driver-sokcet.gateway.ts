@@ -161,7 +161,7 @@ export class DriverSocketGateway
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (trip.customer.location.approximate == true) {
-      trip.customer.location = endStateData.location.coords;
+      trip.customer.location = endStateData.location;
     }
     if (trip.customer.location.approximate == false) {
       endStateData.location = trip.customer.location;

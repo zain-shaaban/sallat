@@ -59,7 +59,7 @@ export class Trip extends Model {
 
   @ApiProperty({type:Object,description:'Custom object with flexible structure'})
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     allowNull: true,
     get() {
       const value = this.getDataValue('tripState');
