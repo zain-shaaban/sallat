@@ -112,6 +112,7 @@ export class DriverSocketGateway
       leftVendor: {},
       onCustomer: {},
     };
+    trip.path.push(startTrip.location.coords)
     this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
   }
 
@@ -130,7 +131,10 @@ export class DriverSocketGateway
         changeStateData.stateData.location = trip.vendor.location;
       }
       trip.tripState.onVendor = changeStateData.stateData;
-    } else trip.tripState.leftVendor = changeStateData.stateData;
+      delete changeStateData.stateData?.description
+      delete changeStateData.stateData?.approximate
+      trip.path.push(changeStateData.stateData.location.coords);
+    } else trip.tripState.leftVendor.time = changeStateData.stateData;
   }
 
   @SubscribeMessage('cancelTrip')
@@ -157,12 +161,15 @@ export class DriverSocketGateway
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (trip.customer.location.approximate == true) {
-      trip.customer.location = endStateData.location;
+      trip.customer.location = endStateData.location.coords;
     }
     if (trip.customer.location.approximate == false) {
       endStateData.location = trip.customer.location;
     }
     trip.tripState.onCustomer = endStateData;
+    delete endStateData.location?.description;
+    delete endStateData.location?.approximate
+    trip.path.push(endStateData.location.coords)
     trip.driverID = Number(trip.driverID);
     await this.tripModel.update(
       {
