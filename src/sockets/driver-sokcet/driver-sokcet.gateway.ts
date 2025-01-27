@@ -112,7 +112,7 @@ export class DriverSocketGateway
       leftVendor: {},
       onCustomer: {},
     };
-    trip.path.push(startTrip.location.coords)
+    trip.path.push(startTrip.location.coords);
     this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
   }
 
@@ -125,14 +125,17 @@ export class DriverSocketGateway
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (changeStateData.stateName == 'onVendor') {
       if (trip.vendor.location.approximate == true) {
+        changeStateData.stateData.location.description =
+          trip.vendor.location.description;
         trip.vendor.location = changeStateData.stateData.location;
       }
       if (trip.vendor.location.approximate == false) {
         changeStateData.stateData.location = trip.vendor.location;
+        delete changeStateData.stateData.location?.description
       }
       trip.tripState.onVendor = changeStateData.stateData;
-      delete changeStateData.stateData?.description
-      delete changeStateData.stateData?.approximate
+      delete changeStateData.stateData?.description;
+      delete changeStateData.stateData?.approximate;
       trip.path.push(changeStateData.stateData.location.coords);
     } else trip.tripState.leftVendor.time = changeStateData.stateData;
   }
@@ -161,15 +164,17 @@ export class DriverSocketGateway
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (trip.customer.location.approximate == true) {
+      endStateData.location.description = trip.customer.location.description;
       trip.customer.location = endStateData.location;
     }
     if (trip.customer.location.approximate == false) {
       endStateData.location = trip.customer.location;
+      delete endStateData.location?.description
     }
     trip.tripState.onCustomer = endStateData;
     delete endStateData.location?.description;
-    delete endStateData.location?.approximate
-    trip.path.push(endStateData.location.coords)
+    delete endStateData.location?.approximate;
+    trip.path.push(endStateData.location.coords);
     trip.driverID = Number(trip.driverID);
     await this.tripModel.update(
       {
