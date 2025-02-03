@@ -125,17 +125,13 @@ export class DriverSocketGateway
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (changeStateData.stateName == 'onVendor') {
       if (trip.vendor.location.approximate == true) {
-        changeStateData.stateData.location.description =
-          trip.vendor.location.description;
-        trip.vendor.location = changeStateData.stateData.location;
-      }
-      if (trip.vendor.location.approximate == false) {
+        const description = trip.vendor.location.description;
+        trip.vendor.location = {...changeStateData.stateData.location};
+        trip.vendor.location.description = description;
+      } else if (trip.vendor.location.approximate == false) {
         changeStateData.stateData.location = trip.vendor.location;
-        delete changeStateData.stateData.location?.description
       }
       trip.tripState.onVendor = changeStateData.stateData;
-      delete changeStateData.stateData?.description;
-      delete changeStateData.stateData?.approximate;
       trip.path.push(changeStateData.stateData.location.coords);
     } else trip.tripState.leftVendor.time = changeStateData.stateData;
   }
@@ -164,12 +160,13 @@ export class DriverSocketGateway
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (trip.customer.location.approximate == true) {
-      endStateData.location.description = trip.customer.location.description;
-      trip.customer.location = endStateData.location;
+      const description=trip.customer.location.description
+      trip.customer.location ={ ...endStateData.location};
+      trip.customer.location.description=description
     }
     if (trip.customer.location.approximate == false) {
       endStateData.location = trip.customer.location;
-      delete endStateData.location?.description
+      delete endStateData.location?.description;
     }
     trip.tripState.onCustomer = endStateData;
     delete endStateData.location?.description;
