@@ -57,7 +57,10 @@ export class Trip extends Model {
   })
   itemTypes: string[];
 
-  @ApiProperty({type:Object,description:'Custom object with flexible structure'})
+  @ApiProperty({
+    type: Object,
+    description: 'Custom object with flexible structure',
+  })
   @Column({
     type: DataType.TEXT,
     allowNull: true,
@@ -90,7 +93,7 @@ export class Trip extends Model {
 
   @ApiProperty({ type: 'number', example: 14000.0 })
   @Column(DataType.FLOAT)
-  totalPrice: number;
+  itemPrice: number;
 
   @ApiProperty({ type: 'number', example: 6666 })
   @Column(DataType.BIGINT)
@@ -109,7 +112,29 @@ export class Trip extends Model {
     ],
   })
   @Column({ type: DataType.JSON, defaultValue: [] })
-  path: string[];
+  rawPath: string[];
+
+  @ApiProperty({
+    type: 'array',
+    example: [
+      { lng: 111.111, lat: 112.222 },
+      { lng: 888.888, lat: 999.999 },
+      { lng: 555.555, lat: 333.333 },
+    ],
+  })
+  @Column({ type: DataType.JSON, defaultValue: [] })
+  routedPath: string[];
+
+  @ApiProperty({
+    type: 'array',
+    example: [
+      { lng: 111.111, lat: 112.222 },
+      { lng: 888.888, lat: 999.999 },
+      { lng: 555.555, lat: 333.333 },
+    ],
+  })
+  @Column({ type: DataType.JSON, defaultValue: [] })
+  matchedPath: string[];
 
   @ApiProperty({ type: 'boolean', example: true })
   @Column({ type: DataType.BOOLEAN, defaultValue: false })

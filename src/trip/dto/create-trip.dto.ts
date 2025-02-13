@@ -92,4 +92,16 @@ export class CreateTripDto {
   @ApiProperty({ type: 'number', example: 80000 })
   @IsNumber()
   approxPrice: number;
+
+  @ApiProperty({type:'array',example:[
+    { lng: 111.111, lat: 112.222 },
+    { lng: 888.888, lat: 999.999 },
+    { lng: 555.555, lat: 333.333 },
+  ]})
+  @IsArray()
+  routedPath:object[]
+
+  @ApiProperty({type:"number",example:133266423})
+  @IsNumber()
+  approxTime:number
 }

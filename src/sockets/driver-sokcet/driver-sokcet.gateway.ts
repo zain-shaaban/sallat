@@ -15,11 +15,48 @@ import {
 } from '../admin-socket/admin-socket.gateway';
 import { forwardRef, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import * as polyline from '@mapbox/polyline';
+import { getPathLength } from 'geolib';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 
 export let onlineDrivers: any[] = [];
+
+let matchedDistance: number;
+let matchedPath: object[];
+
+const toCoordsArray = (latlngObject) => {
+  return latlngObject.map(({ lat, lng }) => [lat, lng]);
+};
+
+function pricing(distance: number) {
+  return 5000 + 2 * distance;
+}
+
+const mapMatching = async (rawPath) => {
+  const polylineFromCoords = polyline.encode(toCoordsArray(rawPath));
+
+  function filterBackslashes(URL: string) {
+    return URL.replace(/\\/g, '%5C');
+  }
+
+  const matchURL = filterBackslashes(
+    `https://osrm.srv656652.hstgr.cloud/match/v1/driving/polyline(${polylineFromCoords})?overview=false`,
+  );
+
+  const res = await fetch(matchURL);
+  const json = await res.json();
+  matchedPath = json.tracepoints
+    .filter(Boolean)
+    .map((p) => p.location.reverse());
+  matchedDistance = getPathLength(
+    matchedPath.map((point) => {
+      return { latitude: point[0], longitude: point[1] };
+    }),
+  );
+  return pricing(matchedDistance);
+};
 
 @WebSocketGateway({
   namespace: 'driver',
@@ -75,7 +112,7 @@ export class DriverSocketGateway
         const oneTrip = ongoingTrips.find(
           (trip) => trip.driverID == oneDriver.driverID,
         );
-        oneTrip.path.push(location);
+        oneTrip.rawPath.push(location);
       }
     }
     this.io.server
@@ -112,7 +149,7 @@ export class DriverSocketGateway
       leftVendor: {},
       onCustomer: {},
     };
-    trip.path.push(startTrip.location.coords);
+    trip.rawPath.push(startTrip.location.coords);
     this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
   }
 
@@ -126,13 +163,13 @@ export class DriverSocketGateway
     if (changeStateData.stateName == 'onVendor') {
       if (trip.vendor.location.approximate == true) {
         const description = trip.vendor.location.description;
-        trip.vendor.location = {...changeStateData.stateData.location};
+        trip.vendor.location = { ...changeStateData.stateData.location };
         trip.vendor.location.description = description;
       } else if (trip.vendor.location.approximate == false) {
         changeStateData.stateData.location = trip.vendor.location;
       }
       trip.tripState.onVendor = changeStateData.stateData;
-      trip.path.push(changeStateData.stateData.location.coords);
+      trip.rawPath.push(changeStateData.stateData.location.coords);
     } else trip.tripState.leftVendor.time = changeStateData.stateData;
   }
 
@@ -152,6 +189,8 @@ export class DriverSocketGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() endStateData: any,
   ) {
+    let itemPrice = endStateData.itemPrice;
+    delete endStateData?.itemPrice;
     const driverID = this.getDriverID(client);
     onlineDrivers = onlineDrivers.map((driver) => {
       if (driver.driverID == driverID && driver.available == false)
@@ -160,9 +199,9 @@ export class DriverSocketGateway
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (trip.customer.location.approximate == true) {
-      const description=trip.customer.location.description
-      trip.customer.location ={ ...endStateData.location};
-      trip.customer.location.description=description
+      const description = trip.customer.location.description;
+      trip.customer.location = { ...endStateData.location };
+      trip.customer.location.description = description;
     }
     if (trip.customer.location.approximate == false) {
       endStateData.location = trip.customer.location;
@@ -171,14 +210,21 @@ export class DriverSocketGateway
     trip.tripState.onCustomer = endStateData;
     delete endStateData.location?.description;
     delete endStateData.location?.approximate;
-    trip.path.push(endStateData.location.coords);
+    trip.rawPath.push(endStateData.location.coords);
     trip.driverID = Number(trip.driverID);
+    trip.price = await mapMatching(trip.rawPath);
+    let time = trip.tripState.onConnection.time - trip.tripState.startTrip.time;
     await this.tripModel.update(
       {
         driverID: trip.driverID,
         success: true,
-        path: trip.path,
+        rawPath: trip.rawPath,
+        matchedPath,
+        distance: matchedDistance,
         tripState: JSON.stringify(trip.tripState),
+        price: trip.price,
+        itemPrice,
+        time,
       },
       { where: { tripID: trip.tripID } },
     );

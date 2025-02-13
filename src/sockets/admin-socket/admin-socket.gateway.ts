@@ -6,58 +6,13 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
-import * as polyline from '@mapbox/polyline';
-import { getPathLength } from 'geolib';
 import { onlineDrivers } from '../driver-sokcet/driver-sokcet.gateway';
 import { Trip } from 'src/trip/entities/trip.entity';
 
-export let locations: any[] = [];
-// export let frequency: number = 5;
-// export let threshold: number = 5;
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
 export let pendingTrips: any[] = [];
 
-// type timeFormat = {
-//   startTime: number;
-//   endTime: number;
-// };
-
-// let rawPath = locations;
-
-// let matchedPath = [];
-
-// export let time: timeFormat = {
-//   startTime: 0,
-//   endTime: 0,
-// };
-
-// const toCoordsArray = (latlngObject) => {
-//   return latlngObject.map(({ lat, lng }) => [lat, lng]);
-// };
-
-// const mapMatching = async () => {
-//   const polylineFromCoords = polyline.encode(toCoordsArray(rawPath));
-
-//   function filterBackslashes(URL: string) {
-//     return URL.replace(/\\/g, '%5C');
-//   }
-
-//   const matchURL = filterBackslashes(
-//     `https://osrm.srv656652.hstgr.cloud/match/v1/driving/polyline(${polylineFromCoords})?overview=false`,
-//   );
-
-//   const res = await fetch(matchURL);
-//   const json = await res.json();
-//   matchedPath = json.tracepoints
-//     .filter(Boolean)
-//     .map((p) => p.location.reverse());
-//   matchedDistance = getPathLength(
-//     matchedPath.map((point) => {
-//       return { latitude: point[0], longitude: point[1] };
-//     }),
-//   );
-// };
 
 @WebSocketGateway({
   namespace: 'admin',

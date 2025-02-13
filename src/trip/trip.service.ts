@@ -33,6 +33,8 @@ export class TripService {
       description,
       approxDistance,
       approxPrice,
+      approxTime,
+      routedPath,
     } = createTripDto;
     let customer: Customer;
     let vendor: Vendor;
@@ -77,6 +79,8 @@ export class TripService {
       description,
       approxDistance,
       approxPrice,
+      approxTime,
+      routedPath,
     });
     trip = trip.toJSON();
     trip.customer = customer.toJSON();
