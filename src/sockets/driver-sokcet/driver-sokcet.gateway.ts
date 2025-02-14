@@ -199,11 +199,10 @@ export class DriverSocketGateway
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (trip.customer.location.approximate == true) {
-      const description = trip.customer.location.description;
-      trip.customer.location = { ...endStateData.location };
-      trip.customer.location.description = description;
+      trip.customer.location.approximate=endStateData.location.approximate
+      trip.customer.location.coords=endStateData.location.coords
     }
-    if (trip.customer.location.approximate == false) {
+    else if (trip.customer.location.approximate == false) {
       endStateData.location = trip.customer.location;
       delete endStateData.location?.description;
     }
