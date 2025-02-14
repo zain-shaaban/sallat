@@ -224,8 +224,8 @@ export class DriverSocketGateway
       {
         driverID: trip.driverID,
         success: true,
-        rawPath: trip.rawPath,
-        matchedPath,
+        rawPath: JSON.stringify(trip.rawPath),
+        matchedPath: JSON.stringify(matchedPath),
         distance: matchedDistance,
         tripState: JSON.stringify(trip.tripState),
         price: trip.price,
