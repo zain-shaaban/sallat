@@ -212,8 +212,14 @@ export class DriverSocketGateway
     delete endStateData.location?.approximate;
     trip.rawPath.push(endStateData.location.coords);
     trip.driverID = Number(trip.driverID);
-    trip.price = await mapMatching(trip.rawPath);
-    let time = trip.tripState.onConnection.time - trip.tripState.startTrip.time;
+    trip.time = trip.tripState.onCustomer.time - trip.tripState.startTrip.time;
+    try {
+      trip.price = await mapMatching(trip.rawPath);
+    } catch (error) {
+      trip.price = null;
+      matchedPath = [];
+      matchedDistance = null;
+    }
     await this.tripModel.update(
       {
         driverID: trip.driverID,
@@ -224,7 +230,7 @@ export class DriverSocketGateway
         tripState: JSON.stringify(trip.tripState),
         price: trip.price,
         itemPrice,
-        time,
+        time: trip.time,
       },
       { where: { tripID: trip.tripID } },
     );

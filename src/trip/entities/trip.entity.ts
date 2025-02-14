@@ -111,7 +111,14 @@ export class Trip extends Model {
       { lng: 555.555, lat: 333.333 },
     ],
   })
-  @Column({ type: DataType.JSON, defaultValue: [] })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+    get() {
+      const value = this.getDataValue('rawPath');
+      return value ? JSON.parse(value) : [];
+    },
+  })
   rawPath: string[];
 
   @ApiProperty({
@@ -122,7 +129,14 @@ export class Trip extends Model {
       { lng: 555.555, lat: 333.333 },
     ],
   })
-  @Column({ type: DataType.JSON, defaultValue: [] })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+    get() {
+      const value = this.getDataValue('routedPath');
+      return value ? JSON.parse(value) : [];
+    },
+  })
   routedPath: string[];
 
   @ApiProperty({
@@ -133,7 +147,14 @@ export class Trip extends Model {
       { lng: 555.555, lat: 333.333 },
     ],
   })
-  @Column({ type: DataType.JSON, defaultValue: [] })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+    get() {
+      const value = this.getDataValue('matchedPath');
+      return value ? JSON.parse(value) :[];
+    },
+  })
   matchedPath: string[];
 
   @ApiProperty({ type: 'boolean', example: true })

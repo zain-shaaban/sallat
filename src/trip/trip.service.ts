@@ -80,7 +80,7 @@ export class TripService {
       approxDistance,
       approxPrice,
       approxTime,
-      routedPath,
+      routedPath: JSON.stringify(routedPath),
     });
     trip = trip.toJSON();
     trip.customer = customer.toJSON();
