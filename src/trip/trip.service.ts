@@ -124,8 +124,7 @@ export class TripService {
     customerPhoneNumber: string,
     customerLocation: object,
   ) {
-    const customer = await this.customerModel.findByPk(customerID);
-    if (!customer) throw new NotFoundException();
+    if (!customerID) throw new NotFoundException();
     await this.customerModel.update(
       {
         name: customerName,
@@ -134,6 +133,7 @@ export class TripService {
       },
       { where: { customerID } },
     );
+    const customer = await this.customerModel.findByPk(customerID);
     return customer;
   }
 
@@ -143,8 +143,7 @@ export class TripService {
     vendorPhoneNumber: string,
     vendorLocation: object,
   ) {
-    const vendor = await this.vendorModel.findByPk(vendorID);
-    if (!vendor) throw new NotFoundException();
+    if (!vendorID) throw new NotFoundException();
     await this.vendorModel.update(
       {
         name: vendorName,
@@ -153,6 +152,7 @@ export class TripService {
       },
       { where: { vendorID } },
     );
+    const vendor = await this.vendorModel.findByPk(vendorID);
     return vendor;
   }
 
