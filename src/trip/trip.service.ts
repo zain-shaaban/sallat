@@ -35,61 +35,95 @@ export class TripService {
       approxPrice,
       approxTime,
       routedPath,
+      alternative,
     } = createTripDto;
-    let customer: Customer;
-    let vendor: Vendor;
-    if (vendorName || vendorPhoneNumber || vendorLocation) {
-      if (vendorID) {
-        vendor = await this.updateVendor(
-          vendorID,
-          vendorName,
-          vendorPhoneNumber,
-          vendorLocation,
-        );
-      } else {
-        vendor = await this.createNewVendor(
-          vendorName,
-          vendorPhoneNumber,
-          vendorLocation,
-        );
-      }
-    } else vendor = await this.getVendor(vendorID);
-    if (customerName || customerPhoneNumber || customerLocation) {
-      if (customerID) {
-        customer = await this.updateCustomer(
-          customerID,
-          customerName,
-          customerPhoneNumber,
-          customerLocation,
-        );
-      } else {
-        customer = await this.createNewCustomer(
-          customerName,
-          customerPhoneNumber,
-          customerLocation,
-        );
-      }
-    } else customer = await this.getCustomer(customerID);
+    if (!alternative) {
+      let customer: Customer;
+      let vendor: Vendor;
+      if (vendorName || vendorPhoneNumber || vendorLocation) {
+        if (vendorID) {
+          vendor = await this.updateVendor(
+            vendorID,
+            vendorName,
+            vendorPhoneNumber,
+            vendorLocation,
+          );
+        } else {
+          vendor = await this.createNewVendor(
+            vendorName,
+            vendorPhoneNumber,
+            vendorLocation,
+          );
+        }
+      } else vendor = await this.getVendor(vendorID);
+      if (customerName || customerPhoneNumber || customerLocation) {
+        if (customerID) {
+          customer = await this.updateCustomer(
+            customerID,
+            customerName,
+            customerPhoneNumber,
+            customerLocation,
+          );
+        } else {
+          customer = await this.createNewCustomer(
+            customerName,
+            customerPhoneNumber,
+            customerLocation,
+          );
+        }
+      } else customer = await this.getCustomer(customerID);
 
-    let trip: any = await this.tripModel.create({
-      driverID,
-      vendorID: vendor.vendorID,
-      customerID: customer.customerID,
-      itemTypes: JSON.stringify(itemTypes),
-      description,
-      approxDistance,
-      approxPrice,
-      approxTime,
-      routedPath: JSON.stringify(routedPath),
-    });
-    trip = trip.toJSON();
-    trip.customer = customer.toJSON();
-    trip.vendor = vendor.toJSON();
-    delete trip.customerID;
-    delete trip.vendorID;
-    readyTrips.push(trip);
-    this.adminGateway.submitNewTrip(trip);
-    return { tripID: trip.tripID };
+      let trip: any = await this.tripModel.create({
+        driverID,
+        vendorID: vendor.vendorID,
+        customerID: customer.customerID,
+        itemTypes: JSON.stringify(itemTypes),
+        description,
+        approxDistance,
+        approxPrice,
+        approxTime,
+        routedPath: JSON.stringify(routedPath),
+      });
+      trip = trip.toJSON();
+      trip.customer = customer.toJSON();
+      trip.vendor = vendor.toJSON();
+      delete trip.customerID;
+      delete trip.vendorID;
+      readyTrips.push(trip);
+      this.adminGateway.submitNewTrip(trip);
+      return { tripID: trip.tripID };
+    } else {
+      let customer: Customer;
+      if (customerName || customerPhoneNumber || customerLocation) {
+        if (customerID) {
+          customer = await this.updateCustomer(
+            customerID,
+            customerName,
+            customerPhoneNumber,
+            customerLocation,
+          );
+        } else {
+          customer = await this.createNewCustomer(
+            customerName,
+            customerPhoneNumber,
+            customerLocation,
+          );
+        }
+      } else customer = await this.getCustomer(customerID);
+      let trip: any = await this.tripModel.create({
+        driverID,
+        customerID: customer.customerID,
+        itemTypes: JSON.stringify(itemTypes),
+        description,
+        alternative,
+      });
+      trip = trip.toJSON();
+      trip.customer = customer.toJSON();
+      delete trip.customerID;
+      readyTrips.push(trip);
+      this.adminGateway.submitNewTrip(trip);
+      return { tripID: trip.tripID };
+    }
   }
 
   async createNewCustomer(

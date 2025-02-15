@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -38,39 +39,39 @@ export class CreateTripDto {
   @IsOptional()
   @IsNumber()
   @Max(1000000)
-  customerID: number;
+  customerID?: number;
 
   @ApiProperty({ type: 'string', example: 'example example' })
   @IsOptional()
   @IsString()
   @MaxLength(150)
-  vendorName: string;
+  vendorName?: string;
 
   @ApiProperty({ type: 'string', example: '+96399887766' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  vendorPhoneNumber: string;
+  vendorPhoneNumber?: string;
 
   @ApiProperty({ type: location })
   @IsOptional()
-  vendorLocation: location;
+  vendorLocation?: location;
 
   @ApiProperty({ type: 'string', example: 'example example' })
   @IsOptional()
   @IsString()
   @MaxLength(150)
-  customerName: string;
+  customerName?: string;
 
   @ApiProperty({ type: 'string', example: '+96399887766' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  customerPhoneNumber: string;
+  customerPhoneNumber?: string;
 
   @ApiProperty({ type: location })
   @IsOptional()
-  customerLocation: location;
+  customerLocation?: location;
 
   @ApiProperty({ type: 'array', example: ['شاورما', 'بطاطا مقلية كاسة'] })
   @IsArray()
@@ -87,11 +88,13 @@ export class CreateTripDto {
 
   @ApiProperty({ type: 'number', example: 5200 })
   @IsNumber()
-  approxDistance: number;
+  @IsOptional()
+  approxDistance?: number;
 
   @ApiProperty({ type: 'number', example: 80000 })
+  @IsOptional()
   @IsNumber()
-  approxPrice: number;
+  approxPrice?: number;
 
   @ApiProperty({type:'array',example:[
     { lng: 111.111, lat: 112.222 },
@@ -99,9 +102,16 @@ export class CreateTripDto {
     { lng: 555.555, lat: 333.333 },
   ]})
   @IsArray()
-  routedPath:object[]
+  @IsOptional()
+  routedPath?:object[]
 
   @ApiProperty({type:"number",example:133266423})
+  @IsOptional()
   @IsNumber()
-  approxTime:number
+  approxTime?:number
+
+  @ApiProperty({type:"boolean",example:false})
+  @IsOptional()
+  @IsBoolean()
+  alternative?:boolean
 }
