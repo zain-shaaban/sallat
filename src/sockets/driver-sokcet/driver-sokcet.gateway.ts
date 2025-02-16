@@ -143,14 +143,37 @@ export class DriverSocketGateway
       return driver;
     });
     const trip = readyTrips.find((trip) => trip.driverID == driverID);
-    trip.tripState = {
-      startTrip: startTrip,
-      onVendor: {},
-      leftVendor: {},
-      onCustomer: {},
-    };
+    if (trip.alternative == true) {
+      trip.tripState = {
+        tripStart: startTrip,
+        wayPoints: [],
+        tripEnd: {},
+      };
+    } else {
+      trip.tripState = {
+        startTrip: startTrip,
+        onVendor: {},
+        leftVendor: {},
+        onCustomer: {},
+      };
+    }
     trip.rawPath.push(startTrip.location.coords);
     this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
+  }
+
+  @SubscribeMessage('addWayPoint')
+  addWayPoints(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() wayPoint: any,
+  ) {
+    const driverID = this.getDriverID(client);
+    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+    trip.tripState.wayPoints.push({ ...wayPoint });
+    trip.rawPath.push(wayPoint.location.coords);
+    if (wayPoint.type == 'customer') {
+      trip.customer.location.coords = wayPoint.location.coords;
+      trip.customer.location.approximate = wayPoint.location.approximate;
+    }
   }
 
   @SubscribeMessage('changeState')
@@ -162,11 +185,9 @@ export class DriverSocketGateway
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (changeStateData.stateName == 'onVendor') {
       if (trip.vendor.location.approximate == true) {
-        const description = trip.vendor.location.description;
-        trip.vendor.location = { ...changeStateData.stateData.location };
-        trip.vendor.location.description = description;
-      } else if (trip.vendor.location.approximate == false) {
-        changeStateData.stateData.location = trip.vendor.location;
+        trip.vendor.location.coords = changeStateData.stateData.location.coords;
+        trip.vendor.location.approximate =
+          changeStateData.stateData.location.approximate;
       }
       trip.tripState.onVendor = changeStateData.stateData;
       trip.rawPath.push(changeStateData.stateData.location.coords);
@@ -198,51 +219,91 @@ export class DriverSocketGateway
       return driver;
     });
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
-    if (trip.customer.location.approximate == true) {
-      trip.customer.location.approximate = endStateData.location.approximate;
-      trip.customer.location.coords = endStateData.location.coords;
-    } else if (trip.customer.location.approximate == false) {
-      endStateData.location = trip.customer.location;
-      delete endStateData.location?.description;
+    if (!trip.alternative) {
+      if (trip.customer.location.approximate == true) {
+        trip.customer.location.approximate = endStateData.location.approximate;
+        trip.customer.location.coords = endStateData.location.coords;
+      }
+      trip.tripState.onCustomer = endStateData;
+      trip.rawPath.push(endStateData.location.coords);
+      trip.driverID = Number(trip.driverID);
+      trip.time =
+        trip.tripState.onCustomer.time - trip.tripState.startTrip.time;
+      try {
+        trip.price = await mapMatching(trip.rawPath);
+      } catch (error) {
+        trip.price = null;
+        matchedPath = [];
+        matchedDistance = null;
+      }
+      await this.tripModel.update(
+        {
+          driverID: trip.driverID,
+          success: true,
+          rawPath: JSON.stringify(trip.rawPath),
+          matchedPath: JSON.stringify(matchedPath),
+          distance: matchedDistance,
+          tripState: JSON.stringify(trip.tripState),
+          price: trip.price,
+          itemPrice,
+          time: trip.time,
+        },
+        { where: { tripID: trip.tripID } },
+      );
+      await this.vendorModel.update(
+        { location: JSON.stringify(trip.vendor.location) },
+        { where: { vendorID: trip.vendor.vendorID } },
+      );
+      await this.customerModel.update(
+        {
+          location: JSON.stringify(trip.customer.location),
+        },
+        { where: { customerID: trip.customer.customerID } },
+      );
+      this.adminSocketGateway.removeTripFromOnGoing(trip);
+      return { price: trip.price };
+    } else {
+      if (endStateData.type == 'customer') {
+        if (trip.customer.location.approximate == true) {
+          trip.customer.location.approximate =
+            endStateData.location.approximate;
+          trip.customer.location.coords = endStateData.location.coords;
+        }
+      }
+      trip.tripState.tripEnd = endStateData;
+      trip.rawPath.push(endStateData.location.coords);
+      trip.driverID = Number(trip.driverID);
+      trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
+      try {
+        trip.price = await mapMatching(trip.rawPath);
+      } catch (error) {
+        trip.price = null;
+        matchedPath = [];
+        matchedDistance = null;
+      }
+      await this.tripModel.update(
+        {
+          driverID: trip.driverID,
+          success: true,
+          rawPath: JSON.stringify(trip.rawPath),
+          matchedPath: JSON.stringify(matchedPath),
+          distance: matchedDistance,
+          tripState: JSON.stringify(trip.tripState),
+          price: trip.price,
+          itemPrice,
+          time: trip.time,
+        },
+        { where: { tripID: trip.tripID } },
+      );
+      await this.customerModel.update(
+        {
+          location: JSON.stringify(trip.customer.location),
+        },
+        { where: { customerID: trip.customer.customerID } },
+      );
+      this.adminSocketGateway.removeTripFromOnGoing(trip);
+      return { price: trip.price };
     }
-    trip.tripState.onCustomer = endStateData;
-    delete endStateData.location?.description;
-    delete endStateData.location?.approximate;
-    trip.rawPath.push(endStateData.location.coords);
-    trip.driverID = Number(trip.driverID);
-    trip.time = trip.tripState.onCustomer.time - trip.tripState.startTrip.time;
-    try {
-      trip.price = await mapMatching(trip.rawPath);
-    } catch (error) {
-      trip.price = null;
-      matchedPath = [];
-      matchedDistance = null;
-    }
-    await this.tripModel.update(
-      {
-        driverID: trip.driverID,
-        success: true,
-        rawPath: JSON.stringify(trip.rawPath),
-        matchedPath: JSON.stringify(matchedPath),
-        distance: matchedDistance,
-        tripState: JSON.stringify(trip.tripState),
-        price: trip.price,
-        itemPrice,
-        time: trip.time,
-      },
-      { where: { tripID: trip.tripID } },
-    );
-    await this.vendorModel.update(
-      { location: JSON.stringify(trip.vendor.location) },
-      { where: { vendorID: trip.vendor.vendorID } },
-    );
-    await this.customerModel.update(
-      {
-        location: JSON.stringify(trip.customer.location),
-      },
-      { where: { customerID: trip.customer.customerID } },
-    );
-    this.adminSocketGateway.removeTripFromOnGoing(trip);
   }
 
   getDriverID(client: Socket) {
