@@ -151,10 +151,10 @@ export class DriverSocketGateway
       };
     } else {
       trip.tripState = {
-        startTrip: startTrip,
+        tripStart: startTrip,
         onVendor: {},
         leftVendor: {},
-        onCustomer: {},
+        tripEnd: {},
       };
     }
     trip.rawPath.push(startTrip.location.coords);
@@ -224,11 +224,11 @@ export class DriverSocketGateway
         trip.customer.location.approximate = endStateData.location.approximate;
         trip.customer.location.coords = endStateData.location.coords;
       }
-      trip.tripState.onCustomer = endStateData;
+      trip.tripState.tripEnd = endStateData;
       trip.rawPath.push(endStateData.location.coords);
       trip.driverID = Number(trip.driverID);
       trip.time =
-        trip.tripState.onCustomer.time - trip.tripState.startTrip.time;
+        trip.tripState.tripEnd.time - trip.tripState.startTrip.time;
       try {
         trip.price = await mapMatching(trip.rawPath);
       } catch (error) {
