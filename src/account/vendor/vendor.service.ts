@@ -1,25 +1,30 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVendorDtoRequest } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcryptjs';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { AdminSocketGateway } from 'src/sockets/admin-socket/admin-socket.gateway';
 
 @Injectable()
 export class VendorService {
-  constructor(@InjectModel(Vendor) private vendorModel: typeof Vendor) {}
+  constructor(
+    @InjectModel(Vendor) private vendorModel: typeof Vendor,
+    @Inject() private readonly adminGateway: AdminSocketGateway,
+  ) {}
 
   async create(createVendorDto: CreateVendorDtoRequest) {
     let { name, email, password, phoneNumber, salary } = createVendorDto;
     password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const { vendorID } = await this.vendorModel.create({
+    const vendor = await this.vendorModel.create({
       name,
       email,
       password,
       phoneNumber,
       salary,
     });
-    return { vendorID };
+    this.adminGateway.newVendor(vendor);
+    return { vendor: vendor.vendorID };
   }
 
   async findAll() {
@@ -40,11 +45,16 @@ export class VendorService {
   async update(vendorID: number, updateVendorDto: UpdateVendorDto) {
     let { name, email, password, phoneNumber, salary } = updateVendorDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const updatedVendor = await this.vendorModel.update(
-      { name, email, password, phoneNumber, salary },
-      { where: { vendorID } },
-    );
-    if (updatedVendor[0] === 0) throw new NotFoundException();
+    const vendor = await this.vendorModel
+      .update(
+        { name, email, password, phoneNumber, salary },
+        { where: { vendorID } },
+      )
+      .then((data) => {
+        if (data[0] == 0) throw new NotFoundException();
+        return this.vendorModel.findByPk(vendorID);
+      });
+    this.adminGateway.updateVendor(vendor);
     return null;
   }
 
@@ -53,6 +63,7 @@ export class VendorService {
       where: { vendorID },
     });
     if (deletedVendor == 0) throw new NotFoundException();
+    this.adminGateway.deleteVendor(vendorID);
     return null;
   }
 }

@@ -136,6 +136,7 @@ export class TripService {
       phoneNumber: customerPhoneNumber,
       location: JSON.stringify(customerLocation),
     });
+    this.adminGateway.newCustomer(customer);
     return customer;
   }
 
@@ -149,6 +150,7 @@ export class TripService {
       phoneNumber: vendorPhoneNumber,
       location: JSON.stringify(vendorLocation),
     });
+    this.adminGateway.newVendor(vendor);
     return vendor;
   }
 
@@ -159,15 +161,17 @@ export class TripService {
     customerLocation: object,
   ) {
     if (!customerID) throw new NotFoundException();
-    await this.customerModel.update(
-      {
-        name: customerName,
-        phoneNumber: customerPhoneNumber,
-        location: JSON.stringify(customerLocation),
-      },
-      { where: { customerID } },
-    );
-    const customer = await this.customerModel.findByPk(customerID);
+    const customer = await this.customerModel
+      .update(
+        {
+          name: customerName,
+          phoneNumber: customerPhoneNumber,
+          location: JSON.stringify(customerLocation),
+        },
+        { where: { customerID } },
+      )
+      .then(() => this.customerModel.findByPk(customerID));
+    this.adminGateway.updateCustomer(customer);
     return customer;
   }
 
@@ -178,15 +182,17 @@ export class TripService {
     vendorLocation: object,
   ) {
     if (!vendorID) throw new NotFoundException();
-    await this.vendorModel.update(
-      {
-        name: vendorName,
-        phoneNumber: vendorPhoneNumber,
-        location: JSON.stringify(vendorLocation),
-      },
-      { where: { vendorID } },
-    );
-    const vendor = await this.vendorModel.findByPk(vendorID);
+    const vendor = await this.vendorModel
+      .update(
+        {
+          name: vendorName,
+          phoneNumber: vendorPhoneNumber,
+          location: JSON.stringify(vendorLocation),
+        },
+        { where: { vendorID } },
+      )
+      .then(() => this.vendorModel.findByPk(vendorID));
+    this.adminGateway.updateVendor(vendor);
     return vendor;
   }
 

@@ -311,16 +311,34 @@ export class DriverSocketGateway
           },
           { where: { tripID: trip.tripID } },
         );
-        await this.vendorModel.update(
-          { location: JSON.stringify(trip.vendor.location) },
-          { where: { vendorID: trip.vendor.vendorID } },
-        );
-        await this.customerModel.update(
-          {
-            location: JSON.stringify(trip.customer.location),
-          },
-          { where: { customerID: trip.customer.customerID } },
-        );
+        await this.vendorModel
+          .update(
+            { location: JSON.stringify(trip.vendor.location) },
+            { where: { vendorID: trip.vendor.vendorID } },
+          )
+          .then(async (data) => {
+            if (data[0] == 1) {
+              let vendor = await this.vendorModel.findByPk(
+                trip.vendor.vendorID,
+              );
+              this.adminSocketGateway.updateVendor(vendor);
+            }
+          });
+        await this.customerModel
+          .update(
+            {
+              location: JSON.stringify(trip.customer.location),
+            },
+            { where: { customerID: trip.customer.customerID } },
+          )
+          .then(async (data) => {
+            if (data[0] == 1) {
+              let customer = await this.customerModel.findByPk(
+                trip.customer.customerID,
+              );
+              this.adminSocketGateway.updateCustomer(customer);
+            }
+          });
         this.adminSocketGateway.removeTripFromOnGoing(trip);
         this.io.server.of('/notifications').emit('tripCompleted', {
           tripID: trip.tripID,
@@ -366,12 +384,21 @@ export class DriverSocketGateway
           },
           { where: { tripID: trip.tripID } },
         );
-        await this.customerModel.update(
-          {
-            location: JSON.stringify(trip.customer.location),
-          },
-          { where: { customerID: trip.customer.customerID } },
-        );
+        await this.customerModel
+          .update(
+            {
+              location: JSON.stringify(trip.customer.location),
+            },
+            { where: { customerID: trip.customer.customerID } },
+          )
+          .then(async (data) => {
+            if (data[0] == 1) {
+              let customer = await this.customerModel.findByPk(
+                trip.customer.customerID,
+              );
+              this.adminSocketGateway.updateCustomer(customer);
+            }
+          });
         this.adminSocketGateway.removeTripFromOnGoing(trip);
         this.io.server.of('/notifications').emit('tripCompleted', {
           tripID: trip.tripID,

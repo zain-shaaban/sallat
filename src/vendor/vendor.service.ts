@@ -1,23 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Vendor } from './entities/vendor.entity';
 import { CreateVendorDtoRequest2 } from './dto/create-vendor.dto';
 import { UpdateVendorDto2 } from './dto/update-vendor.dto';
 import { Trip } from 'src/trip/entities/trip.entity';
 import * as bcrypt from 'bcryptjs';
+import { AdminSocketGateway } from 'src/sockets/admin-socket/admin-socket.gateway';
 
 @Injectable()
 export class VendorService {
   constructor(
     @InjectModel(Vendor) private vendorModel: typeof Vendor,
     @InjectModel(Trip) private tripModel: typeof Trip,
+    @Inject() private readonly adminGateway: AdminSocketGateway,
   ) {}
 
   async create(createVendorDto: CreateVendorDtoRequest2) {
     let { name, phoneNumber, location, email, partner, password } =
       createVendorDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const { vendorID } = await this.vendorModel.create({
+    const vendor = await this.vendorModel.create({
       name,
       phoneNumber,
       location: JSON.stringify(location),
@@ -25,7 +27,8 @@ export class VendorService {
       partner,
       password,
     });
-    return { vendorID };
+    this.adminGateway.newVendor(vendor);
+    return { vendorID: vendor.vendorID };
   }
 
   async findAll() {
@@ -72,8 +75,12 @@ export class VendorService {
         partner,
       },
       { where: { vendorID } },
-    );
-    if (updatedVendor[0] === 0) throw new NotFoundException();
+    ).then((data)=>{
+      if(data[0]==0)
+        throw new NotFoundException()
+      return this.vendorModel.findByPk(vendorID)
+    });
+    this.adminGateway.updateVendor(updatedVendor)
     return null;
   }
 
@@ -82,6 +89,7 @@ export class VendorService {
       where: { vendorID },
     });
     if (deletedVendor == 0) throw new NotFoundException();
+    this.adminGateway.deleteVendor(vendorID)
     return null;
   }
 

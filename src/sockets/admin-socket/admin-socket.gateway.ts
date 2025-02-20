@@ -125,4 +125,40 @@ export class AdminSocketGateway implements OnGatewayConnection {
     pendingTrips.push(myTrip);
     this.sendTripsToAdmins();
   }
+
+  newVendor(vendor) {
+    this.io.server.of('/admin').emit('newVendor', vendor);
+  }
+
+  newCustomer(customer) {
+    this.io.server.of('/admin').emit('newCustomer', customer);
+  }
+
+  newDriver(driver) {
+    this.io.server.of('/admin').emit('newDriver', driver);
+  }
+
+  deleteVendor(vendorID) {
+    this.io.server.of('/admin').emit('deleteVendor', {vendorID});
+  }
+
+  deleteCustomer(customerID) {
+    this.io.server.of('/admin').emit('deleteCustomer', {customerID});
+  }
+
+  deleteDriver(driverID) {
+    this.io.server.of('/admin').emit('deleteDriver', {driverID});
+  }
+
+  updateVendor(vendor) {
+    this.io.server.of('/admin').emit('updateVendor', vendor);
+  }
+
+  updateCustomer(customer) {
+    this.io.server.of('/admin').emit('updateCustomer', customer);
+  }
+
+  updateDriver(driver) {
+    this.io.server.of('/admin').emit('updateDriver', driver);
+  }
 }
