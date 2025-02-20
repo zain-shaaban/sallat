@@ -4,15 +4,19 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { onlineDrivers } from '../driver-sokcet/driver-sokcet.gateway';
 import { Trip } from 'src/trip/entities/trip.entity';
+import { UseFilters } from '@nestjs/common';
+import { WsExceptionFilter } from 'src/common/filters/ws-exception.filter';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
 export let pendingTrips: any[] = [];
 
+@UseFilters(WsExceptionFilter)
 @WebSocketGateway({
   namespace: 'admin',
   cors: {
@@ -32,33 +36,35 @@ export class AdminSocketGateway implements OnGatewayConnection {
     });
   }
 
-  @SubscribeMessage('tripUpdate')
-  tripsUpdate() {
-    this.io.server.of('/admin').emit('');
-  }
-
-  @SubscribeMessage('savePath')
-  async savePath() {}
-
   @SubscribeMessage('resetEnvironment')
   resetAllVariables() {
-    readyTrips.length = 0;
-    ongoingTrips.length = 0;
-    pendingTrips.length = 0;
-    onlineDrivers.length = 0;
+    try {
+      readyTrips.length = 0;
+      ongoingTrips.length = 0;
+      pendingTrips.length = 0;
+      onlineDrivers.length = 0;
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
+    }
   }
 
   @SubscribeMessage('assignNewDriver')
   assignNewDriver(@MessageBody() idPairs: any) {
-    const trip = pendingTrips.find((trip) => trip.tripID == idPairs.tripID);
-    if (trip) {
-      trip.driverID = idPairs.driverID;
-      pendingTrips = pendingTrips.filter(
-        (trip) => trip.tripID != idPairs.tripID,
-      );
-      readyTrips.push(trip);
-      this.sendTripsToAdmins();
-      this.sendTripToDriver(trip);
+    try {
+      const trip = pendingTrips.find((trip) => trip.tripID == idPairs.tripID);
+      if (trip) {
+        trip.driverID = idPairs.driverID;
+        pendingTrips = pendingTrips.filter(
+          (trip) => trip.tripID != idPairs.tripID,
+        );
+        readyTrips.push(trip);
+        this.sendTripsToAdmins();
+        this.sendTripToDriver(trip);
+      }
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
     }
   }
 

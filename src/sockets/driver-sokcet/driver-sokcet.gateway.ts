@@ -6,6 +6,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   ConnectedSocket,
+  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import {
@@ -13,13 +14,14 @@ import {
   ongoingTrips,
   readyTrips,
 } from '../admin-socket/admin-socket.gateway';
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, UseFilters } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as polyline from '@mapbox/polyline';
 import { getPathLength } from 'geolib';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
+import { WsExceptionFilter } from 'src/common/filters/ws-exception.filter';
 
 export let onlineDrivers: any[] = [];
 
@@ -58,6 +60,7 @@ const mapMatching = async (rawPath) => {
   return pricing(matchedDistance);
 };
 
+@UseFilters(WsExceptionFilter)
 @WebSocketGateway({
   namespace: 'driver',
   cors: {
@@ -109,32 +112,42 @@ export class DriverSocketGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() location: { lng: number; lat: number },
   ) {
-    const driverID = this.getDriverID(client);
-    const oneDriver = onlineDrivers.find(
-      (driver) => driver.driverID == driverID,
-    );
-    if (oneDriver) {
-      oneDriver.location = location;
-      if (oneDriver.available == false) {
-        const oneTrip = ongoingTrips.find(
-          (trip) => trip.driverID == oneDriver.driverID,
-        );
-        oneTrip.rawPath.push(location);
+    try {
+      const driverID = this.getDriverID(client);
+      const oneDriver = onlineDrivers.find(
+        (driver) => driver.driverID == driverID,
+      );
+      if (oneDriver) {
+        oneDriver.location = location;
+        if (oneDriver.available == false) {
+          const oneTrip = ongoingTrips.find(
+            (trip) => trip.driverID == oneDriver.driverID,
+          );
+          oneTrip.rawPath.push(location);
+        }
       }
+      this.io.server
+        .of('/admin')
+        .emit('location', { driverID: oneDriver.driverID, location });
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
     }
-    this.io.server
-      .of('/admin')
-      .emit('location', { driverID: oneDriver.driverID, location });
   }
 
   @SubscribeMessage('rejectTrip')
   caseRejectTrip(@ConnectedSocket() client: Socket) {
-    const driverID = this.getDriverID(client);
-    const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
-    this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
-    this.io.server
-      .of('/notifications')
-      .emit('tripRejected', { tripID: oneTrip.tripID, driverID });
+    try {
+      const driverID = this.getDriverID(client);
+      const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
+      this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
+      this.io.server
+        .of('/notifications')
+        .emit('tripRejected', { tripID: oneTrip.tripID, driverID });
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
+    }
   }
 
   @SubscribeMessage('acceptTrip')
@@ -142,36 +155,41 @@ export class DriverSocketGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() startTripData: any,
   ) {
-    const startTrip = {
-      location: startTripData.location,
-      time: startTripData.time,
-    };
-    const driverID = this.getDriverID(client);
-    onlineDrivers = onlineDrivers.map((driver) => {
-      if (driver.driverID == driverID && driver.available == true)
-        driver.available = false;
-      return driver;
-    });
-    const trip = readyTrips.find((trip) => trip.driverID == driverID);
-    if (trip.alternative == true) {
-      trip.tripState = {
-        tripStart: startTrip,
-        wayPoints: [],
-        tripEnd: {},
+    try {
+      const startTrip = {
+        location: startTripData.location,
+        time: startTripData.time,
       };
-    } else {
-      trip.tripState = {
-        tripStart: startTrip,
-        onVendor: {},
-        leftVendor: {},
-        tripEnd: {},
-      };
+      const driverID = this.getDriverID(client);
+      onlineDrivers = onlineDrivers.map((driver) => {
+        if (driver.driverID == driverID && driver.available == true)
+          driver.available = false;
+        return driver;
+      });
+      const trip = readyTrips.find((trip) => trip.driverID == driverID);
+      if (trip.alternative == true) {
+        trip.tripState = {
+          tripStart: startTrip,
+          wayPoints: [],
+          tripEnd: {},
+        };
+      } else {
+        trip.tripState = {
+          tripStart: startTrip,
+          onVendor: {},
+          leftVendor: {},
+          tripEnd: {},
+        };
+      }
+      trip.rawPath.push(startTrip.location.coords);
+      this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
+      this.io.server
+        .of('/notifications')
+        .emit('tripAccepted', { tripID: trip.tripID, driverID });
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
     }
-    trip.rawPath.push(startTrip.location.coords);
-    this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
-    this.io.server
-      .of('/notifications')
-      .emit('tripAccepted', { tripID: trip.tripID, driverID });
   }
 
   @SubscribeMessage('addWayPoint')
@@ -179,13 +197,18 @@ export class DriverSocketGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() wayPoint: any,
   ) {
-    const driverID = this.getDriverID(client);
-    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
-    trip.tripState.wayPoints.push({ ...wayPoint });
-    trip.rawPath.push(wayPoint.location.coords);
-    if (wayPoint.type == 'customer') {
-      trip.customer.location.coords = wayPoint.location.coords;
-      trip.customer.location.approximate = wayPoint.location.approximate;
+    try {
+      const driverID = this.getDriverID(client);
+      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+      trip.tripState.wayPoints.push({ ...wayPoint });
+      trip.rawPath.push(wayPoint.location.coords);
+      if (wayPoint.type == 'customer') {
+        trip.customer.location.coords = wayPoint.location.coords;
+        trip.customer.location.approximate = wayPoint.location.approximate;
+      }
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
     }
   }
 
@@ -194,40 +217,51 @@ export class DriverSocketGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() changeStateData: any,
   ) {
-    const driverID = this.getDriverID(client);
-    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
-    if (changeStateData.stateName == 'onVendor') {
-      this.io.server.of('/notifications').emit('stateOnVendor', {
-        tripID: trip.tripID,
-        driverID,
-        vendorID: trip.vendor.vendorID,
-      });
-      if (trip.vendor.location.approximate == true) {
-        trip.vendor.location.coords = changeStateData.stateData.location.coords;
-        trip.vendor.location.approximate =
-          changeStateData.stateData.location.approximate;
+    try {
+      const driverID = this.getDriverID(client);
+      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+      if (changeStateData.stateName == 'onVendor') {
+        this.io.server.of('/notifications').emit('stateOnVendor', {
+          tripID: trip.tripID,
+          driverID,
+          vendorID: trip.vendor.vendorID,
+        });
+        if (trip.vendor.location.approximate == true) {
+          trip.vendor.location.coords =
+            changeStateData.stateData.location.coords;
+          trip.vendor.location.approximate =
+            changeStateData.stateData.location.approximate;
+        }
+        trip.tripState.onVendor = changeStateData.stateData;
+        trip.rawPath.push(changeStateData.stateData.location.coords);
+      } else {
+        trip.tripState.leftVendor.time = changeStateData.stateData;
+        this.io.server.of('/notifications').emit('stateLeftVendor', {
+          tripID: trip.tripID,
+          driverID,
+          vendorID: trip.vendor.vendorID,
+        });
       }
-      trip.tripState.onVendor = changeStateData.stateData;
-      trip.rawPath.push(changeStateData.stateData.location.coords);
-    } else {
-      trip.tripState.leftVendor.time = changeStateData.stateData;
-      this.io.server.of('/notifications').emit('stateLeftVendor', {
-        tripID: trip.tripID,
-        driverID,
-        vendorID: trip.vendor.vendorID,
-      });
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
     }
   }
 
   @SubscribeMessage('cancelTrip')
   canselTripByDriver(@ConnectedSocket() client: Socket) {
-    const driverID = this.getDriverID(client);
-    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
-    this.adminSocketGateway.moveTripFromOngoingToPending(trip);
-    onlineDrivers = onlineDrivers.filter(
-      (driver) => driver.driverID != driverID,
-    );
-    client.disconnect();
+    try {
+      const driverID = this.getDriverID(client);
+      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+      this.adminSocketGateway.moveTripFromOngoingToPending(trip);
+      onlineDrivers = onlineDrivers.filter(
+        (driver) => driver.driverID != driverID,
+      );
+      client.disconnect();
+      return { status: true };
+    } catch (error) {
+      throw new WsException(error);
+    }
   }
 
   @SubscribeMessage('endTrip')
@@ -235,118 +269,123 @@ export class DriverSocketGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() endStateData: any,
   ) {
-    let itemPrice = endStateData.itemPrice;
-    delete endStateData?.itemPrice;
-    const driverID = this.getDriverID(client);
-    onlineDrivers = onlineDrivers.map((driver) => {
-      if (driver.driverID == driverID && driver.available == false)
-        driver.available = true;
-      return driver;
-    });
-    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
-    if (!trip.alternative) {
-      if (trip.customer.location.approximate == true) {
-        trip.customer.location.approximate = endStateData.location.approximate;
-        trip.customer.location.coords = endStateData.location.coords;
-      }
-      trip.tripState.tripEnd = endStateData;
-      trip.rawPath.push(endStateData.location.coords);
-      trip.driverID = Number(trip.driverID);
-      trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
-      try {
-        trip.price = await mapMatching(trip.rawPath);
-      } catch (error) {
-        trip.price = null;
-        matchedPath = [];
-        matchedDistance = null;
-      }
-      trip.success = true;
-      await this.tripModel.update(
-        {
-          driverID: trip.driverID,
-          success: trip.success,
-          rawPath: JSON.stringify(trip.rawPath),
-          matchedPath: JSON.stringify(matchedPath),
-          distance: matchedDistance,
-          tripState: JSON.stringify(trip.tripState),
-          price: trip.price,
-          itemPrice,
-          time: trip.time,
-        },
-        { where: { tripID: trip.tripID } },
-      );
-      await this.vendorModel.update(
-        { location: JSON.stringify(trip.vendor.location) },
-        { where: { vendorID: trip.vendor.vendorID } },
-      );
-      await this.customerModel.update(
-        {
-          location: JSON.stringify(trip.customer.location),
-        },
-        { where: { customerID: trip.customer.customerID } },
-      );
-      this.adminSocketGateway.removeTripFromOnGoing(trip);
-      this.io.server.of('/notifications').emit('tripCompleted', {
-        tripID: trip.tripID,
-        driverID,
-        success: trip.success,
-        price: trip.price,
-        itemPrice,
-        time: trip.time,
-        distance: matchedDistance,
+    try {
+      let itemPrice = endStateData.itemPrice;
+      delete endStateData?.itemPrice;
+      const driverID = this.getDriverID(client);
+      onlineDrivers = onlineDrivers.map((driver) => {
+        if (driver.driverID == driverID && driver.available == false)
+          driver.available = true;
+        return driver;
       });
-      return { price: trip.price };
-    } else {
-      if (endStateData.type == 'customer') {
+      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+      if (!trip.alternative) {
         if (trip.customer.location.approximate == true) {
           trip.customer.location.approximate =
             endStateData.location.approximate;
           trip.customer.location.coords = endStateData.location.coords;
         }
-      }
-      trip.tripState.tripEnd = endStateData;
-      trip.rawPath.push(endStateData.location.coords);
-      trip.driverID = Number(trip.driverID);
-      trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
-      try {
-        trip.price = await mapMatching(trip.rawPath);
-      } catch (error) {
-        trip.price = null;
-        matchedPath = [];
-        matchedDistance = null;
-      }
-      trip.success = true;
-      await this.tripModel.update(
-        {
-          driverID: trip.driverID,
+        trip.tripState.tripEnd = endStateData;
+        trip.rawPath.push(endStateData.location.coords);
+        trip.driverID = Number(trip.driverID);
+        trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
+        try {
+          trip.price = await mapMatching(trip.rawPath);
+        } catch (error) {
+          trip.price = null;
+          matchedPath = [];
+          matchedDistance = null;
+        }
+        trip.success = true;
+        await this.tripModel.update(
+          {
+            driverID: trip.driverID,
+            success: trip.success,
+            rawPath: JSON.stringify(trip.rawPath),
+            matchedPath: JSON.stringify(matchedPath),
+            distance: matchedDistance,
+            tripState: JSON.stringify(trip.tripState),
+            price: trip.price,
+            itemPrice,
+            time: trip.time,
+          },
+          { where: { tripID: trip.tripID } },
+        );
+        await this.vendorModel.update(
+          { location: JSON.stringify(trip.vendor.location) },
+          { where: { vendorID: trip.vendor.vendorID } },
+        );
+        await this.customerModel.update(
+          {
+            location: JSON.stringify(trip.customer.location),
+          },
+          { where: { customerID: trip.customer.customerID } },
+        );
+        this.adminSocketGateway.removeTripFromOnGoing(trip);
+        this.io.server.of('/notifications').emit('tripCompleted', {
+          tripID: trip.tripID,
+          driverID,
           success: trip.success,
-          rawPath: JSON.stringify(trip.rawPath),
-          matchedPath: JSON.stringify(matchedPath),
-          distance: matchedDistance,
-          tripState: JSON.stringify(trip.tripState),
           price: trip.price,
           itemPrice,
           time: trip.time,
-        },
-        { where: { tripID: trip.tripID } },
-      );
-      await this.customerModel.update(
-        {
-          location: JSON.stringify(trip.customer.location),
-        },
-        { where: { customerID: trip.customer.customerID } },
-      );
-      this.adminSocketGateway.removeTripFromOnGoing(trip);
-      this.io.server.of('/notifications').emit('tripCompleted', {
-        tripID: trip.tripID,
-        driverID,
-        success: trip.success,
-        price: trip.price,
-        itemPrice,
-        time: trip.time,
-        distance: matchedDistance,
-      });
-      return { price: trip.price };
+          distance: matchedDistance,
+        });
+        return { status: true, data: { price: trip.price } };
+      } else {
+        if (endStateData.type == 'customer') {
+          if (trip.customer.location.approximate == true) {
+            trip.customer.location.approximate =
+              endStateData.location.approximate;
+            trip.customer.location.coords = endStateData.location.coords;
+          }
+        }
+        trip.tripState.tripEnd = endStateData;
+        trip.rawPath.push(endStateData.location.coords);
+        trip.driverID = Number(trip.driverID);
+        trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
+        try {
+          trip.price = await mapMatching(trip.rawPath);
+        } catch (error) {
+          trip.price = null;
+          matchedPath = [];
+          matchedDistance = null;
+        }
+        trip.success = true;
+        await this.tripModel.update(
+          {
+            driverID: trip.driverID,
+            success: trip.success,
+            rawPath: JSON.stringify(trip.rawPath),
+            matchedPath: JSON.stringify(matchedPath),
+            distance: matchedDistance,
+            tripState: JSON.stringify(trip.tripState),
+            price: trip.price,
+            itemPrice,
+            time: trip.time,
+          },
+          { where: { tripID: trip.tripID } },
+        );
+        await this.customerModel.update(
+          {
+            location: JSON.stringify(trip.customer.location),
+          },
+          { where: { customerID: trip.customer.customerID } },
+        );
+        this.adminSocketGateway.removeTripFromOnGoing(trip);
+        this.io.server.of('/notifications').emit('tripCompleted', {
+          tripID: trip.tripID,
+          driverID,
+          success: trip.success,
+          price: trip.price,
+          itemPrice,
+          time: trip.time,
+          distance: matchedDistance,
+        });
+        return { status: true, data: { price: trip.price } };
+      }
+    } catch (error) {
+      throw new WsException(error);
     }
   }
 
