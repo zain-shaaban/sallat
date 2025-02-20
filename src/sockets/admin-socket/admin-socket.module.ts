@@ -4,7 +4,7 @@ import { PathModule } from 'src/path/path.module';
 import { DriverSokcetModule } from '../driver-sokcet/driver-sokcet.module';
 
 @Module({
-  imports: [PathModule, forwardRef(() => DriverSokcetModule)], // Use forwardRef here
+  imports: [PathModule, forwardRef(() => DriverSokcetModule)],
   providers: [AdminSocketGateway],
   exports: [AdminSocketGateway],
 })

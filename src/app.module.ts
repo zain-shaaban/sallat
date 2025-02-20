@@ -15,8 +15,7 @@ import { PathModule } from './path/path.module';
 import { TripModule } from './trip/trip.module';
 import { CustomerModule } from './customer/customer.module';
 import { VendorModule } from './vendor/vendor.module';
-import { TestingAdminSocketModule } from './testing/testing-admin-socket/admin-socket.module';
-import { TestingDriverSokcetModule } from './testing/testing-driver-socket/driver-socket.module';
+import { NotificationSocketModule } from './sockets/notification-socket/notification-socket.module';
 
 @Module({
   imports: [
@@ -56,8 +55,7 @@ import { TestingDriverSokcetModule } from './testing/testing-driver-socket/drive
     TripModule,
     CustomerModule,
     AccountVendorModule,
-    TestingAdminSocketModule,
-    TestingDriverSokcetModule
+    NotificationSocketModule,
   ],
 })
 export class AppModule {}

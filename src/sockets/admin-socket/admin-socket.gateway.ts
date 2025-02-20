@@ -13,7 +13,6 @@ export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
 export let pendingTrips: any[] = [];
 
-
 @WebSocketGateway({
   namespace: 'admin',
   cors: {
@@ -66,6 +65,9 @@ export class AdminSocketGateway implements OnGatewayConnection {
   submitNewTrip(trip: Trip) {
     this.sendTripsToAdmins();
     this.sendTripToDriver(trip);
+    this.io.server
+      .of('/notifications')
+      .emit('tripReceived', { tripID: trip.tripID, driverID: trip.driverID });
   }
 
   sendTripsToAdmins() {
@@ -113,7 +115,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
     );
     myTrip.driverID = null;
     myTrip.path = [];
-    myTrip.tripState={};
+    myTrip.tripState = {};
     pendingTrips.push(myTrip);
     this.sendTripsToAdmins();
   }

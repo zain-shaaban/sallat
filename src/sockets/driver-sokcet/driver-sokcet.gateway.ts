@@ -87,6 +87,9 @@ export class DriverSocketGateway
       available: true,
     });
     this.io.server.of('/admin').emit('driverConnection', { onlineDrivers });
+    this.io.server
+      .of('/notifications')
+      .emit('driverConnection', { driverID: +driverID, connection: true });
   }
 
   handleDisconnect(client: Socket) {
@@ -95,6 +98,10 @@ export class DriverSocketGateway
     );
     onlineDrivers = onlineDrivers.filter((driver) => driver != driverToDelete);
     this.io.server.of('/admin').emit('driverConnection', { onlineDrivers });
+    this.io.server.of('/notifications').emit('driverConnection', {
+      driverID: +driverToDelete.driverID,
+      connection: false,
+    });
   }
 
   @SubscribeMessage('sendLocation')
@@ -125,6 +132,9 @@ export class DriverSocketGateway
     const driverID = this.getDriverID(client);
     const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
     this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
+    this.io.server
+      .of('/notifications')
+      .emit('tripRejected', { tripID: oneTrip.tripID, driverID });
   }
 
   @SubscribeMessage('acceptTrip')
@@ -159,6 +169,9 @@ export class DriverSocketGateway
     }
     trip.rawPath.push(startTrip.location.coords);
     this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
+    this.io.server
+      .of('/notifications')
+      .emit('tripAccepted', { tripID: trip.tripID, driverID });
   }
 
   @SubscribeMessage('addWayPoint')
@@ -184,6 +197,11 @@ export class DriverSocketGateway
     const driverID = this.getDriverID(client);
     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
     if (changeStateData.stateName == 'onVendor') {
+      this.io.server.of('/notifications').emit('stateOnVendor', {
+        tripID: trip.tripID,
+        driverID,
+        vendorID: trip.vendor.vendorID,
+      });
       if (trip.vendor.location.approximate == true) {
         trip.vendor.location.coords = changeStateData.stateData.location.coords;
         trip.vendor.location.approximate =
@@ -191,7 +209,14 @@ export class DriverSocketGateway
       }
       trip.tripState.onVendor = changeStateData.stateData;
       trip.rawPath.push(changeStateData.stateData.location.coords);
-    } else trip.tripState.leftVendor.time = changeStateData.stateData;
+    } else {
+      trip.tripState.leftVendor.time = changeStateData.stateData;
+      this.io.server.of('/notifications').emit('stateLeftVendor', {
+        tripID: trip.tripID,
+        driverID,
+        vendorID: trip.vendor.vendorID,
+      });
+    }
   }
 
   @SubscribeMessage('cancelTrip')
@@ -227,8 +252,7 @@ export class DriverSocketGateway
       trip.tripState.tripEnd = endStateData;
       trip.rawPath.push(endStateData.location.coords);
       trip.driverID = Number(trip.driverID);
-      trip.time =
-        trip.tripState.tripEnd.time - trip.tripState.startTrip.time;
+      trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
       try {
         trip.price = await mapMatching(trip.rawPath);
       } catch (error) {
@@ -236,10 +260,11 @@ export class DriverSocketGateway
         matchedPath = [];
         matchedDistance = null;
       }
+      trip.success = true;
       await this.tripModel.update(
         {
           driverID: trip.driverID,
-          success: true,
+          success: trip.success,
           rawPath: JSON.stringify(trip.rawPath),
           matchedPath: JSON.stringify(matchedPath),
           distance: matchedDistance,
@@ -261,6 +286,15 @@ export class DriverSocketGateway
         { where: { customerID: trip.customer.customerID } },
       );
       this.adminSocketGateway.removeTripFromOnGoing(trip);
+      this.io.server.of('/notifications').emit('tripCompleted', {
+        tripID: trip.tripID,
+        driverID,
+        success: trip.success,
+        price: trip.price,
+        itemPrice,
+        time: trip.time,
+        distance: matchedDistance,
+      });
       return { price: trip.price };
     } else {
       if (endStateData.type == 'customer') {
@@ -281,10 +315,11 @@ export class DriverSocketGateway
         matchedPath = [];
         matchedDistance = null;
       }
+      trip.success = true;
       await this.tripModel.update(
         {
           driverID: trip.driverID,
-          success: true,
+          success: trip.success,
           rawPath: JSON.stringify(trip.rawPath),
           matchedPath: JSON.stringify(matchedPath),
           distance: matchedDistance,
@@ -302,6 +337,15 @@ export class DriverSocketGateway
         { where: { customerID: trip.customer.customerID } },
       );
       this.adminSocketGateway.removeTripFromOnGoing(trip);
+      this.io.server.of('/notifications').emit('tripCompleted', {
+        tripID: trip.tripID,
+        driverID,
+        success: trip.success,
+        price: trip.price,
+        itemPrice,
+        time: trip.time,
+        distance: matchedDistance,
+      });
       return { price: trip.price };
     }
   }
