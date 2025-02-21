@@ -87,7 +87,11 @@ export class DriverSocketGateway
       socketID: client.id,
       driverID,
       location: { lng: Number(lng), lat: Number(lat) },
-      available: true,
+      available:
+        ongoingTrips.find((trip) => trip.driverID == driverID) ||
+        readyTrips.find((trip) => trip.driverID == driverID)
+          ? false
+          : true,
     });
     this.adminSocketGateway.sendDriversArrayToAdmins();
     this.io.server
