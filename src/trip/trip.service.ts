@@ -91,6 +91,7 @@ export class TripService {
       delete trip.vendorID;
       readyTrips.push(trip);
       this.adminGateway.submitNewTrip(trip);
+      this.adminGateway.sendDriversArrayToAdmins();
       return { tripID: trip.tripID };
     } else {
       let customer: Customer;
@@ -122,6 +123,7 @@ export class TripService {
       delete trip.customerID;
       readyTrips.push(trip);
       this.adminGateway.submitNewTrip(trip);
+      this.adminGateway.sendDriversArrayToAdmins();
       return { tripID: trip.tripID };
     }
   }

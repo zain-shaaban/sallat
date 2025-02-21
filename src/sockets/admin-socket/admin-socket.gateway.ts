@@ -165,4 +165,8 @@ export class AdminSocketGateway implements OnGatewayConnection {
   updateDriver(driver) {
     this.io.server.of('/admin').emit('updateDriver', driver);
   }
+
+  sendDriversArrayToAdmins() {
+    this.io.server.of('/admin').emit('driverConnection', onlineDrivers);
+  }
 }

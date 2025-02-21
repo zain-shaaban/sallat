@@ -89,7 +89,7 @@ export class DriverSocketGateway
       location: { lng: Number(lng), lat: Number(lat) },
       available: true,
     });
-    this.io.server.of('/admin').emit('driverConnection', { onlineDrivers });
+    this.adminSocketGateway.sendDriversArrayToAdmins();
     this.io.server
       .of('/notifications')
       .emit('driverConnection', { driverID: +driverID, connection: true });
@@ -100,7 +100,7 @@ export class DriverSocketGateway
       (driver) => driver.socketID == client.id,
     );
     onlineDrivers = onlineDrivers.filter((driver) => driver != driverToDelete);
-    this.io.server.of('/admin').emit('driverConnection', { onlineDrivers });
+    this.adminSocketGateway.sendDriversArrayToAdmins();
     this.io.server.of('/notifications').emit('driverConnection', {
       driverID: +driverToDelete.driverID,
       connection: false,
@@ -144,6 +144,7 @@ export class DriverSocketGateway
         if (driver.driverID == driverID) driver.available = true;
         return driver;
       });
+      this.adminSocketGateway.sendDriversArrayToAdmins();
       this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
       this.io.server
         .of('/notifications')
@@ -352,6 +353,7 @@ export class DriverSocketGateway
           time: trip.time,
           distance: matchedDistance,
         });
+        this.adminSocketGateway.sendDriversArrayToAdmins();
         return { status: true, data: { price: trip.price } };
       } else {
         if (endStateData.type == 'customer') {
@@ -412,6 +414,7 @@ export class DriverSocketGateway
           time: trip.time,
           distance: matchedDistance,
         });
+        this.adminSocketGateway.sendDriversArrayToAdmins();
         return { status: true, data: { price: trip.price } };
       }
     } catch (error) {
