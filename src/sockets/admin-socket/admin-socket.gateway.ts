@@ -71,6 +71,10 @@ export class AdminSocketGateway implements OnGatewayConnection {
   submitNewTrip(trip: Trip) {
     this.sendTripsToAdmins();
     this.sendTripToDriver(trip);
+    let driver = onlineDrivers.find(
+      (driver) => driver.driverID == trip.driverID && driver.available == true,
+    );
+    if (driver) driver.available = false;
     this.io.server
       .of('/notifications')
       .emit('tripReceived', { tripID: trip.tripID, driverID: trip.driverID });
@@ -139,15 +143,15 @@ export class AdminSocketGateway implements OnGatewayConnection {
   }
 
   deleteVendor(vendorID) {
-    this.io.server.of('/admin').emit('deleteVendor', {vendorID});
+    this.io.server.of('/admin').emit('deleteVendor', { vendorID });
   }
 
   deleteCustomer(customerID) {
-    this.io.server.of('/admin').emit('deleteCustomer', {customerID});
+    this.io.server.of('/admin').emit('deleteCustomer', { customerID });
   }
 
   deleteDriver(driverID) {
-    this.io.server.of('/admin').emit('deleteDriver', {driverID});
+    this.io.server.of('/admin').emit('deleteDriver', { driverID });
   }
 
   updateVendor(vendor) {

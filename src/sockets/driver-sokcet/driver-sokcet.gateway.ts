@@ -140,6 +140,10 @@ export class DriverSocketGateway
     try {
       const driverID = this.getDriverID(client);
       const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
+      onlineDrivers = onlineDrivers.map((driver) => {
+        if (driver.driverID == driverID) driver.available = true;
+        return driver;
+      });
       this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
       this.io.server
         .of('/notifications')
@@ -162,8 +166,6 @@ export class DriverSocketGateway
       };
       const driverID = this.getDriverID(client);
       onlineDrivers = onlineDrivers.map((driver) => {
-        if (driver.driverID == driverID && driver.available == true)
-          driver.available = false;
         return driver;
       });
       const trip = readyTrips.find((trip) => trip.driverID == driverID);
@@ -319,7 +321,8 @@ export class DriverSocketGateway
           .then(async (data) => {
             if (data[0] == 1) {
               let vendor = await this.vendorModel.findByPk(
-                trip.vendor.vendorID,{attributes:{exclude:['password']}}
+                trip.vendor.vendorID,
+                { attributes: { exclude: ['password'] } },
               );
               this.adminSocketGateway.updateVendor(vendor);
             }
