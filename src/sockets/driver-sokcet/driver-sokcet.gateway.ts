@@ -319,7 +319,7 @@ export class DriverSocketGateway
           .then(async (data) => {
             if (data[0] == 1) {
               let vendor = await this.vendorModel.findByPk(
-                trip.vendor.vendorID,
+                trip.vendor.vendorID,{attributes:{exclude:['password']}}
               );
               this.adminSocketGateway.updateVendor(vendor);
             }

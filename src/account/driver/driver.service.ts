@@ -17,7 +17,7 @@ export class DriverService {
     let { name, email, password, phoneNumber, salary, assignedVehicleNumber } =
       createDriverDto;
     password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const driver = await this.driverModel.create({
+    let driver = await this.driverModel.create({
       name,
       email,
       password,
@@ -25,6 +25,8 @@ export class DriverService {
       salary,
       assignedVehicleNumber,
     });
+    driver = driver.toJSON();
+    delete driver.password;
     this.adminGateway.newDriver(driver);
     return { driverID: driver.driverID };
   }
@@ -55,7 +57,9 @@ export class DriverService {
       )
       .then((data) => {
         if (data[0] == 0) throw new NotFoundException();
-        return this.driverModel.findByPk(driverID);
+        return this.driverModel.findByPk(driverID, {
+          attributes: { exclude: ['password'] },
+        });
       });
     this.adminGateway.updateDriver(driver);
     return null;

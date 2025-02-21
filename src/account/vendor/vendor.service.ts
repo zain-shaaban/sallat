@@ -14,15 +14,19 @@ export class VendorService {
   ) {}
 
   async create(createVendorDto: CreateVendorDtoRequest) {
-    let { name, email, password, phoneNumber, salary } = createVendorDto;
+    let { name, email, password, phoneNumber, partner, location } =
+      createVendorDto;
     password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const vendor = await this.vendorModel.create({
+    let vendor = await this.vendorModel.create({
       name,
-      email,
-      password,
       phoneNumber,
-      salary,
+      location: JSON.stringify(location),
+      email,
+      partner,
+      password,
     });
+    vendor = vendor.toJSON();
+    delete vendor.password;
     this.adminGateway.newVendor(vendor);
     return { vendor: vendor.vendorID };
   }
@@ -43,16 +47,26 @@ export class VendorService {
   }
 
   async update(vendorID: number, updateVendorDto: UpdateVendorDto) {
-    let { name, email, password, phoneNumber, salary } = updateVendorDto;
+    let { name, email, password, phoneNumber, partner, location } =
+      updateVendorDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
     const vendor = await this.vendorModel
       .update(
-        { name, email, password, phoneNumber, salary },
+        {
+          name,
+          phoneNumber,
+          location: JSON.stringify(location),
+          email,
+          partner,
+          password,
+        },
         { where: { vendorID } },
       )
       .then((data) => {
         if (data[0] == 0) throw new NotFoundException();
-        return this.vendorModel.findByPk(vendorID);
+        return this.vendorModel.findByPk(vendorID, {
+          attributes: { exclude: ['password'] },
+        });
       });
     this.adminGateway.updateVendor(vendor);
     return null;

@@ -19,7 +19,7 @@ export class VendorService {
     let { name, phoneNumber, location, email, partner, password } =
       createVendorDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const vendor = await this.vendorModel.create({
+    let vendor = await this.vendorModel.create({
       name,
       phoneNumber,
       location: JSON.stringify(location),
@@ -27,6 +27,8 @@ export class VendorService {
       partner,
       password,
     });
+    vendor=vendor.toJSON()
+    delete vendor.password;
     this.adminGateway.newVendor(vendor);
     return { vendorID: vendor.vendorID };
   }
@@ -65,22 +67,25 @@ export class VendorService {
     let { name, phoneNumber, location, email, password, partner } =
       updateVendorDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const updatedVendor = await this.vendorModel.update(
-      {
-        name,
-        phoneNumber,
-        location: JSON.stringify(location),
-        email,
-        password,
-        partner,
-      },
-      { where: { vendorID } },
-    ).then((data)=>{
-      if(data[0]==0)
-        throw new NotFoundException()
-      return this.vendorModel.findByPk(vendorID)
-    });
-    this.adminGateway.updateVendor(updatedVendor)
+    const updatedVendor = await this.vendorModel
+      .update(
+        {
+          name,
+          phoneNumber,
+          location: JSON.stringify(location),
+          email,
+          password,
+          partner,
+        },
+        { where: { vendorID } },
+      )
+      .then((data) => {
+        if (data[0] == 0) throw new NotFoundException();
+        return this.vendorModel.findByPk(vendorID, {
+          attributes: { exclude: ['password'] },
+        });
+      });
+    this.adminGateway.updateVendor(updatedVendor);
     return null;
   }
 
@@ -89,7 +94,7 @@ export class VendorService {
       where: { vendorID },
     });
     if (deletedVendor == 0) throw new NotFoundException();
-    this.adminGateway.deleteVendor(vendorID)
+    this.adminGateway.deleteVendor(vendorID);
     return null;
   }
 
