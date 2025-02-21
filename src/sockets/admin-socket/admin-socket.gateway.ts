@@ -59,8 +59,8 @@ export class AdminSocketGateway implements OnGatewayConnection {
           (trip) => trip.tripID != idPairs.tripID,
         );
         readyTrips.push(trip);
-        this.sendTripsToAdmins();
-        this.sendTripToDriver(trip);
+        this.submitNewTrip(trip);
+        this.sendDriversArrayToAdmins()
       }
       return { status: true };
     } catch (error) {
