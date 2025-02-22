@@ -435,7 +435,17 @@ export class DriverSocketGateway
           distance: matchedDistance,
         });
         this.adminSocketGateway.sendDriversArrayToAdmins();
-        return { status: true, data: { price: trip.price } };
+        return {
+          status: true,
+          data: {
+            tripID: trip.tripID,
+            success: trip.success,
+            itemPrice,
+            time: trip.time,
+            distance: matchedDistance,
+            price: trip.price,
+          },
+        };
       }
     } catch (error) {
       return {
