@@ -10,13 +10,11 @@ import { Namespace, Socket } from 'socket.io';
 import { onlineDrivers } from '../driver-sokcet/driver-sokcet.gateway';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { UseFilters } from '@nestjs/common';
-import { WsExceptionFilter } from 'src/common/filters/ws-exception.filter';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
 export let pendingTrips: any[] = [];
 
-@UseFilters(WsExceptionFilter)
 @WebSocketGateway({
   namespace: 'admin',
   cors: {
@@ -45,7 +43,10 @@ export class AdminSocketGateway implements OnGatewayConnection {
       onlineDrivers.length = 0;
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
@@ -60,11 +61,14 @@ export class AdminSocketGateway implements OnGatewayConnection {
         );
         readyTrips.push(trip);
         this.submitNewTrip(trip);
-        this.sendDriversArrayToAdmins()
+        this.sendDriversArrayToAdmins();
       }
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 

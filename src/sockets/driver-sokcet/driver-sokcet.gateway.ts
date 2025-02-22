@@ -21,7 +21,6 @@ import { getPathLength } from 'geolib';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
-import { WsExceptionFilter } from 'src/common/filters/ws-exception.filter';
 
 export let onlineDrivers: any[] = [];
 
@@ -60,7 +59,6 @@ const mapMatching = async (rawPath) => {
   return pricing(matchedDistance);
 };
 
-@UseFilters(WsExceptionFilter)
 @WebSocketGateway({
   namespace: 'driver',
   cors: {
@@ -135,7 +133,10 @@ export class DriverSocketGateway
         .emit('location', { driverID: oneDriver.driverID, location });
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
@@ -155,7 +156,10 @@ export class DriverSocketGateway
         .emit('tripRejected', { tripID: oneTrip.tripID, driverID });
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
@@ -195,7 +199,10 @@ export class DriverSocketGateway
         .emit('tripAccepted', { tripID: trip.tripID, driverID });
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
@@ -215,7 +222,10 @@ export class DriverSocketGateway
       }
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
@@ -251,7 +261,10 @@ export class DriverSocketGateway
       }
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
@@ -267,7 +280,10 @@ export class DriverSocketGateway
       client.disconnect();
       return { status: true };
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
@@ -422,7 +438,10 @@ export class DriverSocketGateway
         return { status: true, data: { price: trip.price } };
       }
     } catch (error) {
-      throw new WsException(error);
+      return {
+        status: false,
+        message: error.message,
+      };
     }
   }
 
