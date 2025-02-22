@@ -321,9 +321,9 @@ export class DriverSocketGateway
         try {
           trip.price = await mapMatching(trip.rawPath);
         } catch (error) {
-          trip.price = null;
+          trip.price = 0;
           matchedPath = [];
-          matchedDistance = null;
+          matchedDistance = 0;
         }
         trip.success = true;
         await this.tripModel.update(
@@ -396,9 +396,9 @@ export class DriverSocketGateway
         try {
           trip.price = await mapMatching(trip.rawPath);
         } catch (error) {
-          trip.price = null;
+          trip.price = 0;
           matchedPath = [];
-          matchedDistance = null;
+          matchedDistance = 0;
         }
         trip.success = true;
         await this.tripModel.update(
