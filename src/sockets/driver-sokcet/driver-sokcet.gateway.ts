@@ -243,7 +243,10 @@ export class DriverSocketGateway
           driverID,
           vendorID: trip.vendor.vendorID,
         });
-        if (trip.vendor.location.approximate == true) {
+        if (
+          trip.vendor.location.approximate == true &&
+          changeStateData.stateData.location.approximate == false
+        ) {
           trip.vendor.location.coords =
             changeStateData.stateData.location.coords;
           trip.vendor.location.approximate =
@@ -303,7 +306,10 @@ export class DriverSocketGateway
       });
       const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
       if (!trip.alternative) {
-        if (trip.customer.location.approximate == true) {
+        if (
+          trip.customer.location.approximate == true &&
+          endStateData.location.approximate == false
+        ) {
           trip.customer.location.approximate =
             endStateData.location.approximate;
           trip.customer.location.coords = endStateData.location.coords;
