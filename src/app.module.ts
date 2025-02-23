@@ -16,6 +16,7 @@ import { TripModule } from './trip/trip.module';
 import { CustomerModule } from './customer/customer.module';
 import { VendorModule } from './vendor/vendor.module';
 import { NotificationSocketModule } from './sockets/notification-socket/notification-socket.module';
+import { ErrorLoggerModule } from './common/error_logger/error_logger.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { NotificationSocketModule } from './sockets/notification-socket/notifica
     CustomerModule,
     AccountVendorModule,
     NotificationSocketModule,
+    ErrorLoggerModule,
   ],
 })
 export class AppModule {}

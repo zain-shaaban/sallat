@@ -4,12 +4,11 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { onlineDrivers } from '../driver-sokcet/driver-sokcet.gateway';
 import { Trip } from 'src/trip/entities/trip.entity';
-import { UseFilters } from '@nestjs/common';
+import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
@@ -25,13 +24,24 @@ export class AdminSocketGateway implements OnGatewayConnection {
   @WebSocketServer()
   io: Namespace;
 
+  constructor(private readonly logger: ErrorLoggerService) {}
+
   handleConnection(client: Socket) {
-    client.emit('onConnection', {
-      onlineDrivers,
-      readyTrips,
-      pendingTrips,
-      ongoingTrips,
-    });
+    try {
+      client.emit('onConnection', {
+        onlineDrivers,
+        readyTrips,
+        pendingTrips,
+        ongoingTrips,
+      });
+      return { status: true };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
   }
 
   @SubscribeMessage('resetEnvironment')
@@ -43,6 +53,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       onlineDrivers.length = 0;
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -65,6 +76,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       }
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,

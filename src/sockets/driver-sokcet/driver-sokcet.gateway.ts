@@ -6,7 +6,6 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   ConnectedSocket,
-  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import {
@@ -21,6 +20,7 @@ import { getPathLength } from 'geolib';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
+import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
 
 export let onlineDrivers: any[] = [];
 
@@ -77,36 +77,59 @@ export class DriverSocketGateway
     @InjectModel(Trip) private readonly tripModel: typeof Trip,
     @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
+    private readonly logger: ErrorLoggerService,
   ) {}
 
   handleConnection(client: Socket) {
-    const { driverID, lng, lat } = client.handshake.query;
-    onlineDrivers.push({
-      socketID: client.id,
-      driverID,
-      location: { lng: Number(lng), lat: Number(lat) },
-      available:
-        ongoingTrips.find((trip) => trip.driverID == driverID) ||
-        readyTrips.find((trip) => trip.driverID == driverID)
-          ? false
-          : true,
-    });
-    this.adminSocketGateway.sendDriversArrayToAdmins();
-    this.io.server
-      .of('/notifications')
-      .emit('driverConnection', { driverID: +driverID, connection: true });
+    try {
+      const { driverID, lng, lat } = client.handshake.query;
+      onlineDrivers.push({
+        socketID: client.id,
+        driverID,
+        location: { lng: Number(lng), lat: Number(lat) },
+        available:
+          ongoingTrips.find((trip) => trip.driverID == driverID) ||
+          readyTrips.find((trip) => trip.driverID == driverID)
+            ? false
+            : true,
+      });
+      this.adminSocketGateway.sendDriversArrayToAdmins();
+      this.io.server
+        .of('/notifications')
+        .emit('driverConnection', { driverID: +driverID, connection: true });
+      return { status: true };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
   }
 
   handleDisconnect(client: Socket) {
-    const driverToDelete = onlineDrivers.find(
-      (driver) => driver.socketID == client.id,
-    );
-    onlineDrivers = onlineDrivers.filter((driver) => driver != driverToDelete);
-    this.adminSocketGateway.sendDriversArrayToAdmins();
-    this.io.server.of('/notifications').emit('driverConnection', {
-      driverID: +driverToDelete.driverID,
-      connection: false,
-    });
+    try {
+      const driverToDelete = onlineDrivers.find(
+        (driver) => driver.socketID == client.id,
+      );
+      onlineDrivers = onlineDrivers.filter(
+        (driver) => driver != driverToDelete,
+      );
+      this.adminSocketGateway.sendDriversArrayToAdmins();
+      this.io.server.of('/notifications').emit('driverConnection', {
+        driverID: +driverToDelete.driverID,
+        connection: false,
+      });
+      return {
+        status: true,
+      };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
   }
 
   @SubscribeMessage('sendLocation')
@@ -133,6 +156,7 @@ export class DriverSocketGateway
         .emit('location', { driverID: oneDriver.driverID, location });
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -156,6 +180,7 @@ export class DriverSocketGateway
         .emit('tripRejected', { tripID: oneTrip.tripID, driverID });
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -199,6 +224,7 @@ export class DriverSocketGateway
         .emit('tripAccepted', { tripID: trip.tripID, driverID });
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -222,6 +248,7 @@ export class DriverSocketGateway
       }
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -264,6 +291,7 @@ export class DriverSocketGateway
       }
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -283,6 +311,7 @@ export class DriverSocketGateway
       client.disconnect();
       return { status: true };
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -464,6 +493,7 @@ export class DriverSocketGateway
         };
       }
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
