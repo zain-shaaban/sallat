@@ -13,7 +13,7 @@ import {
   ongoingTrips,
   readyTrips,
 } from '../admin-socket/admin-socket.gateway';
-import { forwardRef, Inject, UseFilters } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as polyline from '@mapbox/polyline';
 import { getPathLength } from 'geolib';
@@ -148,7 +148,14 @@ export class DriverSocketGateway
           const oneTrip = ongoingTrips.find(
             (trip) => trip.driverID == oneDriver.driverID,
           );
-          oneTrip.rawPath.push(location);
+          if (oneTrip.alternative == false) {
+            if (typeof oneTrip.tripState.onVendor.time == 'number')
+              oneTrip.rawPath.push(location);
+          } else {
+            if (oneTrip.tripState.wayPoints.length > 0)
+              oneTrip.rawPath.push(location);
+          }
+          console.log(oneTrip.rawPath);
         }
       }
       this.io.server
@@ -217,7 +224,6 @@ export class DriverSocketGateway
           tripEnd: {},
         };
       }
-      trip.rawPath.push(startTrip.location.coords);
       this.adminSocketGateway.moveTripFromReadyToOnGoing(trip);
       this.io.server
         .of('/notifications')
