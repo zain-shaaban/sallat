@@ -238,8 +238,6 @@ export class TripService {
 
   async sendNewLocation(sendLocationData: sendLocationDto) {
     const { driverID, location } = sendLocationData;
-    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
-    if (!trip) throw new NotFoundException();
     this.adminGateway.sendNewLocation(driverID, location);
     return null;
   }
