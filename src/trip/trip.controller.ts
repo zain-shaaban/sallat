@@ -15,6 +15,7 @@ import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { CustomerSearchDtoResponse } from './dto/customer-search.dto';
 import { GetAllTripsDto } from './dto/get-all-trips.dto';
 import { GetSingleTripDto } from './dto/get-single-trip.dto';
+import { sendLocationDto } from './dto/new-location.dto';
 
 @Controller('trip')
 export class TripController {
@@ -154,6 +155,41 @@ export class TripController {
   async remove(@Param('tripID', ParseIntPipe) tripID: number) {
     
     return await asyncHandler(this.tripService.remove(tripID));
+  }
+
+  @ApiOperation({ summary: 'send new location if the driver is offline' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    schema: {
+      example: {
+        status: true,
+        data: null,
+      },
+    },
+    description: 'The new location has been successfully sent',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'validation error',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'invalid or missing token',
+    schema: {
+      example: {
+        status: false,
+        message: 'invalid token',
+      },
+    },
+  })
+  @Post('sendLocation')
+  async sendNewLocationIfDriverOffline(@Body() sendLocationDto: sendLocationDto) {
+    return await asyncHandler(this.tripService.sendNewLocation(sendLocationDto));
   }
 
   @ApiOperation({ summary: 'Get a single trip by tripID' })

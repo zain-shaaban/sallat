@@ -6,8 +6,10 @@ import { Customer } from '../customer/entities/customer.entity';
 import { Vendor } from '../vendor/entities/vendor.entity';
 import {
   AdminSocketGateway,
+  ongoingTrips,
   readyTrips,
 } from 'src/sockets/admin-socket/admin-socket.gateway';
+import { sendLocationDto } from './dto/new-location.dto';
 
 @Injectable()
 export class TripService {
@@ -231,6 +233,14 @@ export class TripService {
       where: { tripID },
     });
     if (deletedTrip == 0) throw new NotFoundException();
+    return null;
+  }
+
+  async sendNewLocation(sendLocationData: sendLocationDto) {
+    const { driverID, location } = sendLocationData;
+    const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+    if (!trip) throw new NotFoundException();
+    this.adminGateway.sendNewLocation(driverID, location);
     return null;
   }
 }
