@@ -168,10 +168,10 @@ export class DriverSocketGateway
             }
           }
         }
+        this.io.server
+          .of('/admin')
+          .emit('location', { driverID: oneDriver.driverID, location });
       }
-      this.io.server
-        .of('/admin')
-        .emit('location', { driverID: oneDriver.driverID, location });
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -522,8 +522,10 @@ export class DriverSocketGateway
     return Number(client.handshake.query.driverID);
   }
 
-  sendDriverDisconnectNotification(driverID:number){
-    onlineDrivers=onlineDrivers.filter(driver=>driver.driverID!=driverID)
+  sendDriverDisconnectNotification(driverID: number) {
+    onlineDrivers = onlineDrivers.filter(
+      (driver) => driver.driverID != driverID,
+    );
     this.io.server.of('/notifications').emit('driverConnection', {
       driverID,
       connection: false,
