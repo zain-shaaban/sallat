@@ -118,7 +118,7 @@ export class TripService {
         customerID: customer.customerID,
         itemTypes: JSON.stringify(itemTypes),
         description,
-        alternative,
+        alternative: true,
       });
       trip = trip.toJSON();
       trip.customer = customer.toJSON();
