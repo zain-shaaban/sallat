@@ -6,6 +6,7 @@ import { Customer } from '../customer/entities/customer.entity';
 import { Vendor } from '../vendor/entities/vendor.entity';
 import {
   AdminSocketGateway,
+  ongoingTrips,
   readyTrips,
 } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { sendLocationDto } from './dto/new-location.dto';
@@ -255,6 +256,25 @@ export class TripService {
 
   async sendNewLocation(sendLocationData: sendLocationDto) {
     const { driverID, location } = sendLocationData;
+    const oneDriver = onlineDrivers.find(
+      (driver) => driver.driverID == driverID,
+    );
+    if (!oneDriver) throw new NotFoundException();
+    oneDriver.location = location;
+    if (oneDriver.available == false) {
+      const oneTrip = ongoingTrips.find(
+        (trip) => trip.driverID == oneDriver.driverID,
+      );
+      if (oneTrip) {
+        if (oneTrip.alternative == false) {
+          if (typeof oneTrip.tripState.onVendor.time == 'number')
+            oneTrip.rawPath.push(location);
+        } else if (oneTrip.alternative == true) {
+          if (oneTrip.tripState.wayPoints.length > 0)
+            oneTrip.rawPath.push(location);
+        }
+      }
+    }
     this.adminGateway.sendNewLocation(driverID, location);
     return null;
   }
