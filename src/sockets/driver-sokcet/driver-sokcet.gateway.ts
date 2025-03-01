@@ -148,12 +148,14 @@ export class DriverSocketGateway
           const oneTrip = ongoingTrips.find(
             (trip) => trip.driverID == oneDriver.driverID,
           );
-          if (oneTrip.alternative == false) {
-            if (typeof oneTrip.tripState.onVendor.time == 'number')
-              oneTrip.rawPath.push(location);
-          } else if (oneTrip.alternative == true) {
-            if (oneTrip.tripState.wayPoints.length > 0)
-              oneTrip.rawPath.push(location);
+          if (oneTrip) {
+            if (oneTrip.alternative == false) {
+              if (typeof oneTrip.tripState.onVendor.time == 'number')
+                oneTrip.rawPath.push(location);
+            } else if (oneTrip.alternative == true) {
+              if (oneTrip.tripState.wayPoints.length > 0)
+                oneTrip.rawPath.push(location);
+            }
           }
         }
       }
