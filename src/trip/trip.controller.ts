@@ -192,6 +192,11 @@ export class TripController {
     return await asyncHandler(this.tripService.sendNewLocation(sendLocationDto));
   }
 
+  @Get('ping/:driverID')
+  async sendPingFromDriver(@Param('driverID',ParseIntPipe) driverID:number){
+    return await asyncHandler(this.tripService.sendPingFromDriver(driverID))
+  }
+
   @ApiOperation({ summary: 'Get a single trip by tripID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -224,7 +229,7 @@ export class TripController {
       },
     },
   })
-  @Get(':tripID')
+  @Get('/get/:tripID')
   async findOne(@Param('tripID', ParseIntPipe) tripID: number) {
     return await asyncHandler(this.tripService.findOne(tripID));
   }

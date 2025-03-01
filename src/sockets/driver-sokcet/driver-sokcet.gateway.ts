@@ -83,20 +83,27 @@ export class DriverSocketGateway
   handleConnection(client: Socket) {
     try {
       const { driverID, lng, lat } = client.handshake.query;
-      onlineDrivers.push({
-        socketID: client.id,
-        driverID,
-        location: { lng: Number(lng), lat: Number(lat) },
-        available:
-          ongoingTrips.find((trip) => trip.driverID == driverID) ||
-          readyTrips.find((trip) => trip.driverID == driverID)
-            ? false
-            : true,
-      });
-      this.adminSocketGateway.sendDriversArrayToAdmins();
-      this.io.server
-        .of('/notifications')
-        .emit('driverConnection', { driverID: +driverID, connection: true });
+      let driver = onlineDrivers.find((driver) => driver.driverID == driverID);
+      if (!driver) {
+        onlineDrivers.push({
+          socketID: client.id,
+          driverID,
+          location: { lng: Number(lng), lat: Number(lat) },
+          available:
+            ongoingTrips.find((trip) => trip.driverID == driverID) ||
+            readyTrips.find((trip) => trip.driverID == driverID)
+              ? false
+              : true,
+        });
+        this.adminSocketGateway.sendDriversArrayToAdmins();
+        this.io.server
+          .of('/notifications')
+          .emit('driverConnection', { driverID: +driverID, connection: true });
+      } else {
+        clearTimeout(driver.timeOutID);
+        driver.socketID = client.id;
+        driver.location = { lng: Number(lng), lat: Number(lat) };
+      }
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -109,17 +116,20 @@ export class DriverSocketGateway
 
   handleDisconnect(client: Socket) {
     try {
-      const driverToDelete = onlineDrivers.find(
+      let driverToDelete = onlineDrivers.find(
         (driver) => driver.socketID == client.id,
       );
-      onlineDrivers = onlineDrivers.filter(
-        (driver) => driver != driverToDelete,
-      );
-      this.adminSocketGateway.sendDriversArrayToAdmins();
-      this.io.server.of('/notifications').emit('driverConnection', {
-        driverID: +driverToDelete.driverID,
-        connection: false,
-      });
+      const timeOutID = setTimeout(() => {
+        onlineDrivers = onlineDrivers.filter(
+          (driver) => driver.driverID != driverToDelete.driverID,
+        );
+        this.adminSocketGateway.sendDriversArrayToAdmins();
+        this.io.server.of('/notifications').emit('driverConnection', {
+          driverID: +driverToDelete.driverID,
+          connection: false,
+        });
+      }, 1000 * 5);
+      driverToDelete.timeOutID = timeOutID;
       return {
         status: true,
       };
@@ -510,5 +520,13 @@ export class DriverSocketGateway
 
   getDriverID(client: Socket) {
     return Number(client.handshake.query.driverID);
+  }
+
+  sendDriverDisconnectNotification(driverID:number){
+    onlineDrivers=onlineDrivers.filter(driver=>driver.driverID!=driverID)
+    this.io.server.of('/notifications').emit('driverConnection', {
+      driverID,
+      connection: false,
+    });
   }
 }

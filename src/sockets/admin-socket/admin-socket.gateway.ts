@@ -189,4 +189,5 @@ export class AdminSocketGateway implements OnGatewayConnection {
   sendNewLocation(driverID: number, location: object) {
     this.io.server.of('/admin').emit('httpLocation', { driverID, location });
   }
+
 }

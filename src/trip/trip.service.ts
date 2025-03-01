@@ -9,6 +9,10 @@ import {
   readyTrips,
 } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { sendLocationDto } from './dto/new-location.dto';
+import {
+  DriverSocketGateway,
+  onlineDrivers,
+} from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 
 @Injectable()
 export class TripService {
@@ -17,6 +21,7 @@ export class TripService {
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
     @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
     @Inject() private readonly adminGateway: AdminSocketGateway,
+    @Inject() private readonly driverGateWay: DriverSocketGateway,
   ) {}
 
   async createNewTrip(createTripDto: CreateTripDto) {
@@ -233,6 +238,18 @@ export class TripService {
       where: { tripID },
     });
     if (deletedTrip == 0) throw new NotFoundException();
+    return null;
+  }
+
+  async sendPingFromDriver(driverID: number) {
+    let driver = onlineDrivers.find((driver) => driver.driverID == driverID);
+    if (!driver) throw new NotFoundException();
+    clearTimeout(driver.timeOutID);
+    const timeOutID = setTimeout(() => {
+      this.driverGateWay.sendDriverDisconnectNotification(driverID);
+      this.adminGateway.sendDriversArrayToAdmins();
+    }, 1000 * 5);
+    driver.timeOutID = timeOutID;
     return null;
   }
 

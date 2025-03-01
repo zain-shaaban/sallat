@@ -6,6 +6,7 @@ import { Trip } from './entities/trip.entity';
 import { CustomerModule } from 'src/customer/customer.module';
 import { VendorModule } from 'src/vendor/vendor.module';
 import { AdminSocketModule } from 'src/sockets/admin-socket/admin-socket.module';
+import { DriverSokcetModule } from 'src/sockets/driver-sokcet/driver-sokcet.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AdminSocketModule } from 'src/sockets/admin-socket/admin-socket.module'
     CustomerModule,
     forwardRef(() => VendorModule),
     AdminSocketModule,
+    DriverSokcetModule
   ],
   controllers: [TripController],
   providers: [TripService],
