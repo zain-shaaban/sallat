@@ -11,7 +11,6 @@ import {
 } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { sendLocationDto } from './dto/new-location.dto';
 import {
-  DriverSocketGateway,
   onlineDrivers,
 } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 
@@ -22,7 +21,6 @@ export class TripService {
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
     @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
     @Inject() private readonly adminGateway: AdminSocketGateway,
-    @Inject() private readonly driverGateWay: DriverSocketGateway,
   ) {}
 
   async createNewTrip(createTripDto: CreateTripDto) {
@@ -242,18 +240,6 @@ export class TripService {
     return null;
   }
 
-  // async sendPingFromDriver(driverID: number) {
-  //   let driver = onlineDrivers.find((driver) => driver.driverID == driverID);
-  //   if (!driver) throw new NotFoundException();
-  //   clearTimeout(driver.timeOutID);
-  //   const timeOutID = setTimeout(() => {
-  //     this.driverGateWay.sendDriverDisconnectNotification(driverID);
-  //     this.adminGateway.sendDriversArrayToAdmins();
-  //   }, 1000 * 5);
-  //   driver.timeOutID = timeOutID;
-  //   return null;
-  // }
-
   async sendNewLocation(sendLocationData: sendLocationDto) {
     const { driverID, location } = sendLocationData;
     this.adminGateway.sendHttpLocation(driverID, location);
@@ -262,7 +248,7 @@ export class TripService {
     );
     if (!oneDriver) throw new NotFoundException();
     oneDriver.location = location;
-    oneDriver.lastLocation=Date.now()
+    oneDriver.lastLocation = Date.now();
     if (oneDriver.available == false) {
       const oneTrip = ongoingTrips.find(
         (trip) => trip.driverID == oneDriver.driverID,

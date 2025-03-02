@@ -4,8 +4,11 @@ import { AdminSocketModule } from '../admin-socket/admin-socket.module';
 import { TripModule } from 'src/trip/trip.module';
 
 @Module({
-  imports: [forwardRef(() => AdminSocketModule), forwardRef(() => TripModule)],
+  imports: [
+    forwardRef(() => AdminSocketModule),
+    forwardRef(() => TripModule),
+  ],
   providers: [DriverSocketGateway],
   exports: [DriverSocketGateway],
 })
-export class DriverSokcetModule {}
+export class DriverSocketModule {}

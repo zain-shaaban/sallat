@@ -1,10 +1,10 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AdminSocketGateway } from './admin-socket.gateway';
 import { PathModule } from 'src/path/path.module';
-import { DriverSokcetModule } from '../driver-sokcet/driver-sokcet.module';
+import { DriverSocketModule } from '../driver-sokcet/driver-sokcet.module';
 
 @Module({
-  imports: [PathModule, forwardRef(() => DriverSokcetModule)],
+  imports: [PathModule, forwardRef(() => DriverSocketModule)],
   providers: [AdminSocketGateway],
   exports: [AdminSocketGateway],
 })

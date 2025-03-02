@@ -9,7 +9,7 @@ import { DriverModule } from './account/driver/driver.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './category/category.module';
-import { DriverSokcetModule } from './sockets/driver-sokcet/driver-sokcet.module';
+import { DriverSocketModule } from './sockets/driver-sokcet/driver-sokcet.module';
 import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
 import { PathModule } from './path/path.module';
 import { TripModule } from './trip/trip.module';
@@ -52,7 +52,7 @@ import { NotificationModule } from './notification/notification.module';
     DriverModule,
     AuthModule,
     CategoryModule,
-    DriverSokcetModule,
+    DriverSocketModule,
     AdminSocketModule,
     PathModule,
     TripModule,

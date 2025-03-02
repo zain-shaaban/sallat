@@ -21,6 +21,7 @@ import { Trip } from 'src/trip/entities/trip.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 export let onlineDrivers: any[] = [];
 
@@ -78,33 +79,35 @@ export class DriverSocketGateway
     @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
     private readonly logger: ErrorLoggerService,
+    @Inject() private readonly notificationService: NotificationService,
   ) {
-    setInterval(
-      () => {
-        let beforeDelete = onlineDrivers.length;
-        onlineDrivers = onlineDrivers.filter((driver) => {
-          if (
-            Date.now() - driver.lastLocation > 1000 * 60 * 15 &&
-            driver.socketID == null
-          ) {
-            this.adminSocketGateway.sendDriverDisconnectNotification(
-              +driver.driverID,
-            );
-          } else if (
-            Date.now() - driver.lastLocation > 1000 * 60 * 5 &&
-            driver.socketID == null &&
-            driver.notificationSent == false
-          ) {
-            driver.notificationSent = true;
-            console.log('are you still at work');
-            return driver;
-          } else return driver;
-        });
-        if (beforeDelete != onlineDrivers.length)
-          this.adminSocketGateway.sendDriversArrayToAdmins();
-      },
-      1000 * 60 * 2,
-    );
+    setInterval(async () => {
+      let beforeDelete = onlineDrivers.length;
+      onlineDrivers = onlineDrivers.filter(async (driver) => {
+        if (
+          Date.now() - driver.lastLocation > 1000 * 60 * 3 &&
+          driver.socketID == null
+        ) {
+          this.adminSocketGateway.sendDriverDisconnectNotification(
+            +driver.driverID,
+          );
+        } else if (
+          Date.now() - driver.lastLocation > 1000 * 60 * 1 &&
+          driver.socketID == null &&
+          driver.notificationSent == false
+        ) {
+          driver.notificationSent = true;
+          await this.notificationService.send({
+            title: 'هل مازلت مستمر بالدوام؟',
+            driverID: +driver.driverID,
+            content: 'اضغط لتحديث الحالة',
+          });
+          return driver;
+        } else return driver;
+      });
+      if (beforeDelete != onlineDrivers.length)
+        this.adminSocketGateway.sendDriversArrayToAdmins();
+    }, 1000 * 20);
   }
 
   handleConnection(client: Socket) {
