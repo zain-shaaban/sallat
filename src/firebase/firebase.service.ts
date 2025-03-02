@@ -6,7 +6,7 @@ import { logger } from 'src/common/error_logger/logger.util';
 export class FirebaseService implements OnModuleInit {
   private firebaseAdmin: admin.app.App;
 
-  onModuleInit() {
+  async onModuleInit() {
     if (!admin.apps.length) {
       const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
 
@@ -26,13 +26,17 @@ export class FirebaseService implements OnModuleInit {
         });
       } catch (error) {
         logger.error(error.message, error.stack);
-        return { status: false, message: error.message };
+        throw new Error(`Firebase initialization failed: ${error.message}`);
       }
     } else {
       this.firebaseAdmin = admin.app();
     }
   }
+
   messaging(): admin.messaging.Messaging {
+    if (!this.firebaseAdmin) {
+      throw new Error('Firebase Admin is not initialized');
+    }
     return this.firebaseAdmin.messaging();
   }
 }

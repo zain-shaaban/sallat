@@ -25,7 +25,6 @@ export class NotificationService {
       },
     };
 
-    console.log(message)
     await this.firebaseService.messaging().send(message);
     return null;
   }
