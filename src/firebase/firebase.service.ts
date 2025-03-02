@@ -32,16 +32,7 @@ export class FirebaseService implements OnModuleInit {
       this.firebaseAdmin = admin.app();
     }
   }
-
-  get auth(): admin.auth.Auth {
-    return this.firebaseAdmin.auth();
-  }
-
-  get firestore(): admin.firestore.Firestore {
-    return this.firebaseAdmin.firestore();
-  }
-
-  get messaging(): admin.messaging.Messaging {
+  messaging(): admin.messaging.Messaging {
     return this.firebaseAdmin.messaging();
   }
 }
