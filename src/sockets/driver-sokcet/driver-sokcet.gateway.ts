@@ -119,17 +119,19 @@ export class DriverSocketGateway
       let driverToDelete = onlineDrivers.find(
         (driver) => driver.socketID == client.id,
       );
-      const timeOutID = setTimeout(() => {
-        onlineDrivers = onlineDrivers.filter(
-          (driver) => driver.driverID != driverToDelete.driverID,
-        );
-        this.adminSocketGateway.sendDriversArrayToAdmins();
-        this.io.server.of('/notifications').emit('driverConnection', {
-          driverID: +driverToDelete.driverID,
-          connection: false,
-        });
-      }, 1000 * 5);
-      driverToDelete.timeOutID = timeOutID;
+      if (driverToDelete) {
+        const timeOutID = setTimeout(() => {
+          onlineDrivers = onlineDrivers.filter(
+            (driver) => driver.driverID != driverToDelete.driverID,
+          );
+          this.adminSocketGateway.sendDriversArrayToAdmins();
+          this.io.server.of('/notifications').emit('driverConnection', {
+            driverID: +driverToDelete.driverID,
+            connection: false,
+          });
+        }, 1000 * 5);
+        driverToDelete.timeOutID = timeOutID;
+      }
       return {
         status: true,
       };
