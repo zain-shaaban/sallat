@@ -256,6 +256,7 @@ export class TripService {
 
   async sendNewLocation(sendLocationData: sendLocationDto) {
     const { driverID, location } = sendLocationData;
+    this.adminGateway.sendHttpLocation(driverID, location);
     const oneDriver = onlineDrivers.find(
       (driver) => driver.driverID == driverID,
     );
