@@ -18,6 +18,7 @@ import { VendorModule } from './vendor/vendor.module';
 import { NotificationSocketModule } from './sockets/notification-socket/notification-socket.module';
 import { ErrorLoggerModule } from './common/error_logger/error_logger.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { FirebaseModule } from './firebase/firebase.module';
     NotificationSocketModule,
     ErrorLoggerModule,
     FirebaseModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}
