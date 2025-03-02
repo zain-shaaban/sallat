@@ -81,35 +81,39 @@ export class DriverSocketGateway
     private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
   ) {
-    setInterval(async () => {
-      let beforeDelete = onlineDrivers.length;
-      onlineDrivers = onlineDrivers.filter(async (driver) => {
-        if (
-          Date.now() - driver.lastLocation > 1000 * 60 * 3 &&
-          driver.socketID == null
-        ) {
-          console.log('driver disconnect');
-          this.adminSocketGateway.sendDriverDisconnectNotification(
-            +driver.driverID,
-          );
-        } else if (
-          Date.now() - driver.lastLocation > 1000 * 60 * 1 &&
-          driver.socketID == null &&
-          driver.notificationSent == false
-        ) {
-          await this.notificationService.send({
-            title: 'هل مازلت مستمر بالدوام؟',
-            driverID: +driver.driverID,
-            content: 'اضغط لتحديث الحالة',
-          });
-          console.log('driver send notification');
-          driver.notificationSent = true;
-          return driver;
-        } else return driver;
-      });
-      if (beforeDelete != onlineDrivers.length)
-        this.adminSocketGateway.sendDriversArrayToAdmins();
-    }, 1000 * 20);
+    setInterval(
+      async () => {
+        let beforeDelete = onlineDrivers.length;
+        onlineDrivers = onlineDrivers.filter((driver) => {
+          if (
+            Date.now() - driver.lastLocation > 1000 * 60 * 15 &&
+            driver.socketID == null
+          ) {
+            this.adminSocketGateway.sendDriverDisconnectNotification(
+              +driver.driverID,
+            );
+            return false;
+          } else if (
+            Date.now() - driver.lastLocation > 1000 * 60 * 5 &&
+            driver.socketID == null &&
+            driver.notificationSent == false
+          ) {
+            this.notificationService.send({
+              title: 'هل مازلت مستمر بالدوام؟',
+              driverID: +driver.driverID,
+              content: 'اضغط لتحديث الحالة',
+            });
+            driver.notificationSent = true;
+            return true;
+          } else {
+            return true;
+          }
+        });
+        if (beforeDelete != onlineDrivers.length)
+          this.adminSocketGateway.sendDriversArrayToAdmins();
+      },
+      1000 * 60 * 2,
+    );
   }
 
   handleConnection(client: Socket) {
