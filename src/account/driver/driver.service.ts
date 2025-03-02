@@ -47,12 +47,27 @@ export class DriverService {
   }
 
   async update(driverID: number, updateDriverDto: UpdateDriverDto) {
-    let { name, email, password, phoneNumber, salary, assignedVehicleNumber } =
-      updateDriverDto;
+    let {
+      name,
+      email,
+      password,
+      phoneNumber,
+      salary,
+      assignedVehicleNumber,
+      notificationToken,
+    } = updateDriverDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
     const driver = await this.driverModel
       .update(
-        { name, email, password, phoneNumber, salary, assignedVehicleNumber },
+        {
+          name,
+          email,
+          password,
+          phoneNumber,
+          salary,
+          assignedVehicleNumber,
+          notificationToken,
+        },
         { where: { driverID } },
       )
       .then((data) => {

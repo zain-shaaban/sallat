@@ -48,6 +48,11 @@ export class CreateDriverDtoRequest {
   @IsOptional()
   @IsNumber()
   salary?: number;
+
+  @ApiProperty({ example: 'tokentokentoken', required: false })
+  @IsOptional()
+  @IsString()
+  notificationToken?: string;
 }
 
 class CreateDriverData {
