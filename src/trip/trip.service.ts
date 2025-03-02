@@ -242,17 +242,17 @@ export class TripService {
     return null;
   }
 
-  async sendPingFromDriver(driverID: number) {
-    let driver = onlineDrivers.find((driver) => driver.driverID == driverID);
-    if (!driver) throw new NotFoundException();
-    clearTimeout(driver.timeOutID);
-    const timeOutID = setTimeout(() => {
-      this.driverGateWay.sendDriverDisconnectNotification(driverID);
-      this.adminGateway.sendDriversArrayToAdmins();
-    }, 1000 * 5);
-    driver.timeOutID = timeOutID;
-    return null;
-  }
+  // async sendPingFromDriver(driverID: number) {
+  //   let driver = onlineDrivers.find((driver) => driver.driverID == driverID);
+  //   if (!driver) throw new NotFoundException();
+  //   clearTimeout(driver.timeOutID);
+  //   const timeOutID = setTimeout(() => {
+  //     this.driverGateWay.sendDriverDisconnectNotification(driverID);
+  //     this.adminGateway.sendDriversArrayToAdmins();
+  //   }, 1000 * 5);
+  //   driver.timeOutID = timeOutID;
+  //   return null;
+  // }
 
   async sendNewLocation(sendLocationData: sendLocationDto) {
     const { driverID, location } = sendLocationData;
@@ -262,6 +262,7 @@ export class TripService {
     );
     if (!oneDriver) throw new NotFoundException();
     oneDriver.location = location;
+    oneDriver.lastLocation=Date.now()
     if (oneDriver.available == false) {
       const oneTrip = ongoingTrips.find(
         (trip) => trip.driverID == oneDriver.driverID,

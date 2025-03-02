@@ -78,7 +78,34 @@ export class DriverSocketGateway
     @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
     private readonly logger: ErrorLoggerService,
-  ) {}
+  ) {
+    setInterval(
+      () => {
+        let beforeDelete = onlineDrivers.length;
+        onlineDrivers = onlineDrivers.filter((driver) => {
+          if (
+            Date.now() - driver.lastLocation > 1000 * 60 * 15 &&
+            driver.socketID == null
+          ) {
+            this.adminSocketGateway.sendDriverDisconnectNotification(
+              +driver.driverID,
+            );
+          } else if (
+            Date.now() - driver.lastLocation > 1000 * 60 * 5 &&
+            driver.socketID == null &&
+            driver.notificationSent == false
+          ) {
+            driver.notificationSent = true;
+            console.log('are you still at work');
+            return driver;
+          } else return driver;
+        });
+        if (beforeDelete != onlineDrivers.length)
+          this.adminSocketGateway.sendDriversArrayToAdmins();
+      },
+      1000 * 60 * 2,
+    );
+  }
 
   handleConnection(client: Socket) {
     try {
@@ -94,15 +121,18 @@ export class DriverSocketGateway
             readyTrips.find((trip) => trip.driverID == driverID)
               ? false
               : true,
+          lastLocation: Date.now(),
+          notificationSent: false,
         });
         this.adminSocketGateway.sendDriversArrayToAdmins();
         this.io.server
           .of('/notifications')
           .emit('driverConnection', { driverID: +driverID, connection: true });
       } else {
-        clearTimeout(driver.timeOutID);
         driver.socketID = client.id;
         driver.location = { lng: Number(lng), lat: Number(lat) };
+        driver.lastLocation = Date.now();
+        driver.notificationSent = false;
       }
       return { status: true };
     } catch (error) {
@@ -116,21 +146,10 @@ export class DriverSocketGateway
 
   handleDisconnect(client: Socket) {
     try {
-      let driverToDelete = onlineDrivers.find(
-        (driver) => driver.socketID == client.id,
-      );
-      if (driverToDelete) {
-        const timeOutID = setTimeout(() => {
-          onlineDrivers = onlineDrivers.filter(
-            (driver) => driver.driverID != driverToDelete.driverID,
-          );
-          this.adminSocketGateway.sendDriversArrayToAdmins();
-          this.io.server.of('/notifications').emit('driverConnection', {
-            driverID: +driverToDelete.driverID,
-            connection: false,
-          });
-        }, 1000 * 5);
-        driverToDelete.timeOutID = timeOutID;
+      let driver = onlineDrivers.find((driver) => driver.socketID == client.id);
+      if (driver) {
+        driver.lastLocation = Date.now();
+        driver.socketID = null;
       }
       return {
         status: true,
@@ -522,15 +541,5 @@ export class DriverSocketGateway
 
   getDriverID(client: Socket) {
     return Number(client.handshake.query.driverID);
-  }
-
-  sendDriverDisconnectNotification(driverID: number) {
-    onlineDrivers = onlineDrivers.filter(
-      (driver) => driver.driverID != driverID,
-    );
-    this.io.server.of('/notifications').emit('driverConnection', {
-      driverID,
-      connection: false,
-    });
   }
 }

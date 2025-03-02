@@ -193,4 +193,11 @@ export class AdminSocketGateway implements OnGatewayConnection {
   sendHttpLocation(driverID: number, location: object) {
     this.io.server.of('/admin').emit('httpLocation', { driverID, location });
   }
+
+  sendDriverDisconnectNotification(driverID: number) {
+    this.io.server.of('/notifications').emit('driverConnection', {
+      driverID,
+      connection: false,
+    });
+  }
 }
