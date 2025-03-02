@@ -88,6 +88,7 @@ export class DriverSocketGateway
           Date.now() - driver.lastLocation > 1000 * 60 * 3 &&
           driver.socketID == null
         ) {
+          console.log('driver disconnect');
           this.adminSocketGateway.sendDriverDisconnectNotification(
             +driver.driverID,
           );
@@ -96,12 +97,13 @@ export class DriverSocketGateway
           driver.socketID == null &&
           driver.notificationSent == false
         ) {
-          driver.notificationSent = true;
           await this.notificationService.send({
             title: 'هل مازلت مستمر بالدوام؟',
             driverID: +driver.driverID,
             content: 'اضغط لتحديث الحالة',
           });
+          console.log('driver send notification');
+          driver.notificationSent = true;
           return driver;
         } else return driver;
       });
