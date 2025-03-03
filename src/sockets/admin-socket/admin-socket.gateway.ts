@@ -102,6 +102,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       let driver = onlineDrivers.find(
         (driver) => driver.driverID == trip.driverID,
       );
+      driver.available = true;
       this.notificationService.send({
         title: 'تم سحب الرحلة',
         content: 'كن جاهز لاستقبال رحلة مختلفة',
@@ -109,7 +110,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       });
       this.tripPulledNotificationForAdmins(trip.tripID, trip.driverID);
       this.moveTripFromReadyToPending(trip);
-      this.sendTripsToAdmins();
+      this.sendDriversArrayToAdmins();
       this.tripPulledForDriver(driver);
       return { status: true };
     } catch (error) {
