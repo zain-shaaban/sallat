@@ -147,20 +147,42 @@ export class TripService {
           );
         }
       } else customer = await this.getCustomer(customerID);
-      let trip: any = await this.tripModel.create({
-        driverID,
-        customerID: customer.customerID,
-        itemTypes: JSON.stringify(itemTypes),
-        description,
-        alternative: true,
-      });
-      trip = trip.toJSON();
-      trip.customer = customer.toJSON();
-      delete trip.customerID;
-      readyTrips.push(trip);
-      this.adminGateway.submitNewTrip(trip);
-      this.adminGateway.sendDriversArrayToAdmins();
-      return { tripID: trip.tripID };
+      if (driverID) {
+        let trip: any = await this.tripModel.create({
+          driverID,
+          customerID: customer.customerID,
+          itemTypes: JSON.stringify(itemTypes),
+          description,
+          alternative: true,
+        });
+        trip = trip.toJSON();
+        trip.customer = customer.toJSON();
+        delete trip.customerID;
+        readyTrips.push(trip);
+        this.adminGateway.submitNewTrip(trip);
+        this.adminGateway.sendDriversArrayToAdmins();
+        this.notificationService.send({
+          title: 'رحلة جديدة',
+          content: 'اضغط لعرض تفاصيل الرحلة',
+          driverID: trip.driverID,
+        });
+        return { tripID: trip.tripID };
+      } else {
+        let trip: any = await this.tripModel.create({
+          customerID: customer.customerID,
+          itemTypes: JSON.stringify(itemTypes),
+          description,
+          alternative: true,
+        });
+        trip = trip.toJSON();
+        trip.customer = customer.toJSON();
+        delete trip.customerID;
+        pendingTrips.push(trip);
+        this.adminGateway.sendTripsToAdmins();
+        this.adminGateway.sendDriversArrayToAdmins();
+        this.adminGateway.sendTripReceivedNotification(trip.tripID, null);
+        return { tripID: trip.tripID };
+      }
     }
   }
 
