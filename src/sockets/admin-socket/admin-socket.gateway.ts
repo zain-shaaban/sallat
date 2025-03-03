@@ -9,6 +9,8 @@ import { Namespace, Socket } from 'socket.io';
 import { onlineDrivers } from '../driver-sokcet/driver-sokcet.gateway';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
+import { Inject } from '@nestjs/common';
+import { NotificationService } from 'src/notification/notification.service';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
@@ -24,7 +26,10 @@ export class AdminSocketGateway implements OnGatewayConnection {
   @WebSocketServer()
   io: Namespace;
 
-  constructor(private readonly logger: ErrorLoggerService) {}
+  constructor(
+    private readonly logger: ErrorLoggerService,
+    @Inject() private readonly notificationService: NotificationService,
+  ) {}
 
   handleConnection(client: Socket) {
     try {
@@ -73,6 +78,11 @@ export class AdminSocketGateway implements OnGatewayConnection {
         readyTrips.push(trip);
         this.submitNewTrip(trip);
         this.sendDriversArrayToAdmins();
+        this.notificationService.send({
+          title: 'رحلة جديدة',
+          content: 'اضغط لعرض تفاصيل الرحلة',
+          driverID: trip.driverID,
+        });
       }
       return { status: true };
     } catch (error) {
