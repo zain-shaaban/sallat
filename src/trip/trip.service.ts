@@ -10,9 +10,8 @@ import {
   readyTrips,
 } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { sendLocationDto } from './dto/new-location.dto';
-import {
-  onlineDrivers,
-} from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
+import { onlineDrivers } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class TripService {
@@ -21,6 +20,7 @@ export class TripService {
     @InjectModel(Customer) private readonly customerModel: typeof Customer,
     @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
     @Inject() private readonly adminGateway: AdminSocketGateway,
+    @Inject() private readonly notificationService: NotificationService,
   ) {}
 
   async createNewTrip(createTripDto: CreateTripDto) {
@@ -98,6 +98,11 @@ export class TripService {
       readyTrips.push(trip);
       this.adminGateway.submitNewTrip(trip);
       this.adminGateway.sendDriversArrayToAdmins();
+      this.notificationService.send({
+        title: 'رحلة جديدة',
+        content: 'اضغط لعرض تفاصيل الرحلة',
+        driverID: trip.driverID,
+      });
       return { tripID: trip.tripID };
     } else {
       let customer: Customer;

@@ -153,7 +153,6 @@ export class TripController {
   @ApiOperation({ summary: 'Delete single trip' })
   @Delete('delete/:tripID')
   async remove(@Param('tripID', ParseIntPipe) tripID: number) {
-    
     return await asyncHandler(this.tripService.remove(tripID));
   }
 
@@ -188,8 +187,12 @@ export class TripController {
     },
   })
   @Post('sendLocation')
-  async sendNewLocationIfDriverOffline(@Body() sendLocationDto: sendLocationDto) {
-    return await asyncHandler(this.tripService.sendNewLocation(sendLocationDto));
+  async sendNewLocationIfDriverOffline(
+    @Body() sendLocationDto: sendLocationDto,
+  ) {
+    return await asyncHandler(
+      this.tripService.sendNewLocation(sendLocationDto),
+    );
   }
 
   @ApiOperation({ summary: 'Get a single trip by tripID' })

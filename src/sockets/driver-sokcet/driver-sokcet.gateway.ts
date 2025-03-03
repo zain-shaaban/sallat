@@ -143,6 +143,12 @@ export class DriverSocketGateway
         driver.lastLocation = Date.now();
         driver.notificationSent = false;
       }
+      readyTrips.forEach((trip) => {
+        if (trip.driverID == driverID) client.emit('alreadyAssignedTrip', trip);
+      });
+      ongoingTrips.forEach((trip) => {
+        if (trip.driverID == driverID) client.emit('alreadyAssignedTrip', trip);
+      });
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
