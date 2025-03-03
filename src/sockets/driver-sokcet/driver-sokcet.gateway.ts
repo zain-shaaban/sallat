@@ -13,7 +13,7 @@ import {
   ongoingTrips,
   readyTrips,
 } from '../admin-socket/admin-socket.gateway';
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as polyline from '@mapbox/polyline';
 import { getPathLength } from 'geolib';
@@ -371,6 +371,27 @@ export class DriverSocketGateway
   //     };
   //   }
   // }
+  @SubscribeMessage('setAvailable')
+  updateDriverAvailable(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() availableData,
+  ) {
+    try {
+      let driver = onlineDrivers.find((driver) => driver.socketID == client.id);
+      if (!driver) throw new NotFoundException();
+      driver.available = availableData.available;
+      this.adminSocketGateway.sendDriversArrayToAdmins();
+      return {
+        status: true,
+      };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
+  }
 
   @SubscribeMessage('endTrip')
   async endTrip(
