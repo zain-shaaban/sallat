@@ -352,25 +352,25 @@ export class DriverSocketGateway
     }
   }
 
-  @SubscribeMessage('cancelTrip')
-  canselTripByDriver(@ConnectedSocket() client: Socket) {
-    try {
-      const driverID = this.getDriverID(client);
-      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
-      this.adminSocketGateway.moveTripFromOngoingToPending(trip);
-      onlineDrivers = onlineDrivers.filter(
-        (driver) => driver.driverID != driverID,
-      );
-      client.disconnect();
-      return { status: true };
-    } catch (error) {
-      this.logger.error(error.message, error.stack);
-      return {
-        status: false,
-        message: error.message,
-      };
-    }
-  }
+  // @SubscribeMessage('cancelTrip')
+  // canselTripByDriver(@ConnectedSocket() client: Socket) {
+  //   try {
+  //     const driverID = this.getDriverID(client);
+  //     const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+  //     this.adminSocketGateway.moveTripFromOngoingToPending(trip);
+  //     onlineDrivers = onlineDrivers.filter(
+  //       (driver) => driver.driverID != driverID,
+  //     );
+  //     client.disconnect();
+  //     return { status: true };
+  //   } catch (error) {
+  //     this.logger.error(error.message, error.stack);
+  //     return {
+  //       status: false,
+  //       message: error.message,
+  //     };
+  //   }
+  // }
 
   @SubscribeMessage('endTrip')
   async endTrip(
