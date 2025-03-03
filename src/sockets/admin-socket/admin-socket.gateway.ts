@@ -9,7 +9,7 @@ import { Namespace, Socket } from 'socket.io';
 import { onlineDrivers } from '../driver-sokcet/driver-sokcet.gateway';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
-import { Inject } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { NotificationService } from 'src/notification/notification.service';
 
 export let readyTrips: any[] = [];
@@ -84,6 +84,33 @@ export class AdminSocketGateway implements OnGatewayConnection {
           driverID: trip.driverID,
         });
       }
+      return { status: true };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
+  }
+
+  @SubscribeMessage('pullTrip')
+  pullTrip(@MessageBody() tripID: number) {
+    try {
+      let trip = readyTrips.find((trip) => trip.tripID == tripID);
+      if (!trip) throw new NotFoundException();
+      let driver = onlineDrivers.find(
+        (driver) => driver.driverID == trip.driverID,
+      );
+      this.notificationService.send({
+        title: 'تم سحب الرحلة',
+        content: 'كن جاهز لاستقبال رحلة مختلفة',
+        driverID: trip.driverID,
+      });
+      this.tripPulledNotificationForAdmins(trip.tripID, trip.driverID);
+      this.moveTripFromReadyToPending(trip);
+      this.sendTripsToAdmins();
+      this.tripPulledForDriver(driver);
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -238,8 +265,18 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.io.server.of('/notifications').emit('tripCancelled', tripID);
   }
 
+  tripPulledNotificationForAdmins(tripID: number, driverID: number) {
+    this.io.server
+      .of('/notifications')
+      .emit('tripPulled', { tripID, driverID });
+  }
+
   tripCancelledForDriver(driver) {
     this.io.server.of('/driver').to(driver.socketID).emit('tripCancelled');
+  }
+
+  tripPulledForDriver(driver) {
+    this.io.server.of('/driver').to(driver.socketID).emit('tripPulled');
   }
 
   deleteVendor(vendorID) {
