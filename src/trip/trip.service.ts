@@ -7,6 +7,7 @@ import { Vendor } from '../vendor/entities/vendor.entity';
 import {
   AdminSocketGateway,
   ongoingTrips,
+  pendingTrips,
   readyTrips,
 } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { sendLocationDto } from './dto/new-location.dto';
@@ -78,32 +79,56 @@ export class TripService {
         }
       } else customer = await this.getCustomer(customerID);
 
-      let trip: any = await this.tripModel.create({
-        driverID,
-        vendorID: vendor.vendorID,
-        customerID: customer.customerID,
-        itemTypes: JSON.stringify(itemTypes),
-        description,
-        approxDistance,
-        approxPrice,
-        approxTime,
-        routedPath: JSON.stringify(routedPath),
-        alternative: false,
-      });
-      trip = trip.toJSON();
-      trip.customer = customer.toJSON();
-      trip.vendor = vendor.toJSON();
-      delete trip.customerID;
-      delete trip.vendorID;
-      readyTrips.push(trip);
-      this.adminGateway.submitNewTrip(trip);
-      this.adminGateway.sendDriversArrayToAdmins();
-      this.notificationService.send({
-        title: 'رحلة جديدة',
-        content: 'اضغط لعرض تفاصيل الرحلة',
-        driverID: trip.driverID,
-      });
-      return { tripID: trip.tripID };
+      if (driverID) {
+        let trip: any = await this.tripModel.create({
+          driverID,
+          vendorID: vendor.vendorID,
+          customerID: customer.customerID,
+          itemTypes: JSON.stringify(itemTypes),
+          description,
+          approxDistance,
+          approxPrice,
+          approxTime,
+          routedPath: JSON.stringify(routedPath),
+          alternative: false,
+        });
+        trip = trip.toJSON();
+        trip.customer = customer.toJSON();
+        trip.vendor = vendor.toJSON();
+        delete trip.customerID;
+        delete trip.vendorID;
+        readyTrips.push(trip);
+        this.adminGateway.submitNewTrip(trip);
+        this.adminGateway.sendDriversArrayToAdmins();
+        this.notificationService.send({
+          title: 'رحلة جديدة',
+          content: 'اضغط لعرض تفاصيل الرحلة',
+          driverID: trip.driverID,
+        });
+        return { tripID: trip.tripID };
+      } else {
+        let trip: any = await this.tripModel.create({
+          vendorID: vendor.vendorID,
+          customerID: customer.customerID,
+          itemTypes: JSON.stringify(itemTypes),
+          description,
+          approxDistance,
+          approxPrice,
+          approxTime,
+          routedPath: JSON.stringify(routedPath),
+          alternative: false,
+        });
+        trip = trip.toJSON();
+        trip.customer = customer.toJSON();
+        trip.vendor = vendor.toJSON();
+        delete trip.customerID;
+        delete trip.vendorID;
+        pendingTrips.push(trip);
+        this.adminGateway.sendTripsToAdmins();
+        this.adminGateway.sendDriversArrayToAdmins();
+        this.adminGateway.sendTripReceivedNotification(trip.tripID, null);
+        return { tripID: trip.tripID };
+      }
     } else {
       let customer: Customer;
       if (customerName || customerPhoneNumber || customerLocation) {

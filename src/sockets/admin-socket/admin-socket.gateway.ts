@@ -101,9 +101,13 @@ export class AdminSocketGateway implements OnGatewayConnection {
       (driver) => driver.driverID == trip.driverID && driver.available == true,
     );
     if (driver) driver.available = false;
+    this.sendTripReceivedNotification(trip.tripID, trip.driverID);
+  }
+
+  sendTripReceivedNotification(tripID, driverID) {
     this.io.server
       .of('/notifications')
-      .emit('tripReceived', { tripID: trip.tripID, driverID: trip.driverID });
+      .emit('tripReceived', { tripID, driverID });
   }
 
   sendTripsToAdmins() {

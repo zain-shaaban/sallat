@@ -25,7 +25,7 @@ class location {
 export class CreateTripDto {
   @ApiProperty({ type: 'number', example: 10 })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @Max(1000000)
   driverID: number;
 
@@ -96,22 +96,25 @@ export class CreateTripDto {
   @IsNumber()
   approxPrice?: number;
 
-  @ApiProperty({type:'array',example:[
-    { lng: 111.111, lat: 112.222 },
-    { lng: 888.888, lat: 999.999 },
-    { lng: 555.555, lat: 333.333 },
-  ]})
+  @ApiProperty({
+    type: 'array',
+    example: [
+      { lng: 111.111, lat: 112.222 },
+      { lng: 888.888, lat: 999.999 },
+      { lng: 555.555, lat: 333.333 },
+    ],
+  })
   @IsArray()
   @IsOptional()
-  routedPath?:object[]
+  routedPath?: object[];
 
-  @ApiProperty({type:"number",example:133266423})
+  @ApiProperty({ type: 'number', example: 133266423 })
   @IsOptional()
   @IsNumber()
-  approxTime?:number
+  approxTime?: number;
 
-  @ApiProperty({type:"boolean",example:false})
+  @ApiProperty({ type: 'boolean', example: false })
   @IsOptional()
   @IsBoolean()
-  alternative?:boolean
+  alternative?: boolean;
 }
