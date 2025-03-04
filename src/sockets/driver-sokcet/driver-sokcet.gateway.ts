@@ -142,6 +142,7 @@ export class DriverSocketGateway
         driver.location = { lng: Number(lng), lat: Number(lat) };
         driver.lastLocation = Date.now();
         driver.notificationSent = false;
+        this.adminSocketGateway.sendDriversArrayToAdmins();
       }
       readyTrips.forEach((trip) => {
         if (trip.driverID == driverID) client.emit('alreadyAssignedTrip', trip);
@@ -374,12 +375,12 @@ export class DriverSocketGateway
   @SubscribeMessage('setAvailable')
   updateDriverAvailable(
     @ConnectedSocket() client: Socket,
-    @MessageBody() availableData,
+    @MessageBody() available: boolean,
   ) {
     try {
       let driver = onlineDrivers.find((driver) => driver.socketID == client.id);
       if (!driver) throw new NotFoundException();
-      driver.available = availableData.available;
+      driver.available = available;
       this.adminSocketGateway.sendDriversArrayToAdmins();
       return {
         status: true,
