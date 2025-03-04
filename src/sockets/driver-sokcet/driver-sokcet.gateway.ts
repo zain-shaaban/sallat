@@ -137,12 +137,14 @@ export class DriverSocketGateway
         this.io.server
           .of('/notifications')
           .emit('driverConnection', { driverID: +driverID, connection: true });
+        client.emit('onConnection', { available: driver.available });
       } else {
         driver.socketID = client.id;
         driver.location = { lng: Number(lng), lat: Number(lat) };
         driver.lastLocation = Date.now();
         driver.notificationSent = false;
         this.adminSocketGateway.sendDriversArrayToAdmins();
+        client.emit('onConnection', { available: driver.available });
       }
       readyTrips.forEach((trip) => {
         if (trip.driverID == driverID) client.emit('alreadyAssignedTrip', trip);
