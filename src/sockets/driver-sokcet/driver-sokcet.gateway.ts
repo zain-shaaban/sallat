@@ -86,7 +86,7 @@ export class DriverSocketGateway
         let beforeDelete = onlineDrivers.length;
         onlineDrivers = onlineDrivers.filter((driver) => {
           if (
-            Date.now() - driver.lastLocation > 1000 * 60 * 15 &&
+            Date.now() - driver.lastLocation > 1000 * 60 * 45 &&
             driver.socketID == null
           ) {
             this.adminSocketGateway.sendDriverDisconnectNotification(
@@ -94,7 +94,7 @@ export class DriverSocketGateway
             );
             return false;
           } else if (
-            Date.now() - driver.lastLocation > 1000 * 60 * 5 &&
+            Date.now() - driver.lastLocation > 1000 * 60 * 15 &&
             driver.socketID == null &&
             driver.notificationSent == false
           ) {
@@ -112,7 +112,7 @@ export class DriverSocketGateway
         if (beforeDelete != onlineDrivers.length)
           this.adminSocketGateway.sendDriversArrayToAdmins();
       },
-      1000 * 60 * 2,
+      1000 * 60 * 6,
     );
   }
 
