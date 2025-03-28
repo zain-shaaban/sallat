@@ -1,61 +1,60 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateManagerDtoRequest } from './dto/create-manager.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
-import { InjectModel } from '@nestjs/sequelize';
 import { Manager } from './entities/manager.entity';
 import * as bcrypt from 'bcryptjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ManagerService {
-  constructor(@InjectModel(Manager) private managerModel: typeof Manager) {}
+  constructor(
+    @InjectRepository(Manager) private managerRepository: Repository<Manager>,
+  ) {}
 
   async create(createManagerDto: CreateManagerDtoRequest) {
-    let { name, email, password, phoneNumber, salary} =
-      createManagerDto;
+    let { name, email, password, phoneNumber, salary } = createManagerDto;
     password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const { managerID } = await this.managerModel.create({
+    const { managerID } = await this.managerRepository.save({
       name,
       email,
       password,
       phoneNumber,
       salary,
-      superAdmin:false
+      superAdmin: false,
     });
     return { managerID };
   }
 
   async findAll() {
-    const allManagers = await this.managerModel.findAll({
-      attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
-    });
-    return allManagers;
+    const allManagers = await this.managerRepository.find();
+    return plainToInstance(Manager, allManagers);
   }
 
-  async findOne(managerID: number) {
-    const manager = await this.managerModel.findByPk(managerID, {
-      attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
-    });
+  async findOne(managerID: string) {
+    const manager = await this.managerRepository.findOneBy({ managerID });
     if (!manager) throw new NotFoundException();
-    return manager;
+    return plainToInstance(Manager, manager);
   }
 
-  async update(managerID: number, updateManagerDto: UpdateManagerDto) {
-    let { name, email, password, phoneNumber, salary } =
-      updateManagerDto;
+  async update(managerID: string, updateManagerDto: UpdateManagerDto) {
+    let { name, email, password, phoneNumber, salary } = updateManagerDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const updatedManager = await this.managerModel.update(
-      { name, email, password, phoneNumber, salary },
-      { where: { managerID } },
-    );
-    if (updatedManager[0] === 0) throw new NotFoundException();
+    const { affected } = await this.managerRepository.update(managerID, {
+      name,
+      email,
+      password,
+      phoneNumber,
+      salary,
+    });
+    if (affected === 0) throw new NotFoundException();
     return null;
   }
 
-  async remove(managerID: number) {
-    const deletedManager = await this.managerModel.destroy({
-      where: { managerID },
-    });
-    if (deletedManager == 0) throw new NotFoundException();
+  async remove(managerID: string) {
+    const { affected } = await this.managerRepository.delete(managerID);
+    if (affected == 0) throw new NotFoundException();
     return null;
   }
 }

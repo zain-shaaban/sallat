@@ -5,20 +5,21 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Cc } from 'src/account/cc/entities/cc.entity';
 import { Driver } from 'src/account/driver/entities/driver.entity';
 import { Manager } from 'src/account/manager/entities/manager.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AccountAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
-    @InjectModel(Driver) private driverModel: typeof Driver,
-    @InjectModel(Cc) private ccModel: typeof Cc,
-    @InjectModel(Manager) private managerModel: typeof Manager,
-    @InjectModel(Vendor) private vendorModel: typeof Vendor,
+    @InjectRepository(Driver) private driverRepository: Repository<Driver>,
+    @InjectRepository(Cc) private ccRepository: Repository<Cc>,
+    @InjectRepository(Manager) private managerRepository: Repository<Manager>,
+    @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -36,16 +37,22 @@ export class AccountAuthGuard implements CanActivate {
     }
   }
 
-  async checkAccount(id: number, role: string) {
+  async checkAccount(id: string, role: string) {
     switch (role) {
       case 'manager':
-        return (await this.managerModel.findByPk(id)) ? true : false;
+        return (await this.managerRepository.findOneBy({ managerID: id }))
+          ? true
+          : false;
       case 'vendor':
-        return (await this.vendorModel.findByPk(id)) ? true : false;
+        return (await this.vendorRepository.findOneBy({ vendorID: id }))
+          ? true
+          : false;
       case 'cc':
-        return (await this.ccModel.findByPk(id)) ? true : false;
+        return (await this.ccRepository.findOneBy({ ccID: id })) ? true : false;
       case 'driver':
-        return (await this.driverModel.findByPk(id)) ? true : false;
+        return (await this.driverRepository.findOneBy({ driverID: id }))
+          ? true
+          : false;
     }
   }
 }

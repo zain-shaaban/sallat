@@ -1,22 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { Path } from './entities/path.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PathService {
-  constructor(@InjectModel(Path) private pathModel:typeof Path){}
+  constructor(
+    @InjectRepository(Path) private pathRepository: Repository<Path>,
+  ) {}
 
-  async create(path:any) {
-    return await this.pathModel.create({path,date:new Date().getTime()});
+  async create(path: any) {
+    return await this.pathRepository.save({ path, date: new Date().getTime() });
   }
 
   async findAll() {
-    return await this.pathModel.findAll({attributes:['pathID','date']});
+    return await this.pathRepository.find({ select: ['pathID', 'date'] });
   }
 
-  async findOne(pathID: number) {
-    const path=await this.pathModel.findOne({where:{pathID}});
-    if(!path) throw new NotFoundException()
-    return path
+  async findOne(pathID: string) {
+    const path = await this.pathRepository.findOne({ where: { pathID } });
+    if (!path) throw new NotFoundException();
+    return path;
   }
 }

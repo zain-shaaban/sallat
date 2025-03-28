@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { PathService } from './path.service';
 import { PathController } from './path.controller';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { Path } from './entities/path.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports:[SequelizeModule.forFeature([Path])],
+  imports: [TypeOrmModule.forFeature([Path])],
   controllers: [PathController],
   providers: [PathService],
-  exports:[PathService]
+  exports: [PathService],
 })
 export class PathModule {}

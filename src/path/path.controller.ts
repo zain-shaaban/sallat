@@ -12,7 +12,7 @@ export class PathController {
   }
 
   @Get(':pathID')
-  async findOne(@Param('pathID', ParseIntPipe) pathID: number) {
+  async findOne(@Param('pathID') pathID: string) {
     return await asyncHandler(this.pathService.findOne(pathID));
   }
 }

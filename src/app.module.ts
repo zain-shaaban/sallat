@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import dbConfig from './config/db.config';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { CcModule } from './account/cc/cc.module';
 import { ManagerModule } from './account/manager/manager.module';
 import { AccountVendorModule } from './account/vendor/vendor.module';
@@ -19,19 +18,20 @@ import { NotificationSocketModule } from './sockets/notification-socket/notifica
 import { ErrorLoggerModule } from './common/error_logger/error_logger.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { NotificationModule } from './notification/notification.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [dbConfig] }),
-    SequelizeModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        dialect: 'mysql',
+        type: 'postgres',
         host: configService.get('database.host'),
         port: configService.get('database.port'),
         username: configService.get('database.user'),
         password: configService.get('database.password'),
         database: configService.get('database.name'),
-        autoLoadModels: true,
+        autoLoadEntities:true,
         retryAttempts: 2,
         synchronize: true,
         logging: false,

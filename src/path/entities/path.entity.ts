@@ -1,27 +1,15 @@
-import {
-  Column,
-  DataType,
-  Table,
-  Model,
-  PrimaryKey,
-  Unique,
-  AutoIncrement,
-} from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({ tableName: 'path', timestamps: false })
-export class Path extends Model {
-  @PrimaryKey
-  @AutoIncrement
-  @Unique
-  @Column(DataType.INTEGER)
-  pathID: number;
+@Entity('sallat_path')
+export class Path {
+  @PrimaryGeneratedColumn('uuid')
+  pathID: string;
 
   @Column({
-    type: DataType.JSON,
-    allowNull: false,
+    type: 'jsonb',
   })
   path: string;
 
-  @Column(DataType.BIGINT)
+  @Column('bigint')
   date: number;
 }

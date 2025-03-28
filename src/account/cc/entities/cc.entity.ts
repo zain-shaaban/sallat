@@ -1,48 +1,33 @@
-import {ApiProperty } from '@nestjs/swagger';
-import {
-  Column,
-  DataType,
-  Table,
-  Model,
-  AllowNull,
-  PrimaryKey,
-  AutoIncrement,
-  Unique,
-  Validate,
-} from 'sequelize-typescript';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude} from 'class-transformer';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({ tableName: 'cc' })
-export class Cc extends Model {
-  @ApiProperty({type:'number',example:30})
-  @PrimaryKey
-  @AutoIncrement
-  @Unique
-  @Column(DataType.INTEGER)
-  ccID: number;
+@Entity('sallat_cc')
+export class Cc {
+  @ApiProperty({
+    type: 'string',
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+  })
+  @PrimaryGeneratedColumn('uuid')
+  ccID: string;
 
-  @ApiProperty({type:'string',example:'0999888777'})
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @ApiProperty({ type: 'string', example: '0999888777' })
+  @Column()
   phoneNumber: string;
 
-  @ApiProperty({type:'string',example:'example example'})
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @ApiProperty({ type: 'string', example: 'example example' })
+  @Column()
   name: string;
 
-  @ApiProperty({type:'string',example:'example@gmail.com'})
-  @Validate({ isEmail: true })
-  @Unique
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @ApiProperty({ type: 'string', example: 'example@gmail.com' })
+  @Column({ type: 'varchar', unique: true })
   email: string;
 
-  @Unique
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column({ type: 'varchar', unique: true })
+  @Exclude()
   password: string;
 
-  @ApiProperty({type:'number',example:1500000.00})
-  @Column(DataType.FLOAT)
+  @ApiProperty({ type: 'number', example: 1500000.0 })
+  @Column({ type: 'float', nullable: true })
   salary: number;
 }

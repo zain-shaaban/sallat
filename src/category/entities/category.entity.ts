@@ -1,18 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  Column,
-  DataType,
-  Table,
-  Model,
-  PrimaryKey,
-  Unique,
-} from 'sequelize-typescript';
 
-@Table({ tableName: 'category', timestamps: false })
-export class Category extends Model {
+import { Entity, PrimaryColumn } from 'typeorm';
+
+@Entity('sallat_categories')
+export class Category {
   @ApiProperty({ type: 'string', example: 'طعام' })
-  @PrimaryKey
-  @Unique
-  @Column(DataType.STRING)
+  @PrimaryColumn({ unique: true, type: 'varchar' })
   type: string;
 }

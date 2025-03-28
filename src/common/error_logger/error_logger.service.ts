@@ -1,26 +1,27 @@
 import { Injectable, LoggerService, LogLevel } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { ErrorLogger } from './entities/error_logger.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ErrorLoggerService implements LoggerService {
   constructor(
-    @InjectModel(ErrorLogger)
-    private readonly errorLoggerModel: typeof ErrorLogger,
+    @InjectRepository(ErrorLogger)
+    private errorLoggerRepository: Repository<ErrorLogger>,
   ) {}
 
   async error(message: string, stack: string) {
-    await this.errorLoggerModel.create({ message, stack });
+    await this.errorLoggerRepository.insert({ message, stack });
   }
 
   async findAll() {
-    return await this.errorLoggerModel.findAll({
-      attributes: ['errorID', 'message', 'timestamp'],
+    return await this.errorLoggerRepository.find({
+      select: ['errorID', 'message', 'timestamp'],
     });
   }
 
   async findOne(errorID: number) {
-    return await this.errorLoggerModel.findOne({ where: { errorID } });
+    return await this.errorLoggerRepository.findOneBy({ errorID });
   }
   log(message: string) {}
 

@@ -32,8 +32,8 @@ export class CreateCustomerDtoRequest {
 }
 
 class CreateCustomerData {
-  @ApiProperty({ example: 20 })
-  customerID: number;
+  @ApiProperty({ example: '3c559f4a-ef14-4e62-8874-384a89c8689e' })
+  customerID: string;
 }
 
 export class CreateCustomerDtoResponse {

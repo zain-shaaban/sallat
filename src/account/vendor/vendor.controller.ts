@@ -91,8 +91,8 @@ export class VendorController {
   @ApiParam({
     name: 'vendorID',
     description: 'The ID of the vendor',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -115,7 +115,7 @@ export class VendorController {
     },
   })
   @Get('get/:vendorID')
-  async findOne(@Param('vendorID', ParseIntPipe) vendorID: number) {
+  async findOne(@Param('vendorID') vendorID: string) {
     return await asyncHandler(this.vendorService.findOne(vendorID));
   }
 
@@ -133,8 +133,8 @@ export class VendorController {
   @ApiParam({
     name: 'vendorID',
     description: 'The ID of the Vendor',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -168,7 +168,7 @@ export class VendorController {
   @ApiOperation({ summary: 'Update single Vendor data' })
   @Patch('update/:vendorID')
   async update(
-    @Param('vendorID', ParseIntPipe) vendorID: number,
+    @Param('vendorID') vendorID: string,
     @Body() updateVendorDto: UpdateVendorDto,
   ) {
     return await asyncHandler(
@@ -190,8 +190,8 @@ export class VendorController {
   @ApiParam({
     name: 'vendorID',
     description: 'The ID of the Vendor',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -215,7 +215,7 @@ export class VendorController {
   })
   @ApiOperation({ summary: 'Delete single Vendor' })
   @Delete('delete/:vendorID')
-  async remove(@Param('vendorID', ParseIntPipe) vendorID: number) {
+  async remove(@Param('vendorID') vendorID: string) {
     return await asyncHandler(this.vendorService.remove(vendorID));
   }
 }

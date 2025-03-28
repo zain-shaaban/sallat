@@ -1,17 +1,19 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { Vendor } from './entities/vendor.entity';
 import { CreateVendorDtoRequest2 } from './dto/create-vendor.dto';
 import { UpdateVendorDto2 } from './dto/update-vendor.dto';
 import { Trip } from 'src/trip/entities/trip.entity';
 import * as bcrypt from 'bcryptjs';
 import { AdminSocketGateway } from 'src/sockets/admin-socket/admin-socket.gateway';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class VendorService {
   constructor(
-    @InjectModel(Vendor) private vendorModel: typeof Vendor,
-    @InjectModel(Trip) private tripModel: typeof Trip,
+    @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
+    @InjectRepository(Trip) private tripRepository: Repository<Trip>,
     @Inject() private readonly adminGateway: AdminSocketGateway,
   ) {}
 
@@ -19,88 +21,71 @@ export class VendorService {
     let { name, phoneNumber, location, email, partner, password } =
       createVendorDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    let vendor = await this.vendorModel.create({
+    let vendor = await this.vendorRepository.save({
       name,
       phoneNumber,
-      location: JSON.stringify(location),
+      location,
       email,
       partner,
       password,
     });
-    vendor=vendor.toJSON()
     delete vendor.password;
     this.adminGateway.newVendor(vendor);
     return { vendorID: vendor.vendorID };
   }
 
   async findAll() {
-    let allVendors: any = await this.vendorModel.findAll();
+    let allVendors: any = await this.vendorRepository.find();
     for (let i in allVendors) {
-      const trips: any = (
-        await this.tripModel.findAll({
-          where: { vendorID: allVendors[i].vendorID },
-          attributes: { exclude: ['password'] },
-        })
-      ).map((trip) => trip.toJSON());
-      allVendors[i] = allVendors[i].toJSON();
+      const trips: any = await this.tripRepository.find({
+        where: { vendorID: allVendors[i].vendorID },
+      });
       allVendors[i].trips = trips;
     }
-    return allVendors;
+    return plainToInstance(Vendor, allVendors);
   }
 
-  async findOne(vendorID: number) {
-    let vendor: any = await this.vendorModel.findByPk(vendorID, {
-      attributes: { exclude: ['password'] },
-    });
+  async findOne(vendorID: string) {
+    let vendor: any = await this.vendorRepository.findOneBy({ vendorID });
     if (!vendor) throw new NotFoundException();
-    vendor = vendor.toJSON();
-    const trips: any = (
-      await this.tripModel.findAll({
-        where: { vendorID: vendor.vendorID },
-      })
-    ).map((trip) => trip.toJSON());
+    const trips: any = await this.tripRepository.find({
+      where: { vendorID: vendor.vendorID },
+    });
     vendor.trips = trips;
-    return vendor;
+    return plainToInstance(Vendor, vendor);
   }
 
-  async update(vendorID: number, updateVendorDto: UpdateVendorDto2) {
+  async update(vendorID: string, updateVendorDto: UpdateVendorDto2) {
     let { name, phoneNumber, location, email, password, partner } =
       updateVendorDto;
     if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
-    const updatedVendor = await this.vendorModel
-      .update(
-        {
-          name,
-          phoneNumber,
-          location: JSON.stringify(location),
-          email,
-          password,
-          partner,
-        },
-        { where: { vendorID } },
-      )
-      .then((data) => {
-        if (data[0] == 0) throw new NotFoundException();
-        return this.vendorModel.findByPk(vendorID, {
-          attributes: { exclude: ['password'] },
-        });
+    const updatedVendor = await this.vendorRepository
+      .update(vendorID, {
+        name,
+        phoneNumber,
+        location,
+        email,
+        password,
+        partner,
+      })
+      .then(({ affected }) => {
+        if (affected == 0) throw new NotFoundException();
+        return this.vendorRepository.findOneBy({ vendorID });
       });
     this.adminGateway.updateVendor(updatedVendor);
     return null;
   }
 
-  async remove(vendorID: number) {
-    const deletedVendor = await this.vendorModel.destroy({
-      where: { vendorID },
-    });
-    if (deletedVendor == 0) throw new NotFoundException();
+  async remove(vendorID: string) {
+    const { affected } = await this.vendorRepository.delete(vendorID);
+    if (affected == 0) throw new NotFoundException();
     this.adminGateway.deleteVendor(vendorID);
     return null;
   }
 
   async findOnMap() {
-    const allVendorsOnMap = await this.vendorModel.findAll({
-      attributes: ['vendorID', 'name', 'location'],
+    const allVendorsOnMap = await this.vendorRepository.find({
+      select: ['vendorID', 'name', 'location'],
     });
     return allVendorsOnMap;
   }

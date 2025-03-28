@@ -9,8 +9,8 @@ class location {
 }
 
 export class GetVendorData {
-  @ApiProperty({ type:'number',example: 20 })
-  vendorID: number;
+  @ApiProperty({ type:'string',example: '3c559f4a-ef14-4e62-8874-384a89c8689e' })
+  vendorID: string;
 
   @ApiProperty({ example: '0999888777' })
   phoneNumber: string;

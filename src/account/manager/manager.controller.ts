@@ -91,8 +91,8 @@ export class ManagerController {
   @ApiParam({
     name: 'managerID',
     description: 'The ID of the manager',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -115,7 +115,7 @@ export class ManagerController {
     },
   })
   @Get('get/:managerID')
-  async findOne(@Param('managerID', ParseIntPipe) managerID: number) {
+  async findOne(@Param('managerID') managerID: string) {
     return await asyncHandler(this.managerService.findOne(managerID));
   }
 
@@ -133,8 +133,8 @@ export class ManagerController {
   @ApiParam({
     name: 'managerID',
     description: 'The ID of the Manager',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -168,7 +168,7 @@ export class ManagerController {
   @ApiOperation({ summary: 'Update single Manager data' })
   @Patch('update/:managerID')
   async update(
-    @Param('managerID', ParseIntPipe) managerID: number,
+    @Param('managerID') managerID: string,
     @Body() updateManagerDto: UpdateManagerDto,
   ) {
     return await asyncHandler(
@@ -190,8 +190,8 @@ export class ManagerController {
   @ApiParam({
     name: 'managerID',
     description: 'The ID of the Manager',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -215,7 +215,7 @@ export class ManagerController {
   })
   @ApiOperation({ summary: 'Delete single Manager' })
   @Delete('delete/:managerID')
-  async remove(@Param('managerID', ParseIntPipe) managerID: number) {
+  async remove(@Param('managerID') managerID: string) {
     return await asyncHandler(this.managerService.remove(managerID));
   }
 }

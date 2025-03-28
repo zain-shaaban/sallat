@@ -97,8 +97,8 @@ export class CustomerController {
   @ApiParam({
     name: 'customerID',
     description: 'The ID of the customer',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -132,7 +132,7 @@ export class CustomerController {
   @ApiOperation({ summary: 'Update single customer data' })
   @Patch('update/:customerID')
   async update(
-    @Param('customerID', ParseIntPipe) customerID: number,
+    @Param('customerID') customerID: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ) {
     return await asyncHandler(
@@ -174,8 +174,8 @@ export class CustomerController {
   @ApiParam({
     name: 'customerID',
     description: 'The ID of the customer',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -199,7 +199,7 @@ export class CustomerController {
   })
   @ApiOperation({ summary: 'Delete single customer' })
   @Delete('delete/:customerID')
-  async remove(@Param('customerID', ParseIntPipe) customerID: number) {
+  async remove(@Param('customerID') customerID: string) {
     return await asyncHandler(this.customerService.remove(customerID));
   }
 
@@ -212,8 +212,8 @@ export class CustomerController {
   @ApiParam({
     name: 'customerID',
     description: 'The ID of the customer',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -236,7 +236,7 @@ export class CustomerController {
     },
   })
   @Get('/:customerID')
-  async findOne(@Param('customerID', ParseIntPipe) customerID: number) {
+  async findOne(@Param('customerID') customerID: string) {
     return await asyncHandler(this.customerService.findOne(customerID));
   }
 }

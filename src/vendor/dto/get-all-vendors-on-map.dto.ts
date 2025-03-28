@@ -9,8 +9,8 @@ class location {
 }
 
 class GetVendorsOnMapData {
-  @ApiProperty({ type:'number',example: 52})
-  vendorID: number;
+  @ApiProperty({ type:'string',example: '3c559f4a-ef14-4e62-8874-384a89c8689e'})
+  vendorID: string;
 
   @ApiProperty({type:'string', example: 'example example' })
   name: string;

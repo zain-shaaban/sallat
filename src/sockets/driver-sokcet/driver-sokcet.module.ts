@@ -1,12 +1,15 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { DriverSocketGateway } from './driver-sokcet.gateway';
 import { AdminSocketModule } from '../admin-socket/admin-socket.module';
-import { TripModule } from 'src/trip/trip.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Trip } from 'src/trip/entities/trip.entity';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { Customer } from 'src/customer/entities/customer.entity';
 
 @Module({
   imports: [
-    forwardRef(() => AdminSocketModule),
-    forwardRef(() => TripModule),
+    TypeOrmModule.forFeature([Trip, Vendor, Customer]),
+    forwardRef(()=>AdminSocketModule),
   ],
   providers: [DriverSocketGateway],
   exports: [DriverSocketGateway],

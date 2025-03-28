@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsNumber,
@@ -47,8 +46,8 @@ export class CreateManagerDtoRequest {
 }
 
 class CreateManagerData {
-  @ApiProperty({ example: 20 })
-  managerID: number;
+  @ApiProperty({ example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f' })
+  managerID: string;
 }
 
 export class CreateManagerDtoResponse {

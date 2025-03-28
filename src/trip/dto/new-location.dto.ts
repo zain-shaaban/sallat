@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, Max } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+} from 'class-validator';
 
 class location {
   @ApiProperty({ type: 'number', example: 65.565656 })
@@ -14,11 +20,13 @@ class location {
 }
 
 export class sendLocationDto {
-  @ApiProperty({ type: 'number', example: 10 })
-  @IsNumber()
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
+  @IsString()
   @IsNotEmpty()
-  @Max(1000000)
-  driverID: number;
+  driverID: string;
 
   @ApiProperty({ type: location })
   @IsOptional()

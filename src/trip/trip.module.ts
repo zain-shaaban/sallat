@@ -1,27 +1,20 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { TripController } from './trip.controller';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
-import { CustomerModule } from 'src/customer/customer.module';
-import { VendorModule } from 'src/vendor/vendor.module';
 import { AdminSocketModule } from 'src/sockets/admin-socket/admin-socket.module';
 import { DriverSocketModule } from 'src/sockets/driver-sokcet/driver-sokcet.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Customer } from 'src/customer/entities/customer.entity';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Trip]),
-    forwardRef(() => CustomerModule),
-    forwardRef(() => VendorModule),
-    forwardRef(()=>AdminSocketModule),
+    TypeOrmModule.forFeature([Trip, Customer, Vendor]),
+    forwardRef(() => AdminSocketModule),
     forwardRef(() => DriverSocketModule),
   ],
   controllers: [TripController],
   providers: [TripService],
-  exports: [
-    SequelizeModule.forFeature([Trip]),
-    forwardRef(() => CustomerModule),
-    forwardRef(() => VendorModule),
-  ],
 })
 export class TripModule {}

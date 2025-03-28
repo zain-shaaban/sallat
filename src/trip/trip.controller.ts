@@ -27,7 +27,7 @@ export class TripController {
     schema: {
       example: {
         status: true,
-        data: { tripID: 3100 },
+        data: { tripID: '3c559f4a-ef14-4e62-8874-384a89c8689e' },
       },
     },
     description: 'The trip has been successfully submited',
@@ -127,8 +127,8 @@ export class TripController {
   @ApiParam({
     name: 'tripID',
     description: 'The ID of the trip',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -152,7 +152,7 @@ export class TripController {
   })
   @ApiOperation({ summary: 'Delete single trip' })
   @Delete('delete/:tripID')
-  async remove(@Param('tripID', ParseIntPipe) tripID: number) {
+  async remove(@Param('tripID') tripID: string) {
     return await asyncHandler(this.tripService.remove(tripID));
   }
 
@@ -204,8 +204,8 @@ export class TripController {
   @ApiParam({
     name: 'tripID',
     description: 'The ID of the trip',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -228,7 +228,7 @@ export class TripController {
     },
   })
   @Get('/get/:tripID')
-  async findOne(@Param('tripID', ParseIntPipe) tripID: number) {
+  async findOne(@Param('tripID') tripID: string) {
     return await asyncHandler(this.tripService.findOne(tripID));
   }
 }

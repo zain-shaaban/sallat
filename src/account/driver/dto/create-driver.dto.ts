@@ -56,8 +56,8 @@ export class CreateDriverDtoRequest {
 }
 
 class CreateDriverData {
-  @ApiProperty({ example: 20 })
-  driverID: number;
+  @ApiProperty({ example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f' })
+  driverID: string;
 }
 
 export class CreateDriverDtoResponse {

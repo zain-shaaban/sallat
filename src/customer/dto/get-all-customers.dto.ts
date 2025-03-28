@@ -9,13 +9,16 @@ class location {
 }
 
 export class GetCustomerData {
-  @ApiProperty({type:'number', example: 30 })
-  customerID: number;
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
+  customerID: string;
 
-  @ApiProperty({ type:'string',example: '0999888777' })
+  @ApiProperty({ type: 'string', example: '0999888777' })
   phoneNumber: string;
 
-  @ApiProperty({ type:'string',example: 'example example' })
+  @ApiProperty({ type: 'string', example: 'example example' })
   name: string;
 
   @ApiProperty({ type: location })

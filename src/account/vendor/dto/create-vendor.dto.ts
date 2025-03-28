@@ -55,8 +55,8 @@ export class CreateVendorDtoRequest {
 }
 
 class CreateVendorData {
-  @ApiProperty({ example: 20 })
-  vendorID: number;
+  @ApiProperty({ example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f' })
+  vendorID: string;
 }
 
 export class CreateVendorDtoResponse {

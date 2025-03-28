@@ -1,6 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
-import { InjectModel } from '@nestjs/sequelize';
 import { Trip } from './entities/trip.entity';
 import { Customer } from '../customer/entities/customer.entity';
 import { Vendor } from '../vendor/entities/vendor.entity';
@@ -13,13 +12,16 @@ import {
 import { sendLocationDto } from './dto/new-location.dto';
 import { onlineDrivers } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 import { NotificationService } from 'src/notification/notification.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TripService {
   constructor(
-    @InjectModel(Trip) private readonly tripModel: typeof Trip,
-    @InjectModel(Customer) private readonly customerModel: typeof Customer,
-    @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
+    @InjectRepository(Trip) private tripRepository: Repository<Trip>,
+    @InjectRepository(Customer)
+    private customerRepository: Repository<Customer>,
+    @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
     @Inject() private readonly adminGateway: AdminSocketGateway,
     @Inject() private readonly notificationService: NotificationService,
   ) {}
@@ -80,21 +82,20 @@ export class TripService {
       } else customer = await this.getCustomer(customerID);
 
       if (driverID) {
-        let trip: any = await this.tripModel.create({
+        let trip: any = await this.tripRepository.save({
           driverID,
           vendorID: vendor.vendorID,
           customerID: customer.customerID,
-          itemTypes: JSON.stringify(itemTypes),
+          itemTypes,
           description,
           approxDistance,
           approxPrice,
           approxTime,
-          routedPath: JSON.stringify(routedPath),
+          routedPath,
           alternative: false,
         });
-        trip = trip.toJSON();
-        trip.customer = customer.toJSON();
-        trip.vendor = vendor.toJSON();
+        trip.customer = customer
+        trip.vendor = vendor
         delete trip.customerID;
         delete trip.vendorID;
         readyTrips.push(trip);
@@ -107,20 +108,19 @@ export class TripService {
         });
         return { tripID: trip.tripID };
       } else {
-        let trip: any = await this.tripModel.create({
+        let trip: any = await this.tripRepository.save({
           vendorID: vendor.vendorID,
           customerID: customer.customerID,
-          itemTypes: JSON.stringify(itemTypes),
+          itemTypes,
           description,
           approxDistance,
           approxPrice,
           approxTime,
-          routedPath: JSON.stringify(routedPath),
+          routedPath,
           alternative: false,
         });
-        trip = trip.toJSON();
-        trip.customer = customer.toJSON();
-        trip.vendor = vendor.toJSON();
+        trip.customer = customer;
+        trip.vendor = vendor;
         delete trip.customerID;
         delete trip.vendorID;
         pendingTrips.push(trip);
@@ -148,15 +148,14 @@ export class TripService {
         }
       } else customer = await this.getCustomer(customerID);
       if (driverID) {
-        let trip: any = await this.tripModel.create({
+        let trip: any = await this.tripRepository.save({
           driverID,
           customerID: customer.customerID,
-          itemTypes: JSON.stringify(itemTypes),
+          itemTypes,
           description,
           alternative: true,
         });
-        trip = trip.toJSON();
-        trip.customer = customer.toJSON();
+        trip.customer = customer;
         delete trip.customerID;
         readyTrips.push(trip);
         this.adminGateway.submitNewTrip(trip);
@@ -168,14 +167,13 @@ export class TripService {
         });
         return { tripID: trip.tripID };
       } else {
-        let trip: any = await this.tripModel.create({
+        let trip: any = await this.tripRepository.save({
           customerID: customer.customerID,
-          itemTypes: JSON.stringify(itemTypes),
+          itemTypes: itemTypes,
           description,
           alternative: true,
         });
-        trip = trip.toJSON();
-        trip.customer = customer.toJSON();
+        trip.customer = customer;
         delete trip.customerID;
         pendingTrips.push(trip);
         this.adminGateway.sendTripsToAdmins();
@@ -191,10 +189,10 @@ export class TripService {
     customerPhoneNumber: string,
     customerLocation: object,
   ) {
-    const customer = await this.customerModel.create({
+    const customer = await this.customerRepository.save({
       name: customerName,
       phoneNumber: customerPhoneNumber,
-      location: JSON.stringify(customerLocation),
+      location: customerLocation,
     });
     this.adminGateway.newCustomer(customer);
     return customer;
@@ -205,90 +203,82 @@ export class TripService {
     vendorPhoneNumber: string,
     vendorLocation: object,
   ) {
-    const vendor = await this.vendorModel.create({
+    const vendor = await this.vendorRepository.save({
       name: vendorName,
       phoneNumber: vendorPhoneNumber,
-      location: JSON.stringify(vendorLocation),
+      location: vendorLocation,
     });
     this.adminGateway.newVendor(vendor);
     return vendor;
   }
 
   async updateCustomer(
-    customerID: number,
+    customerID: string,
     customerName: string,
     customerPhoneNumber: string,
     customerLocation: object,
   ) {
     if (!customerID) throw new NotFoundException();
-    const customer = await this.customerModel
-      .update(
-        {
-          name: customerName,
-          phoneNumber: customerPhoneNumber,
-          location: JSON.stringify(customerLocation),
-        },
-        { where: { customerID } },
-      )
-      .then(() => this.customerModel.findByPk(customerID));
+    const customer = await this.customerRepository
+      .update(customerID, {
+        name: customerName,
+        phoneNumber: customerPhoneNumber,
+        location: customerLocation,
+      })
+      .then(() => this.customerRepository.findOneBy({ customerID }));
     this.adminGateway.updateCustomer(customer);
     return customer;
   }
 
   async updateVendor(
-    vendorID: number,
+    vendorID: string,
     vendorName: string,
     vendorPhoneNumber: string,
     vendorLocation: object,
   ) {
     if (!vendorID) throw new NotFoundException();
-    const vendor = await this.vendorModel
-      .update(
-        {
-          name: vendorName,
-          phoneNumber: vendorPhoneNumber,
-          location: JSON.stringify(vendorLocation),
-        },
-        { where: { vendorID } },
-      )
-      .then(() => this.vendorModel.findByPk(vendorID));
+    const vendor = await this.vendorRepository
+      .update(vendorID, {
+        name: vendorName,
+        phoneNumber: vendorPhoneNumber,
+        location: vendorLocation,
+      })
+      .then(() => this.vendorRepository.findOneBy({ vendorID }));
     this.adminGateway.updateVendor(vendor);
     return vendor;
   }
 
-  async getVendor(vendorID: number) {
-    return await this.vendorModel.findByPk(vendorID);
+  async getVendor(vendorID: string) {
+    return await this.vendorRepository.findOneBy({ vendorID });
   }
 
-  async getCustomer(customerID: number) {
-    return await this.customerModel.findByPk(customerID);
+  async getCustomer(customerID: string) {
+    return await this.customerRepository.findOneBy({ customerID });
   }
 
   async findAll() {
-    const allTrips = await this.tripModel.findAll();
+    const allTrips = await this.tripRepository.find();
     return allTrips;
   }
 
   async customerSearch(phoneNumber: string) {
-    const customer = await this.customerModel.findOne({
-      attributes: ['customerID', 'name', 'location'],
+    const customer = await this.customerRepository.findOne({
+      select: ['customerID', 'name', 'location'],
       where: { phoneNumber },
     });
     if (!customer) throw new NotFoundException();
     return customer;
   }
 
-  async findOne(tripID: number) {
-    const trip = await this.tripModel.findByPk(tripID);
+  async findOne(tripID: string) {
+    const trip = await this.tripRepository.findOneBy({ tripID });
     if (!trip) throw new NotFoundException();
     return trip;
   }
 
-  async remove(tripID: number) {
-    const deletedTrip = await this.tripModel.destroy({
-      where: { tripID },
-    });
-    if (deletedTrip == 0) throw new NotFoundException();
+  async remove(tripID: string) {
+    const { affected } = await this.tripRepository.delete(tripID);
+    if (affected == 0) throw new NotFoundException();
     return null;
   }
 

@@ -1,13 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  AutoIncrement,
-  Column,
-  DataType,
-  PrimaryKey,
-  Table,
-  Unique,
-  Model,
-} from 'sequelize-typescript';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 class location {
   @ApiProperty({ type: 'number', example: 4544.232 })
@@ -17,31 +9,24 @@ class location {
   lat: number;
 }
 
-@Table({ tableName: 'customer', timestamps: false })
-export class Customer extends Model {
-  @ApiProperty({ type: 'number', example: 20 })
-  @PrimaryKey
-  @AutoIncrement
-  @Unique
-  @Column(DataType.INTEGER)
-  customerID: number;
+@Entity('sallat_customers')
+export class Customer {
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
+  @PrimaryGeneratedColumn('uuid')
+  customerID: string;
 
   @ApiProperty({ type: 'string', example: 'example example' })
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column()
   name: string;
 
   @ApiProperty({ type: 'string', example: '+96399887766' })
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column()
   phoneNumber: string;
 
   @ApiProperty({ type: location })
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    get() {
-      const value = this.getDataValue('location');
-      return value ? JSON.parse(value) : {};
-    },
-  })
+  @Column({ type: 'jsonb' })
   location: location;
 }

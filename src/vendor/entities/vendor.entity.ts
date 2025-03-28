@@ -1,60 +1,49 @@
-import {ApiProperty } from '@nestjs/swagger';
-import {
-  Column,
-  DataType,
-  Table,
-  Model,
-  PrimaryKey,
-  AutoIncrement,
-  Unique,
-  Default,
-} from 'sequelize-typescript';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 class location {
-    @ApiProperty({ type: 'number', example: 4544.232 })
-    lng: number;
-  
-    @ApiProperty({ type: 'number', example: 454.232 })
-    lat: number;
-  }
+  @ApiProperty({ type: 'number', example: 4544.232 })
+  lng: number;
 
-@Table({ tableName: 'vendor' })
-export class Vendor extends Model {
-  @ApiProperty({type:'number',example:30})
-  @PrimaryKey
-  @AutoIncrement
-  @Unique
-  @Column(DataType.INTEGER)
-  vendorID: number;
+  @ApiProperty({ type: 'number', example: 454.232 })
+  lat: number;
+}
 
-  @ApiProperty({type:'string',example:'0999888777'})
-  @Column(DataType.STRING)
+@Entity('sallat_vendors')
+export class Vendor {
+  @ApiProperty({
+    type: 'string',
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+  })
+  @PrimaryGeneratedColumn('uuid')
+  vendorID: string;
+
+  @ApiProperty({ type: 'string', example: '0999888777' })
+  @Column({ type: 'varchar', nullable: true })
   phoneNumber: string;
 
-  @ApiProperty({type:'string',example:'example example'})
-  @Column(DataType.STRING)
+  @ApiProperty({ type: 'string', example: 'example example' })
+  @Column({ type: 'varchar', nullable: true })
   name: string;
 
   @ApiProperty({ type: location })
   @Column({
-    type: DataType.STRING,
-    get() {
-      const value = this.getDataValue('location');
-      return value ? JSON.parse(value) : {};
-    },
+    type: 'jsonb',
+    default: {},
   })
   location: location;
 
-  @ApiProperty({type:'boolean',example:false})
-  @Default(false)
-  @Column(DataType.BOOLEAN)
+  @ApiProperty({ type: 'boolean', example: false })
+  @Column({ type: 'boolean', default: false })
   partner: boolean;
 
-  @ApiProperty({type:'string',example:'example@gmail.com'})
-  @Column(DataType.STRING)
+  @ApiProperty({ type: 'string', example: 'example@gmail.com' })
+  @Column({ type: 'varchar', nullable: true })
   email: string;
 
-  @ApiProperty({type:'string',example:'example123'})
-  @Column(DataType.STRING)
+  @ApiProperty({ type: 'string', example: 'example123' })
+  @Exclude()
+  @Column({ type: 'varchar', nullable: true })
   password: string;
 }

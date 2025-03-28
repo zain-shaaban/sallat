@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   HttpStatus,
 } from '@nestjs/common';
 import { VendorService } from './vendor.service';
@@ -26,7 +25,6 @@ import { GetAllVendorsDto2 } from './dto/get-all-vendors.dto';
 import { GetSingleVendorDto2 } from './dto/get-single-vendor.dto';
 import { GetAllVendorsOnMapDto } from './dto/get-all-vendors-on-map.dto';
 import { UpdateVendorDto2 } from './dto/update-vendor.dto';
-
 
 @ApiBearerAuth()
 @ApiTags('Vendor')
@@ -98,8 +96,8 @@ export class VendorController {
   @ApiParam({
     name: 'vendorID',
     description: 'The ID of the vendor',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -133,7 +131,7 @@ export class VendorController {
   @ApiOperation({ summary: 'Update single vendor data' })
   @Patch('update/:vendorID')
   async update(
-    @Param('vendorID', ParseIntPipe) vendorID: number,
+    @Param('vendorID') vendorID: string,
     @Body() updateVendorDto: UpdateVendorDto2,
   ) {
     return await asyncHandler(
@@ -175,8 +173,8 @@ export class VendorController {
   @ApiParam({
     name: 'vendorID',
     description: 'The ID of the vendor',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -200,7 +198,7 @@ export class VendorController {
   })
   @ApiOperation({ summary: 'Delete single vendor' })
   @Delete('delete/:vendorID')
-  async remove(@Param('vendorID', ParseIntPipe) vendorID: number) {
+  async remove(@Param('vendorID') vendorID: string) {
     return await asyncHandler(this.vendorService.remove(vendorID));
   }
 
@@ -213,8 +211,8 @@ export class VendorController {
   @ApiParam({
     name: 'vendorID',
     description: 'The ID of the vendor',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -237,7 +235,7 @@ export class VendorController {
     },
   })
   @Get('/:vendorID')
-  async findOne(@Param('vendorID', ParseIntPipe) vendorID: number) {
+  async findOne(@Param('vendorID') vendorID: string) {
     return await asyncHandler(this.vendorService.findOne(vendorID));
   }
 }

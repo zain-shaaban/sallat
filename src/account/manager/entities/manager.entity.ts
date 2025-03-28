@@ -1,53 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  Column,
-  DataType,
-  Table,
-  Model,
-  AllowNull,
-  PrimaryKey,
-  AutoIncrement,
-  Unique,
-  Validate,
-  Default,
-} from 'sequelize-typescript';
+import { Exclude } from 'class-transformer';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Table({ tableName: 'manager' })
-export class Manager extends Model {
-  @ApiProperty({ type: 'number', example: 30 })
-  @PrimaryKey
-  @AutoIncrement
-  @Unique
-  @Column(DataType.INTEGER)
-  managerID: number;
+@Entity('sallat_managers')
+export class Manager {
+  @ApiProperty({ type: 'string', example: '09eea85b-85d3-4d8a-8e41-a6a5af12c546' })
+  @PrimaryGeneratedColumn('uuid')
+  managerID: string;
 
   @ApiProperty({ type: 'string', example: '0999888777' })
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column()
   phoneNumber: string;
 
   @ApiProperty({ type: 'string', example: 'example example' })
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column()
   name: string;
 
   @ApiProperty({ type: 'string', example: 'example@gmail.com' })
-  @Validate({ isEmail: true })
-  @Unique
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column({ type: 'varchar', unique: true })
   email: string;
 
-  @Unique
-  @AllowNull(false)
-  @Column(DataType.STRING)
+  @Exclude()
+  @Column({ type: 'varchar', unique: true })
   password: string;
 
   @ApiProperty({ type: 'number', example: 1500000.0 })
-  @Column(DataType.FLOAT)
+  @Column({ type: 'float', nullable: true })
   salary: number;
 
   @ApiProperty({ type: 'boolean', example: false })
-  @Column(DataType.BOOLEAN)
+  @Column({ type: 'boolean', default: false })
   superAdmin: boolean;
 }

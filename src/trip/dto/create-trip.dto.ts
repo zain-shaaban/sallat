@@ -23,23 +23,31 @@ class location {
 }
 
 export class CreateTripDto {
-  @ApiProperty({ type: 'number', example: 10 })
-  @IsNumber()
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
+  @IsString()
   @IsOptional()
-  @Max(1000000)
-  driverID: number;
+  driverID: string;
 
-  @ApiProperty({ type: 'number', example: 10, required: false })
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+    required: false,
+  })
   @IsOptional()
-  @IsNumber()
-  @Max(1000000)
-  vendorID?: number;
+  @IsString()
+  vendorID?: string;
 
-  @ApiProperty({ type: 'number', example: 10, required: false })
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+    required: false,
+  })
   @IsOptional()
-  @IsNumber()
-  @Max(1000000)
-  customerID?: number;
+  @IsString()
+  customerID?: string;
 
   @ApiProperty({ type: 'string', example: 'example example' })
   @IsOptional()

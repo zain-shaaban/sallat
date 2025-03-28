@@ -6,9 +6,7 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
 import { DriverService } from './driver.service';
 import {
@@ -92,8 +90,8 @@ export class DriverController {
   @ApiParam({
     name: 'driverID',
     description: 'The ID of the driver',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -116,7 +114,7 @@ export class DriverController {
     },
   })
   @Get('get/:driverID')
-  async findOne(@Param('driverID', ParseIntPipe) driverID: number) {
+  async findOne(@Param('driverID') driverID: string) {
     return await asyncHandler(this.driverService.findOne(driverID));
   }
 
@@ -134,8 +132,8 @@ export class DriverController {
   @ApiParam({
     name: 'driverID',
     description: 'The ID of the driver',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -169,7 +167,7 @@ export class DriverController {
   @ApiOperation({ summary: 'Update single driver data' })
   @Patch('update/:driverID')
   async update(
-    @Param('driverID', ParseIntPipe) driverID: number,
+    @Param('driverID') driverID: string,
     @Body() updateDriverDto: UpdateDriverDto,
   ) {
     return await asyncHandler(
@@ -191,8 +189,8 @@ export class DriverController {
   @ApiParam({
     name: 'driverID',
     description: 'The ID of the driver',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -216,7 +214,7 @@ export class DriverController {
   })
   @ApiOperation({ summary: 'Delete single driver' })
   @Delete('delete/:driverID')
-  async remove(@Param('driverID', ParseIntPipe) driverID: number) {
+  async remove(@Param('driverID') driverID: string) {
     return await asyncHandler(this.driverService.remove(driverID));
   }
 }

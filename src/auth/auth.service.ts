@@ -4,13 +4,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { LoginRequestDto } from './dto/login.dto';
-import { InjectModel } from '@nestjs/sequelize';
 import { Cc } from 'src/account/cc/entities/cc.entity';
 import { Driver } from 'src/account/driver/entities/driver.entity';
 import { Manager } from 'src/account/manager/entities/manager.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 export enum Role {
   Driver = 'driver',
@@ -22,10 +23,10 @@ export enum Role {
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(Cc) private ccModel: typeof Cc,
-    @InjectModel(Driver) private driverModel: typeof Driver,
-    @InjectModel(Manager) private managerModel: typeof Manager,
-    @InjectModel(Vendor) private vendorModel: typeof Vendor,
+    @InjectRepository(Cc) private ccRepository: Repository<Cc>,
+    @InjectRepository(Driver) private driverRepository: Repository<Driver>,
+    @InjectRepository(Manager) private managerRepository: Repository<Manager>,
+    @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
     private readonly jwtService: JwtService,
   ) {}
   async login(loginDto: LoginRequestDto, type: string) {
@@ -44,7 +45,7 @@ export class AuthService {
   }
   async managerLogin(loginDto: LoginRequestDto) {
     const { email, password } = loginDto;
-    const manager = await this.managerModel.findOne({ where: { email } });
+    const manager = await this.managerRepository.findOneBy({ email });
     if (!manager) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, manager.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
@@ -56,7 +57,7 @@ export class AuthService {
   }
   async driverLogin(loginDto: LoginRequestDto) {
     const { email, password } = loginDto;
-    const driver = await this.driverModel.findOne({ where: { email } });
+    const driver = await this.driverRepository.findOneBy({ email });
     if (!driver) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, driver.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
@@ -68,7 +69,7 @@ export class AuthService {
   }
   async vendorLogin(loginDto: LoginRequestDto) {
     const { email, password } = loginDto;
-    const vendor = await this.vendorModel.findOne({ where: { email } });
+    const vendor = await this.vendorRepository.findOneBy({ email });
     if (!vendor) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, vendor.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');
@@ -80,7 +81,7 @@ export class AuthService {
   }
   async ccLogin(loginDto: LoginRequestDto) {
     const { email, password } = loginDto;
-    const cc = await this.ccModel.findOne({ where: { email } });
+    const cc = await this.ccRepository.findOneBy({ email });
     if (!cc) throw new UnauthorizedException('Wrong credentials');
     const auth = bcrypt.compareSync(password, cc.password);
     if (!auth) throw new UnauthorizedException('Wrong credentials');

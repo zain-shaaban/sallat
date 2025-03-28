@@ -14,7 +14,6 @@ import {
   readyTrips,
 } from '../admin-socket/admin-socket.gateway';
 import { forwardRef, Inject, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import * as polyline from '@mapbox/polyline';
 import { getPathLength } from 'geolib';
 import { Trip } from 'src/trip/entities/trip.entity';
@@ -22,6 +21,8 @@ import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
 import { NotificationService } from 'src/notification/notification.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 export let onlineDrivers: any[] = [];
 
@@ -73,11 +74,13 @@ export class DriverSocketGateway
   io: Namespace;
 
   constructor(
-    @Inject(forwardRef(() => AdminSocketGateway))
+    @Inject(forwardRef(()=>AdminSocketGateway))
     private readonly adminSocketGateway: AdminSocketGateway,
-    @InjectModel(Trip) private readonly tripModel: typeof Trip,
-    @InjectModel(Vendor) private readonly vendorModel: typeof Vendor,
-    @InjectModel(Customer) private readonly customerModel: typeof Customer,
+    @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
+    @InjectRepository(Vendor)
+    private readonly vendorRepository: Repository<Vendor>,
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
     private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
   ) {
@@ -90,7 +93,7 @@ export class DriverSocketGateway
             driver.socketID == null
           ) {
             this.adminSocketGateway.sendDriverDisconnectNotification(
-              +driver.driverID,
+              driver.driverID,
             );
             return false;
           } else if (
@@ -100,7 +103,7 @@ export class DriverSocketGateway
           ) {
             this.notificationService.send({
               title: 'هل مازلت مستمر بالدوام؟',
-              driverID: +driver.driverID,
+              driverID: driver.driverID,
               content: 'اضغط لتحديث الحالة',
             });
             driver.notificationSent = true;
@@ -432,46 +435,36 @@ export class DriverSocketGateway
           matchedDistance = 0;
         }
         trip.success = true;
-        await this.tripModel.update(
-          {
-            driverID: trip.driverID,
-            success: trip.success,
-            rawPath: JSON.stringify(trip.rawPath),
-            matchedPath: JSON.stringify(matchedPath),
-            distance: matchedDistance,
-            tripState: JSON.stringify(trip.tripState),
-            price: trip.price,
-            itemPrice,
-            time: trip.time,
-          },
-          { where: { tripID: trip.tripID } },
-        );
-        await this.vendorModel
-          .update(
-            { location: JSON.stringify(trip.vendor.location) },
-            { where: { vendorID: trip.vendor.vendorID } },
-          )
-          .then(async (data) => {
-            if (data[0] == 1) {
-              let vendor = await this.vendorModel.findByPk(
-                trip.vendor.vendorID,
-                { attributes: { exclude: ['password'] } },
-              );
+        await this.tripRepository.update(trip.tripID, {
+          driverID: trip.driverID,
+          success: trip.success,
+          rawPath: trip.rawPath,
+          matchedPath,
+          distance: matchedDistance,
+          tripState: trip.tripState,
+          price: trip.price,
+          itemPrice,
+          time: trip.time,
+        });
+        await this.vendorRepository
+          .update(trip.vendor.vendorID, { location: trip.vendor.location })
+          .then(async ({ affected }) => {
+            if (affected == 1) {
+              let vendor = await this.vendorRepository.findOneBy({
+                vendorID: trip.vendor.vendorID,
+              });
               this.adminSocketGateway.updateVendor(vendor);
             }
           });
-        await this.customerModel
-          .update(
-            {
-              location: JSON.stringify(trip.customer.location),
-            },
-            { where: { customerID: trip.customer.customerID } },
-          )
-          .then(async (data) => {
-            if (data[0] == 1) {
-              let customer = await this.customerModel.findByPk(
-                trip.customer.customerID,
-              );
+        await this.customerRepository
+          .update(trip.customer.customerID, {
+            location: trip.customer.location,
+          })
+          .then(async ({ affected }) => {
+            if (affected == 1) {
+              let customer = await this.customerRepository.findOneBy({
+                customerID: trip.customer.customerID,
+              });
               this.adminSocketGateway.updateCustomer(customer);
             }
           });
@@ -517,32 +510,26 @@ export class DriverSocketGateway
           matchedDistance = 0;
         }
         trip.success = true;
-        await this.tripModel.update(
-          {
-            driverID: trip.driverID,
-            success: trip.success,
-            rawPath: JSON.stringify(trip.rawPath),
-            matchedPath: JSON.stringify(matchedPath),
-            distance: matchedDistance,
-            tripState: JSON.stringify(trip.tripState),
-            price: trip.price,
-            itemPrice,
-            time: trip.time,
-          },
-          { where: { tripID: trip.tripID } },
-        );
-        await this.customerModel
-          .update(
-            {
-              location: JSON.stringify(trip.customer.location),
-            },
-            { where: { customerID: trip.customer.customerID } },
-          )
-          .then(async (data) => {
-            if (data[0] == 1) {
-              let customer = await this.customerModel.findByPk(
-                trip.customer.customerID,
-              );
+        await this.tripRepository.update(trip.tripID, {
+          driverID: trip.driverID,
+          success: trip.success,
+          rawPath: trip.rawPath,
+          matchedPath,
+          distance: matchedDistance,
+          tripState: trip.tripState,
+          price: trip.price,
+          itemPrice,
+          time: trip.time,
+        });
+        await this.customerRepository
+          .update(trip.customer.customerID, {
+            location: trip.customer.location,
+          })
+          .then(async ({ affected }) => {
+            if (affected == 1) {
+              let customer = await this.customerRepository.findOneBy({
+                customerID: trip.customer.customerID,
+              });
               this.adminSocketGateway.updateCustomer(customer);
             }
           });

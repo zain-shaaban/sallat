@@ -8,10 +8,13 @@ class location {
 }
 
 class GetCustomersOnMapData {
-  @ApiProperty({ type:'number',example: 52})
-  customerID: number;
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
+  customerID: string;
 
-  @ApiProperty({type:'string', example: 'example example' })
+  @ApiProperty({ type: 'string', example: 'example example' })
   name: string;
 
   @ApiProperty({ type: location })

@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   HttpStatus,
 } from '@nestjs/common';
 import { CcService } from './cc.service';
@@ -88,8 +87,8 @@ export class CcController {
   @ApiParam({
     name: 'ccID',
     description: 'The ID of the cc',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -112,7 +111,7 @@ export class CcController {
     },
   })
   @Get('get/:ccID')
-  async findOne(@Param('ccID', ParseIntPipe) ccID: number) {
+  async findOne(@Param('ccID') ccID: string) {
     return await asyncHandler(this.ccService.findOne(ccID));
   }
 
@@ -130,8 +129,8 @@ export class CcController {
   @ApiParam({
     name: 'ccID',
     description: 'The ID of the Cc',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -165,7 +164,7 @@ export class CcController {
   @ApiOperation({ summary: 'Update single Cc data' })
   @Patch('update/:ccID')
   async update(
-    @Param('ccID', ParseIntPipe) ccID: number,
+    @Param('ccID') ccID: string,
     @Body() updateCcDto: UpdateCcDto,
   ) {
     return await asyncHandler(this.ccService.update(ccID, updateCcDto));
@@ -185,8 +184,8 @@ export class CcController {
   @ApiParam({
     name: 'ccID',
     description: 'The ID of the Cc',
-    type: Number,
-    example: 20,
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -210,7 +209,7 @@ export class CcController {
   })
   @ApiOperation({ summary: 'Delete single Cc' })
   @Delete('delete/:ccID')
-  async remove(@Param('ccID', ParseIntPipe) ccID: number) {
+  async remove(@Param('ccID') ccID: string) {
     return await asyncHandler(this.ccService.remove(ccID));
   }
 }

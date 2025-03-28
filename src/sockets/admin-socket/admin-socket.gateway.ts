@@ -95,7 +95,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('pullTrip')
-  pullTrip(@MessageBody() tripID: number) {
+  pullTrip(@MessageBody() tripID: string) {
     try {
       let trip = readyTrips.find((trip) => trip.tripID == tripID);
       if (!trip) throw new NotFoundException();
@@ -123,7 +123,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('cancelTrip')
-  cancelTrip(@MessageBody() tripID: number) {
+  cancelTrip(@MessageBody() tripID: string) {
     try {
       ongoingTrips = ongoingTrips.filter((trip) => {
         if (trip.tripID == tripID) {
@@ -262,11 +262,11 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.io.server.of('/admin').emit('newDriver', driver);
   }
 
-  tripCancelledNotificationForAdmins(tripID: number) {
+  tripCancelledNotificationForAdmins(tripID: string) {
     this.io.server.of('/notifications').emit('tripCancelled', tripID);
   }
 
-  tripPulledNotificationForAdmins(tripID: number, driverID: number) {
+  tripPulledNotificationForAdmins(tripID: string, driverID: string) {
     this.io.server
       .of('/notifications')
       .emit('tripPulled', { tripID, driverID });
@@ -308,15 +308,15 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.io.server.of('/admin').emit('driverConnection', onlineDrivers);
   }
 
-  sendNewLocation(driverID: number, location: object) {
+  sendNewLocation(driverID: string, location: object) {
     this.io.server.of('/admin').emit('location', { driverID, location });
   }
 
-  sendHttpLocation(driverID: number, location: object) {
+  sendHttpLocation(driverID: string, location: object) {
     this.io.server.of('/admin').emit('httpLocation', { driverID, location });
   }
 
-  sendDriverDisconnectNotification(driverID: number) {
+  sendDriverDisconnectNotification(driverID: string) {
     this.io.server.of('/notifications').emit('driverConnection', {
       driverID,
       connection: false,

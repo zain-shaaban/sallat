@@ -46,8 +46,8 @@ export class CreateCcDtoRequest {
 }
 
 class CreateCcData {
-  @ApiProperty({ example: 20 })
-  ccID: number;
+  @ApiProperty({ example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f' })
+  ccID: string;
 }
 
 export class CreateCcDtoResponse {

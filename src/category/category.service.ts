@@ -1,25 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { Category } from './entities/category.entity';
 import { Item } from './entities/item.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CategoryService {
   constructor(
-    @InjectModel(Category) private categoryModel: typeof Category,
-    @InjectModel(Item) private itemModel: typeof Item,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+    @InjectRepository(Item) private itemRepository: Repository<Item>,
   ) {}
 
   async getAll() {
-    let allCategories: any = await this.categoryModel.findAll();
+    let allCategories: any = await this.categoryRepository.find();
     allCategories = await Promise.all(
       allCategories.map(async (category) => {
-        category = category.toJSON();
-        const types = await this.itemModel.findAll({
-          attributes: ['type'],
+        const types = await this.itemRepository.find({
+          select: ['type'],
           where: { category: category.type },
         });
         return {
@@ -50,55 +51,51 @@ export class CategoryService {
   }
 
   async createCategory(type: string) {
-    await this.categoryModel.create({ type });
+    await this.categoryRepository.insert({ type });
     return null;
   }
 
   async createItem(type: string, category: string) {
-    const existingCategory = await this.categoryModel.findOne({
-      where: { type: category },
+    const existingCategory = await this.categoryRepository.findOneBy({
+      type: category,
     });
-    if (!existingCategory) await this.categoryModel.create({ type: category });
-    await this.itemModel.create({ type, category });
+    if (!existingCategory)
+      await this.categoryRepository.insert({ type: category });
+    await this.itemRepository.insert({ type, category });
     return null;
   }
 
   async updateCategory(oldType: string, newType: string) {
-    const [updatedSuccessfully] = await this.categoryModel.update(
-      { type: newType },
-      { where: { type: oldType } },
-    );
-    if (!updatedSuccessfully) throw new NotFoundException();
+    const { affected } = await this.categoryRepository.update(oldType, {
+      type: newType,
+    });
+    if (!affected) throw new NotFoundException();
 
-    await this.itemModel.update(
+    await this.itemRepository.update(
+      { category: oldType },
       { category: newType },
-      { where: { category: oldType } },
     );
     return null;
   }
 
   async updatedItem(oldType: string, newType: string) {
-    const [updatedSuccessfully] = await this.itemModel.update(
+    const { affected } = await this.itemRepository.update(
+      { type: oldType },
       { type: newType },
-      { where: { type: oldType } },
     );
-    if (!updatedSuccessfully) throw new NotFoundException();
+    if (!affected) throw new NotFoundException();
     return null;
   }
 
   async deleteCategory(type: string) {
-    const deletedSuccessfully = await this.categoryModel.destroy({
-      where: { type },
-    });
-    if (!deletedSuccessfully) throw new NotFoundException();
+    const { affected } = await this.categoryRepository.delete({ type });
+    if (!affected) throw new NotFoundException();
     return null;
   }
 
   async deleteItem(type: string) {
-    const deletedSuccessfully = await this.itemModel.destroy({
-      where: { type },
-    });
-    if (!deletedSuccessfully) throw new NotFoundException();
+    const { affected } = await this.itemRepository.delete({ type });
+    if (!affected) throw new NotFoundException();
     return null;
   }
 }

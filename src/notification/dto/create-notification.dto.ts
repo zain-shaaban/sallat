@@ -1,15 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
-  IsNumber,
   IsString,
 } from 'class-validator';
 
 export class CreateNotificationDto {
-  @ApiProperty({ example: 100 })
-  @IsNumber()
+  @ApiProperty({ example: '3c559f4a-ef14-4e62-8874-384a89c8689e' })
+  @IsString()
   @IsNotEmpty()
-  driverID: number;
+  driverID: string;
 
   @ApiProperty({ example: 'come to the office' })
   @IsString()
