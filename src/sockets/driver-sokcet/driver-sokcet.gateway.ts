@@ -74,7 +74,7 @@ export class DriverSocketGateway
   io: Namespace;
 
   constructor(
-    @Inject(forwardRef(()=>AdminSocketGateway))
+    @Inject(forwardRef(() => AdminSocketGateway))
     private readonly adminSocketGateway: AdminSocketGateway,
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Vendor)
@@ -139,8 +139,8 @@ export class DriverSocketGateway
         this.adminSocketGateway.sendDriversArrayToAdmins();
         this.io.server
           .of('/notifications')
-          .emit('driverConnection', { driverID: +driverID, connection: true });
-        client.emit('onConnection', { available: driver.available });
+          .emit('driverConnection', { driverID, connection: true });
+        client.emit('onConnection', { available: true });
       } else {
         driver.socketID = client.id;
         driver.location = { lng: Number(lng), lat: Number(lat) };
@@ -158,10 +158,7 @@ export class DriverSocketGateway
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
-      return {
-        status: false,
-        message: error.message,
-      };
+      client.disconnect();
     }
   }
 
@@ -425,7 +422,6 @@ export class DriverSocketGateway
         }
         trip.tripState.tripEnd = endStateData;
         trip.rawPath.push(endStateData.location.coords);
-        trip.driverID = Number(trip.driverID);
         trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
         try {
           trip.price = await mapMatching(trip.rawPath);
@@ -500,7 +496,6 @@ export class DriverSocketGateway
         }
         trip.tripState.tripEnd = endStateData;
         trip.rawPath.push(endStateData.location.coords);
-        trip.driverID = Number(trip.driverID);
         trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
         try {
           trip.price = await mapMatching(trip.rawPath);
@@ -566,6 +561,6 @@ export class DriverSocketGateway
   }
 
   getDriverID(client: Socket) {
-    return Number(client.handshake.query.driverID);
+    return client.handshake.query.driverID;
   }
 }
