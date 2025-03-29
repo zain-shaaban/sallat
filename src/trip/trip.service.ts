@@ -14,6 +14,7 @@ import { onlineDrivers } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { LocationEntity } from './entities/location.entity';
 
 @Injectable()
 export class TripService {
@@ -21,6 +22,8 @@ export class TripService {
     @InjectRepository(Trip) private tripRepository: Repository<Trip>,
     @InjectRepository(Customer)
     private customerRepository: Repository<Customer>,
+    @InjectRepository(LocationEntity)
+    private locationRepository: Repository<LocationEntity>,
     @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
     @Inject() private readonly adminGateway: AdminSocketGateway,
     @Inject() private readonly notificationService: NotificationService,
@@ -94,8 +97,8 @@ export class TripService {
           routedPath,
           alternative: false,
         });
-        trip.customer = customer
-        trip.vendor = vendor
+        trip.customer = customer;
+        trip.vendor = vendor;
         delete trip.customerID;
         delete trip.vendorID;
         readyTrips.push(trip);
@@ -284,6 +287,7 @@ export class TripService {
 
   async sendNewLocation(sendLocationData: sendLocationDto) {
     const { driverID, location } = sendLocationData;
+    await this.locationRepository.insert({ driverID, location });
     this.adminGateway.sendHttpLocation(driverID, location);
     const oneDriver = onlineDrivers.find(
       (driver) => driver.driverID == driverID,

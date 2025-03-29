@@ -7,10 +7,11 @@ import { DriverSocketModule } from 'src/sockets/driver-sokcet/driver-sokcet.modu
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { LocationEntity } from './entities/location.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Trip, Customer, Vendor]),
+    TypeOrmModule.forFeature([Trip, Customer, Vendor, LocationEntity]),
     forwardRef(() => AdminSocketModule),
     forwardRef(() => DriverSocketModule),
   ],

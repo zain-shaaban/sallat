@@ -23,6 +23,8 @@ import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service
 import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { LocationEntity } from 'src/trip/entities/location.entity';
+import { start } from 'repl';
 
 export let onlineDrivers: any[] = [];
 
@@ -79,6 +81,8 @@ export class DriverSocketGateway
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Vendor)
     private readonly vendorRepository: Repository<Vendor>,
+    @InjectRepository(LocationEntity)
+    private locationRepository: Repository<LocationEntity>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     private readonly logger: ErrorLoggerService,
@@ -188,6 +192,7 @@ export class DriverSocketGateway
   ) {
     try {
       const driverID = this.getDriverID(client);
+      this.locationRepository.insert({ driverID, location });
       const oneDriver = onlineDrivers.find(
         (driver) => driver.driverID == driverID,
       );
@@ -561,6 +566,6 @@ export class DriverSocketGateway
   }
 
   getDriverID(client: Socket) {
-    return client.handshake.query.driverID;
+    return <string>client.handshake.query.driverID;
   }
 }
