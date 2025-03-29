@@ -51,7 +51,7 @@ export class Trip {
   partnership: boolean;
 
   @ApiProperty({ type: 'array', example: ['شاورما', 'بطاطا مقلية'] })
-  @Column('text', { array: true })
+  @Column({ type: 'jsonb', default: [] })
   itemTypes: string[];
 
   @ApiProperty({
@@ -104,8 +104,8 @@ export class Trip {
       { lng: 555.555, lat: 333.333 },
     ],
   })
-  @Column('text', { array: true, default: [] })
-  rawPath: string[];
+  @Column({ type: 'jsonb', default: [] })
+  rawPath: object[];
 
   @ApiProperty({
     type: 'array',
@@ -115,7 +115,7 @@ export class Trip {
       { lng: 555.555, lat: 333.333 },
     ],
   })
-  @Column('text', { array: true, default: [] })
+  @Column({ type: 'jsonb', default: [] })
   routedPath: object[];
 
   @ApiProperty({
@@ -126,7 +126,7 @@ export class Trip {
       { lng: 555.555, lat: 333.333 },
     ],
   })
-  @Column('text', { array: true, default: [] })
+  @Column({ type: 'jsonb', default: [] })
   matchedPath: object[];
 
   @ApiProperty({ type: 'boolean', example: true })
