@@ -31,4 +31,8 @@ export class sendLocationDto {
   @ApiProperty({ type: location })
   @IsOptional()
   location: location;
+
+  @ApiProperty({ type: 'number', example: 6565656 })
+  @IsNumber()
+  clientDate: number;
 }

@@ -286,8 +286,14 @@ export class TripService {
   }
 
   async sendNewLocation(sendLocationData: sendLocationDto) {
-    const { driverID, location } = sendLocationData;
-    await this.locationRepository.insert({ driverID, location });
+    const { driverID, location, clientDate } = sendLocationData;
+    await this.locationRepository.insert({
+      driverID,
+      location,
+      locationSource: 'http',
+      clientDate,
+      serverDate: Date.now(),
+    });
     this.adminGateway.sendHttpLocation(driverID, location);
     const oneDriver = onlineDrivers.find(
       (driver) => driver.driverID == driverID,

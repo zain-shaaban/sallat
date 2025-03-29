@@ -16,6 +16,12 @@ export class LocationEntity {
   @Column('jsonb')
   location: object;
 
-  @CreateDateColumn()
-  date: string;
+  @Column({ type: 'varchar', nullable: true })
+  locationSource: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  clientDate: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  serverDate: number;
 }

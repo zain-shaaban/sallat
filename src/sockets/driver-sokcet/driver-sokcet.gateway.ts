@@ -24,7 +24,6 @@ import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LocationEntity } from 'src/trip/entities/location.entity';
-import { start } from 'repl';
 
 export let onlineDrivers: any[] = [];
 
@@ -188,16 +187,26 @@ export class DriverSocketGateway
   @SubscribeMessage('sendLocation')
   handleLocationUpdate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() location: { lng: number; lat: number },
+    @MessageBody()
+    sendLocationData: {
+      location: { lng: number; lat: number };
+      clientDate: number;
+    },
   ) {
     try {
       const driverID = this.getDriverID(client);
-      this.locationRepository.insert({ driverID, location });
+      this.locationRepository.insert({
+        driverID,
+        location,
+        locationSource: 'socket',
+        clientDate: sendLocationData.clientDate,
+        serverDate: Date.now(),
+      });
       const oneDriver = onlineDrivers.find(
         (driver) => driver.driverID == driverID,
       );
       if (oneDriver) {
-        oneDriver.location = location;
+        oneDriver.location = sendLocationData.location;
         if (oneDriver.available == false) {
           const oneTrip = ongoingTrips.find(
             (trip) => trip.driverID == oneDriver.driverID,
@@ -205,16 +214,19 @@ export class DriverSocketGateway
           if (oneTrip) {
             if (oneTrip.alternative == false) {
               if (typeof oneTrip.tripState.onVendor.time == 'number')
-                oneTrip.rawPath.push(location);
+                oneTrip.rawPath.push(sendLocationData.location);
             } else if (oneTrip.alternative == true) {
               if (oneTrip.tripState.wayPoints.length > 0)
-                oneTrip.rawPath.push(location);
+                oneTrip.rawPath.push(sendLocationData.location);
             }
           }
         }
         this.io.server
           .of('/admin')
-          .emit('location', { driverID: oneDriver.driverID, location });
+          .emit('location', {
+            driverID: oneDriver.driverID,
+            location: sendLocationData.location,
+          });
       }
       return { status: true };
     } catch (error) {
