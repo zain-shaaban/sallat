@@ -197,7 +197,7 @@ export class DriverSocketGateway
       const driverID = this.getDriverID(client);
       this.locationRepository.insert({
         driverID,
-        location,
+        location: sendLocationData.location,
         locationSource: 'socket',
         clientDate: sendLocationData.clientDate,
         serverDate: Date.now(),
@@ -221,12 +221,10 @@ export class DriverSocketGateway
             }
           }
         }
-        this.io.server
-          .of('/admin')
-          .emit('location', {
-            driverID: oneDriver.driverID,
-            location: sendLocationData.location,
-          });
+        this.io.server.of('/admin').emit('location', {
+          driverID: oneDriver.driverID,
+          location: sendLocationData.location,
+        });
       }
       return { status: true };
     } catch (error) {
