@@ -1,6 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 class location {
   @ApiProperty({ type: 'number', example: 4544.232 })
@@ -10,7 +15,7 @@ class location {
   lat: number;
 }
 
-@Entity('sallat_vendors')
+@Entity('sallat_vendors', { orderBy: { createdAt: 'ASC' } })
 export class Vendor {
   @ApiProperty({
     type: 'string',
@@ -46,4 +51,8 @@ export class Vendor {
   @Exclude()
   @Column({ type: 'varchar', nullable: true })
   password: string;
+
+  @CreateDateColumn()
+  @Exclude()
+  createdAt: Date;
 }

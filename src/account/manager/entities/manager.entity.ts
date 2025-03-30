@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
-@Entity('sallat_managers')
+@Entity('sallat_managers', { orderBy: { createdAt: 'ASC' } })
 export class Manager {
-  @ApiProperty({ type: 'string', example: '09eea85b-85d3-4d8a-8e41-a6a5af12c546' })
+  @ApiProperty({
+    type: 'string',
+    example: '09eea85b-85d3-4d8a-8e41-a6a5af12c546',
+  })
   @PrimaryGeneratedColumn('uuid')
   managerID: string;
 
@@ -31,4 +39,8 @@ export class Manager {
   @ApiProperty({ type: 'boolean', example: false })
   @Column({ type: 'boolean', default: false })
   superAdmin: boolean;
+
+  @CreateDateColumn()
+  @Exclude()
+  createdAt: Date;
 }

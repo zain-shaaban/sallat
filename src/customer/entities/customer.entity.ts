@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 class location {
   @ApiProperty({ type: 'number', example: 4544.232 })
@@ -9,7 +15,7 @@ class location {
   lat: number;
 }
 
-@Entity('sallat_customers')
+@Entity('sallat_customers', { orderBy: { createdAt: 'ASC' } })
 export class Customer {
   @ApiProperty({
     type: 'string',
@@ -29,4 +35,8 @@ export class Customer {
   @ApiProperty({ type: location })
   @Column({ type: 'jsonb' })
   location: location;
+
+  @CreateDateColumn()
+  @Exclude()
+  createdAt: Date;
 }

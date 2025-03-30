@@ -10,7 +10,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './category/category.module';
 import { DriverSocketModule } from './sockets/driver-sokcet/driver-sokcet.module';
 import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
-import { PathModule } from './path/path.module';
 import { TripModule } from './trip/trip.module';
 import { CustomerModule } from './customer/customer.module';
 import { VendorModule } from './vendor/vendor.module';
@@ -31,7 +30,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: configService.get('database.user'),
         password: configService.get('database.password'),
         database: configService.get('database.name'),
-        autoLoadEntities:true,
+        autoLoadEntities: true,
         retryAttempts: 2,
         synchronize: true,
         logging: false,
@@ -54,7 +53,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     CategoryModule,
     DriverSocketModule,
     AdminSocketModule,
-    PathModule,
     TripModule,
     CustomerModule,
     AccountVendorModule,

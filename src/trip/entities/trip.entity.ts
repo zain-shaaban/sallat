@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('sallat_trips')
 export class Trip {
@@ -132,4 +137,8 @@ export class Trip {
   @ApiProperty({ type: 'boolean', example: true })
   @Column({ type: 'boolean', default: false })
   success: boolean;
+
+  @ApiProperty({ type: 'string', example: '2025-01-01 14:32:57.973928' })
+  @CreateDateColumn()
+  createAt: Date;
 }

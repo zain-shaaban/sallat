@@ -1,8 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
-@Entity('sallat_drivers')
+@Entity('sallat_drivers', { orderBy: { createdAt: 'ASC' } })
 export class Driver {
   @ApiProperty({
     type: 'string',
@@ -38,4 +43,8 @@ export class Driver {
   @ApiProperty({ type: 'string', example: 'tokentokentokentokentoken' })
   @Column({ type: 'varchar', nullable: true })
   notificationToken: string;
+
+  @CreateDateColumn()
+  @Exclude()
+  createdAt: Date;
 }

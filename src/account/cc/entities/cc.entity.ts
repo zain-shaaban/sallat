@@ -1,8 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude} from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
-@Entity('sallat_cc')
+@Entity('sallat_cc', { orderBy: { createdAt: 'ASC' } })
 export class Cc {
   @ApiProperty({
     type: 'string',
@@ -30,4 +35,8 @@ export class Cc {
   @ApiProperty({ type: 'number', example: 1500000.0 })
   @Column({ type: 'float', nullable: true })
   salary: number;
+
+  @CreateDateColumn()
+  @Exclude()
+  createAt: Date;
 }
