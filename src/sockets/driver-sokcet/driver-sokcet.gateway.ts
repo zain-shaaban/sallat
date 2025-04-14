@@ -122,6 +122,8 @@ export class DriverSocketGateway
     );
   }
 
+  // Test comment
+
   handleConnection(client: Socket) {
     try {
       const { driverID, lng, lat, clientDate } = client.handshake.query;
