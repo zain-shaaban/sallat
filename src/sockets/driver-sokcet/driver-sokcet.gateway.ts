@@ -122,9 +122,11 @@ export class DriverSocketGateway
     );
   }
 
+  // Test comment
+
   handleConnection(client: Socket) {
     try {
-      const { driverID, lng, lat } = client.handshake.query;
+      const { driverID, lng, lat, clientDate } = client.handshake.query;
       let driver = onlineDrivers.find((driver) => driver.driverID == driverID);
       if (!driver) {
         onlineDrivers.push({
@@ -146,8 +148,11 @@ export class DriverSocketGateway
         client.emit('onConnection', { available: true });
       } else {
         driver.socketID = client.id;
-        driver.location = { lng: Number(lng), lat: Number(lat) };
-        driver.lastLocation = Date.now();
+        if(new Date().getTime() - Number(clientDate) <= 1000 * 30) {
+          console.log("Reconnect location accepted");
+          driver.location = { lng: Number(lng), lat: Number(lat) };
+          driver.lastLocation = Date.now();
+        }
         driver.notificationSent = false;
         this.adminSocketGateway.sendDriversArrayToAdmins();
         client.emit('onConnection', { available: driver.available });
