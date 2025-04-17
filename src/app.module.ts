@@ -32,7 +32,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         database: configService.get('database.name'),
         autoLoadEntities: true,
         retryAttempts: 2,
-        synchronize: true,
+        synchronize: false,
         logging: false,
       }),
       inject: [ConfigService],
