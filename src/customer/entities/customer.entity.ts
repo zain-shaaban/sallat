@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -28,9 +29,9 @@ export class Customer {
   @Column()
   name: string;
 
-  @ApiProperty({ type: 'string', example: '+96399887766' })
-  @Column()
-  phoneNumber: string;
+  @ApiProperty({ type: 'array', example: ['+96399887766', '+96399988877'] })
+  @Column({ type: 'text', array: true})
+  phoneNumber: string[];
 
   @ApiProperty({ type: location })
   @Column({ type: 'jsonb' })
