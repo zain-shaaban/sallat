@@ -272,11 +272,14 @@ export class TripService {
 
   async customerSearch(phoneNumber: string) {
     const customer = await this.customerRepository.findOne({
-      select: ['customerID', 'name', 'location'],
+      select: ['customerID', 'name', 'location', "phoneNumber"],
       where: { phoneNumber: ArrayContains([phoneNumber]) },
     });
     if (!customer) throw new NotFoundException();
-    return customer;
+    const fixedCustomer: any = customer;
+    fixedCustomer.alternativePhoneNumbers = customer.phoneNumber.filter(n => n != phoneNumber) || [];
+    delete fixedCustomer.phoneNumber;
+    return fixedCustomer;
   }
 
   async findOne(tripID: string) {
