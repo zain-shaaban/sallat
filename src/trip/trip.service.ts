@@ -13,8 +13,9 @@ import { sendLocationDto } from './dto/new-location.dto';
 import { onlineDrivers } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 import { LocationEntity } from './entities/location.entity';
+import { CustomerService } from 'src/customer/customer.service';
 
 @Injectable()
 export class TripService {
@@ -27,6 +28,7 @@ export class TripService {
     @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
     @Inject() private readonly adminGateway: AdminSocketGateway,
     @Inject() private readonly notificationService: NotificationService,
+    @Inject() private readonly customerService: CustomerService,
   ) {}
 
   async createNewTrip(createTripDto: CreateTripDto) {
@@ -97,6 +99,7 @@ export class TripService {
           routedPath,
           alternative: false,
         });
+        customer = this.customerService.handlePhoneNumbers(customer);
         trip.customer = customer;
         trip.vendor = vendor;
         delete trip.customerID;
@@ -122,6 +125,7 @@ export class TripService {
           routedPath,
           alternative: false,
         });
+        customer = this.customerService.handlePhoneNumbers(customer);
         trip.customer = customer;
         trip.vendor = vendor;
         delete trip.customerID;
@@ -158,6 +162,7 @@ export class TripService {
           description,
           alternative: true,
         });
+        customer = this.customerService.handlePhoneNumbers(customer);
         trip.customer = customer;
         delete trip.customerID;
         readyTrips.push(trip);
@@ -176,6 +181,7 @@ export class TripService {
           description,
           alternative: true,
         });
+        customer = this.customerService.handlePhoneNumbers(customer);
         trip.customer = customer;
         delete trip.customerID;
         pendingTrips.push(trip);
@@ -194,7 +200,7 @@ export class TripService {
   ) {
     const customer = await this.customerRepository.save({
       name: customerName,
-      phoneNumber: customerPhoneNumber,
+      phoneNumber: [customerPhoneNumber],
       location: customerLocation,
     });
     this.adminGateway.newCustomer(customer);
@@ -221,14 +227,21 @@ export class TripService {
     customerPhoneNumber: string,
     customerLocation: object,
   ) {
-    if (!customerID) throw new NotFoundException();
-    const customer = await this.customerRepository
-      .update(customerID, {
-        name: customerName,
-        phoneNumber: customerPhoneNumber,
-        location: customerLocation,
-      })
-      .then(() => this.customerRepository.findOneBy({ customerID }));
+    let customer = await this.customerRepository.findOneBy({ customerID });
+    if (!customer) throw new NotFoundException();
+    if (customerPhoneNumber)
+      customer.phoneNumber = [
+        customerPhoneNumber,
+        ...customer.phoneNumber.filter((p) => p !== customerPhoneNumber),
+      ];
+    const filteredSource = Object.fromEntries(
+      Object.entries({ name: customerName, location: customerLocation }).filter(
+        ([_, value]) => value !== undefined,
+      ),
+    );
+    Object.assign(customer, filteredSource);
+    await this.customerRepository.save(customer);
+    customer = this.customerService.handlePhoneNumbers(customer);
     this.adminGateway.updateCustomer(customer);
     return customer;
   }
@@ -265,11 +278,14 @@ export class TripService {
   }
 
   async customerSearch(phoneNumber: string) {
-    const customer = await this.customerRepository.findOne({
+    const customer: any = await this.customerRepository.findOne({
       select: ['customerID', 'name', 'location'],
-      where: { phoneNumber },
+      where: { phoneNumber: ArrayContains([phoneNumber]) },
     });
     if (!customer) throw new NotFoundException();
+    customer.alternativePhoneNumbers =
+      customer.phoneNumber.filter((n) => n != phoneNumber) || [];
+    delete customer.phoneNumber;
     return customer;
   }
 

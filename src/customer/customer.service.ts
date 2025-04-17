@@ -18,11 +18,12 @@ export class CustomerService {
 
   async create(createCustomerDto: CreateCustomerDtoRequest) {
     let { name, phoneNumber, location } = createCustomerDto;
-    const customer = await this.customerRepository.save({
+    let customer = await this.customerRepository.save({
       name,
-      phoneNumber,
+      phoneNumber: [phoneNumber],
       location,
     });
+    customer = this.handlePhoneNumbers(customer);
     this.adminGateway.newCustomer(customer);
     return { customerID: customer.customerID };
   }
@@ -34,6 +35,7 @@ export class CustomerService {
         where: { customerID: allCustomers[i].customerID },
       });
       allCustomers[i].trips = trips;
+      allCustomers[i] = this.handlePhoneNumbers(allCustomers[i]);
     }
     return allCustomers;
   }
@@ -45,17 +47,26 @@ export class CustomerService {
       where: { customerID: customer.customerID },
     });
     customer.trips = trips;
+    customer = this.handlePhoneNumbers(customer);
     return customer;
   }
 
   async update(customerID: string, updateCustomerDto: UpdateCustomerDto) {
     let { name, phoneNumber, location } = updateCustomerDto;
-    const customer = await this.customerRepository
-      .update(customerID, { name, phoneNumber, location })
-      .then((data) => {
-        if (data[0] == 0) throw new NotFoundException();
-        return this.customerRepository.findOneBy({ customerID });
-      });
+    let customer = await this.customerRepository.findOneBy({ customerID });
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    if (phoneNumber && !customer.phoneNumber.includes(phoneNumber))
+      customer.phoneNumber.push(phoneNumber);
+
+    let updates = Object.fromEntries(
+      Object.entries({ name, location }).filter(
+        ([_, value]) => value !== undefined,
+      ),
+    );
+    Object.assign(customer, updates);
+    await this.customerRepository.save(customer);
+    customer = this.handlePhoneNumbers(customer);
     this.adminGateway.updateCustomer(customer);
     return null;
   }
@@ -72,5 +83,12 @@ export class CustomerService {
       select: ['customerID', 'name', 'location'],
     });
     return allCustomersOnMap;
+  }
+
+  handlePhoneNumbers(customer: any) {
+    const phoneNumbers = customer.phoneNumber;
+    customer.phoneNumber = phoneNumbers[0];
+    customer.alternativePhoneNumbers = phoneNumbers.slice(1);
+    return customer;
   }
 }
