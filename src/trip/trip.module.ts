@@ -8,12 +8,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { LocationEntity } from './entities/location.entity';
+import { CustomerModule } from 'src/customer/customer.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Trip, Customer, Vendor, LocationEntity]),
     forwardRef(() => AdminSocketModule),
     forwardRef(() => DriverSocketModule),
+    forwardRef(() => CustomerModule),
   ],
   controllers: [TripController],
   providers: [TripService],

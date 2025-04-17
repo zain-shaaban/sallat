@@ -10,5 +10,6 @@ import { Trip } from 'src/trip/entities/trip.entity';
   imports: [TypeOrmModule.forFeature([Customer, Trip]), AdminSocketModule],
   controllers: [CustomerController],
   providers: [CustomerService],
+  exports: [CustomerService],
 })
 export class CustomerModule {}
