@@ -127,6 +127,8 @@ export class DriverSocketGateway
   handleConnection(client: Socket) {
     try {
       const { driverID, lng, lat, clientDate } = client.handshake.query;
+      console.log(clientDate);
+      client.emit("clientDate", clientDate);
       let driver = onlineDrivers.find((driver) => driver.driverID == driverID);
       if (!driver) {
         onlineDrivers.push({
