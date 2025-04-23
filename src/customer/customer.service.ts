@@ -31,10 +31,10 @@ export class CustomerService {
   async findAll() {
     let allCustomers: any = await this.customerRepository.find();
     for (let i in allCustomers) {
-      const trips: any = await this.tripRepository.find({
-        where: { customerID: allCustomers[i].customerID },
-      });
-      allCustomers[i].trips = trips;
+      // const trips: any = await this.tripRepository.find({
+      //   where: { customerID: allCustomers[i].customerID },
+      // });
+      // allCustomers[i].trips = trips;
       allCustomers[i] = this.handlePhoneNumbers(allCustomers[i]);
     }
     return allCustomers;
@@ -43,10 +43,10 @@ export class CustomerService {
   async findOne(customerID: string) {
     let customer: any = await this.customerRepository.findOneBy({ customerID });
     if (!customer) throw new NotFoundException();
-    const trips: any = await this.tripRepository.find({
-      where: { customerID: customer.customerID },
-    });
-    customer.trips = trips;
+    // const trips: any = await this.tripRepository.find({
+    //   where: { customerID: customer.customerID },
+    // });
+    // customer.trips = trips;
     customer = this.handlePhoneNumbers(customer);
     return customer;
   }

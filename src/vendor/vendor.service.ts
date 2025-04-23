@@ -36,22 +36,22 @@ export class VendorService {
 
   async findAll() {
     let allVendors: any = await this.vendorRepository.find();
-    for (let i in allVendors) {
-      const trips: any = await this.tripRepository.find({
-        where: { vendorID: allVendors[i].vendorID },
-      });
-      allVendors[i].trips = trips;
-    }
+    // for (let i in allVendors) {
+    //   const trips: any = await this.tripRepository.find({
+    //     where: { vendorID: allVendors[i].vendorID },
+    //   });
+    //   allVendors[i].trips = trips;
+    // }
     return plainToInstance(Vendor, allVendors);
   }
 
   async findOne(vendorID: string) {
     let vendor: any = await this.vendorRepository.findOneBy({ vendorID });
     if (!vendor) throw new NotFoundException();
-    const trips: any = await this.tripRepository.find({
-      where: { vendorID: vendor.vendorID },
-    });
-    vendor.trips = trips;
+    // const trips: any = await this.tripRepository.find({
+    //   where: { vendorID: vendor.vendorID },
+    // });
+    // vendor.trips = trips;
     return plainToInstance(Vendor, vendor);
   }
 
