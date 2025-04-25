@@ -6,10 +6,11 @@ import { Trip } from 'src/trip/entities/trip.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { LocationEntity } from 'src/trip/entities/location.entity';
+import { NotificationSocket } from '../notification-socket/entites/notification-socket.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Trip, Vendor, Customer, LocationEntity]),
+    TypeOrmModule.forFeature([Trip, Vendor, Customer, LocationEntity, NotificationSocket]),
     forwardRef(() => AdminSocketModule),
   ],
   providers: [DriverSocketGateway],

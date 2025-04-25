@@ -11,6 +11,9 @@ import { Trip } from 'src/trip/entities/trip.entity';
 import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { NotificationService } from 'src/notification/notification.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { NotificationSocket } from '../notification-socket/entites/notification-socket.entity';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
@@ -29,6 +32,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   constructor(
     private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
+    @InjectRepository(NotificationSocket) private readonly notificationSocketRepository: Repository<NotificationSocket>,
   ) {}
 
   handleConnection(client: Socket) {
@@ -198,6 +202,8 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.io.server
       .of('/notifications')
       .emit('tripReceived', { tripID, driverID });
+
+    this.notificationSocketRepository.save({ type: "tripReceived", data: { tripID, driverID } })
   }
 
   sendTripsToAdmins() {
@@ -264,12 +270,14 @@ export class AdminSocketGateway implements OnGatewayConnection {
 
   tripCancelledNotificationForAdmins(tripID: string) {
     this.io.server.of('/notifications').emit('tripCancelled', tripID);
+    this.notificationSocketRepository.save({ type: "tripCancelled", data: tripID });
   }
 
   tripPulledNotificationForAdmins(tripID: string, driverID: string) {
     this.io.server
       .of('/notifications')
       .emit('tripPulled', { tripID, driverID });
+      this.notificationSocketRepository.save({ type: "tripPulled", data: { tripID, driverID } })
   }
 
   tripCancelledForDriver(driver) {
@@ -321,5 +329,9 @@ export class AdminSocketGateway implements OnGatewayConnection {
       driverID,
       connection: false,
     });
+    this.notificationSocketRepository.save({ type: "driverConnection", data: {
+      driverID,
+      connection: false,
+    } })
   }
 }

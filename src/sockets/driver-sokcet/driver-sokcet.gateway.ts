@@ -24,6 +24,7 @@ import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LocationEntity } from 'src/trip/entities/location.entity';
+import { NotificationSocket } from '../notification-socket/entites/notification-socket.entity';
 
 export let onlineDrivers: any[] = [];
 
@@ -86,6 +87,8 @@ export class DriverSocketGateway
     private readonly customerRepository: Repository<Customer>,
     private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
+    @InjectRepository(NotificationSocket)
+    private readonly notificationSocketRepository: Repository<NotificationSocket>,
   ) {
     setInterval(
       async () => {
@@ -144,6 +147,10 @@ export class DriverSocketGateway
           .of('/notifications')
           .emit('driverConnection', { driverID, connection: true });
         client.emit('onConnection', { available: true });
+        this.notificationSocketRepository.save({
+          type: 'driverConnection',
+          data: { driverID, connection: true },
+        });
       } else {
         driver.socketID = client.id;
         if (new Date().getTime() - Number(clientDate) <= 1000 * 30) {
@@ -253,6 +260,11 @@ export class DriverSocketGateway
       this.io.server
         .of('/notifications')
         .emit('tripRejected', { tripID: oneTrip.tripID, driverID });
+
+      this.notificationSocketRepository.save({
+        type: 'tripRejected',
+        data: { tripID: oneTrip.tripID, driverID },
+      });
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -296,6 +308,11 @@ export class DriverSocketGateway
       this.io.server
         .of('/notifications')
         .emit('tripAccepted', { tripID: trip.tripID, driverID });
+
+      this.notificationSocketRepository.save({
+        type: 'tripAccepted',
+        data: { tripID: trip.tripID, driverID },
+      });
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -344,6 +361,14 @@ export class DriverSocketGateway
           driverID,
           vendorID: trip.vendor.vendorID,
         });
+        this.notificationSocketRepository.save({
+          type: 'stateOnVendor',
+          data: {
+            tripID: trip.tripID,
+            driverID,
+            vendorID: trip.vendor.vendorID,
+          },
+        });
         if (
           trip.vendor.location.approximate == true &&
           changeStateData.stateData.location.approximate == false
@@ -361,6 +386,14 @@ export class DriverSocketGateway
           tripID: trip.tripID,
           driverID,
           vendorID: trip.vendor.vendorID,
+        });
+        this.notificationSocketRepository.save({
+          type: 'stateLeftVendor',
+          data: {
+            tripID: trip.tripID,
+            driverID,
+            vendorID: trip.vendor.vendorID,
+          },
         });
       }
       return { status: true };
@@ -492,6 +525,18 @@ export class DriverSocketGateway
           time: trip.time,
           distance: matchedDistance,
         });
+        this.notificationSocketRepository.save({
+          type: 'tripCompleted',
+          data: {
+            tripID: trip.tripID,
+            driverID,
+            success: trip.success,
+            price: trip.price,
+            itemPrice,
+            time: trip.time,
+            distance: matchedDistance,
+          },
+        });
         this.adminSocketGateway.sendDriversArrayToAdmins();
         return {
           status: true,
@@ -555,6 +600,18 @@ export class DriverSocketGateway
           itemPrice,
           time: trip.time,
           distance: matchedDistance,
+        });
+        this.notificationSocketRepository.save({
+          type: 'tripCompleted',
+          data: {
+            tripID: trip.tripID,
+            driverID,
+            success: trip.success,
+            price: trip.price,
+            itemPrice,
+            time: trip.time,
+            distance: matchedDistance,
+          },
         });
         this.adminSocketGateway.sendDriversArrayToAdmins();
         return {
