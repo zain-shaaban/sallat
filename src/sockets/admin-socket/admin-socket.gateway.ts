@@ -11,6 +11,9 @@ import { Trip } from 'src/trip/entities/trip.entity';
 import { ErrorLoggerService } from 'src/common/error_logger/error_logger.service';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { NotificationService } from 'src/notification/notification.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SocketNotification } from 'src/socket-notification/entities/socket-notification.entity';
+import { Repository } from 'typeorm';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
@@ -29,6 +32,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   constructor(
     private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
+    @InjectRepository(SocketNotification) private readonly socketNotificationRepo: Repository<SocketNotification>,
   ) {}
 
   handleConnection(client: Socket) {
@@ -198,6 +202,8 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.io.server
       .of('/notifications')
       .emit('tripReceived', { tripID, driverID });
+
+    this.socketNotificationRepo.save({ type: "tripReceived", data: { tripID, driverID } })
   }
 
   sendTripsToAdmins() {
@@ -264,12 +270,14 @@ export class AdminSocketGateway implements OnGatewayConnection {
 
   tripCancelledNotificationForAdmins(tripID: string) {
     this.io.server.of('/notifications').emit('tripCancelled', tripID);
+    this.socketNotificationRepo.save({ type: "tripCancelled", data: tripID });
   }
 
   tripPulledNotificationForAdmins(tripID: string, driverID: string) {
     this.io.server
       .of('/notifications')
       .emit('tripPulled', { tripID, driverID });
+      this.socketNotificationRepo.save({ type: "tripPulled", data: { tripID, driverID } })
   }
 
   tripCancelledForDriver(driver) {
@@ -321,5 +329,9 @@ export class AdminSocketGateway implements OnGatewayConnection {
       driverID,
       connection: false,
     });
+    this.socketNotificationRepo.save({ type: "driverConnection", data: {
+      driverID,
+      connection: false,
+    } })
   }
 }

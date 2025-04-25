@@ -18,6 +18,7 @@ import { ErrorLoggerModule } from './common/error_logger/error_logger.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { NotificationModule } from './notification/notification.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SocketNotificationModule } from './socket-notification/socket-notification.module';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         database: configService.get('database.name'),
         autoLoadEntities: true,
         retryAttempts: 2,
-        synchronize: false,
+        synchronize: true,
         logging: false,
       }),
       inject: [ConfigService],
@@ -60,6 +61,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ErrorLoggerModule,
     FirebaseModule,
     NotificationModule,
+    SocketNotificationModule,
   ],
 })
 export class AppModule {}
