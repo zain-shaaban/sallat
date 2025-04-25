@@ -1,8 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Customer } from 'src/customer/entities/customer.entity';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -29,19 +33,33 @@ export class Trip {
   @Column({ type: 'varchar', nullable: true })
   driverID: string;
 
-  @ApiProperty({
-    type: 'string',
-    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-  })
-  @Column({ type: 'varchar', nullable: true })
-  vendorID: string;
+  // @ApiProperty({
+  //   type: 'string',
+  //   example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  // })
+  // @Column({ type: 'varchar', nullable: true })
+  // vendorID: string;
 
-  @ApiProperty({
-    type: 'string',
-    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  // @ApiProperty({
+  //   type: 'string',
+  //   example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  // })
+  // @Column({ type: 'varchar', nullable: true })
+  // customerID: string;
+
+  @ManyToOne(() => Vendor, (vendor) => vendor.trips, {
+    onDelete: 'SET NULL',
+    cascade: true,
   })
-  @Column({ type: 'varchar', nullable: true })
-  customerID: string;
+  @JoinColumn({ name: 'vendorID' })
+  vendor: Vendor;
+
+  @ManyToOne(() => Customer, (customer) => customer.trips, {
+    onDelete: 'SET NULL',
+    cascade: true,
+  })
+  @JoinColumn({ name: 'customerID' })
+  customer: Customer;
 
   @ApiProperty({ type: 'string', example: '123456' })
   @Column({ type: 'varchar', nullable: true })

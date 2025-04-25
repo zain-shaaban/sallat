@@ -2,7 +2,6 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { Trip } from './entities/trip.entity';
 import { Customer } from '../customer/entities/customer.entity';
-import { Vendor } from '../vendor/entities/vendor.entity';
 import {
   AdminSocketGateway,
   ongoingTrips,
@@ -25,7 +24,6 @@ export class TripService {
     private customerRepository: Repository<Customer>,
     @InjectRepository(LocationEntity)
     private locationRepository: Repository<LocationEntity>,
-    @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
     @Inject() private readonly adminGateway: AdminSocketGateway,
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly customerService: CustomerService,
@@ -50,230 +48,111 @@ export class TripService {
       routedPath,
       alternative,
     } = createTripDto;
+    const customerPhoneNumbersArray = await this.updatePhoneNumber(
+      customerID,
+      customerPhoneNumber,
+    );
     if (!alternative) {
-      let customer: Customer;
-      let vendor: Vendor;
-      if (vendorName || vendorPhoneNumber || vendorLocation) {
-        if (vendorID) {
-          vendor = await this.updateVendor(
-            vendorID,
-            vendorName,
-            vendorPhoneNumber,
-            vendorLocation,
-          );
-        } else {
-          vendor = await this.createNewVendor(
-            vendorName,
-            vendorPhoneNumber,
-            vendorLocation,
-          );
-        }
-      } else vendor = await this.getVendor(vendorID);
-      if (customerName || customerPhoneNumber || customerLocation) {
-        if (customerID) {
-          customer = await this.updateCustomer(
-            customerID,
-            customerName,
-            customerPhoneNumber,
-            customerLocation,
-          );
-        } else {
-          customer = await this.createNewCustomer(
-            customerName,
-            customerPhoneNumber,
-            customerLocation,
-          );
-        }
-      } else customer = await this.getCustomer(customerID);
-
+      let trip: any = await this.tripRepository.save({
+        driverID,
+        vendor: {
+          vendorID,
+          phoneNumber: vendorPhoneNumber,
+          name: vendorName,
+          location: vendorLocation,
+        },
+        customer: {
+          customerID,
+          phoneNumber: customerPhoneNumbersArray,
+          name: customerName,
+          location: customerLocation,
+        },
+        itemTypes,
+        description,
+        approxDistance,
+        approxPrice,
+        approxTime,
+        routedPath,
+        alternative: false,
+      });
+      const { vendorID: ID, phoneNumber, name, location } = trip.vendor;
+      trip.vendor = { vendorID: ID, phoneNumber, name, location };
+      trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
       if (driverID) {
-        let trip: any = await this.tripRepository.save({
-          driverID,
-          vendorID: vendor.vendorID,
-          customerID: customer.customerID,
-          itemTypes,
-          description,
-          approxDistance,
-          approxPrice,
-          approxTime,
-          routedPath,
-          alternative: false,
-        });
-        customer = this.customerService.handlePhoneNumbers(customer);
-        trip.customer = customer;
-        trip.vendor = vendor;
-        delete trip.customerID;
-        delete trip.vendorID;
         readyTrips.push(trip);
         this.adminGateway.submitNewTrip(trip);
         this.adminGateway.sendDriversArrayToAdmins();
+        this.adminGateway.sendTripReceivedNotification(trip.tripID, driverID);
         this.notificationService.send({
           title: 'رحلة جديدة',
           content: 'اضغط لعرض تفاصيل الرحلة',
           driverID: trip.driverID,
         });
-        return { tripID: trip.tripID };
       } else {
-        let trip: any = await this.tripRepository.save({
-          vendorID: vendor.vendorID,
-          customerID: customer.customerID,
-          itemTypes,
-          description,
-          approxDistance,
-          approxPrice,
-          approxTime,
-          routedPath,
-          alternative: false,
-        });
-        customer = this.customerService.handlePhoneNumbers(customer);
-        trip.customer = customer;
-        trip.vendor = vendor;
-        delete trip.customerID;
-        delete trip.vendorID;
         pendingTrips.push(trip);
         this.adminGateway.sendTripsToAdmins();
         this.adminGateway.sendDriversArrayToAdmins();
         this.adminGateway.sendTripReceivedNotification(trip.tripID, null);
-        return { tripID: trip.tripID };
       }
+      return { tripID: trip.tripID };
     } else {
-      let customer: Customer;
-      if (customerName || customerPhoneNumber || customerLocation) {
-        if (customerID) {
-          customer = await this.updateCustomer(
-            customerID,
-            customerName,
-            customerPhoneNumber,
-            customerLocation,
-          );
-        } else {
-          customer = await this.createNewCustomer(
-            customerName,
-            customerPhoneNumber,
-            customerLocation,
-          );
-        }
-      } else customer = await this.getCustomer(customerID);
+      let trip: any = await this.tripRepository.save({
+        driverID,
+        customer: {
+          customerID,
+          phoneNumber: customerPhoneNumbersArray,
+          name: customerName,
+          location: customerLocation,
+        },
+        itemTypes,
+        description,
+        alternative: true,
+      });
       if (driverID) {
-        let trip: any = await this.tripRepository.save({
-          driverID,
-          customerID: customer.customerID,
-          itemTypes,
-          description,
-          alternative: true,
-        });
-        customer = this.customerService.handlePhoneNumbers(customer);
-        trip.customer = customer;
-        delete trip.customerID;
         readyTrips.push(trip);
         this.adminGateway.submitNewTrip(trip);
         this.adminGateway.sendDriversArrayToAdmins();
+        this.adminGateway.sendTripReceivedNotification(trip.tripID, driverID);
         this.notificationService.send({
           title: 'رحلة جديدة',
           content: 'اضغط لعرض تفاصيل الرحلة',
           driverID: trip.driverID,
         });
-        return { tripID: trip.tripID };
       } else {
-        let trip: any = await this.tripRepository.save({
-          customerID: customer.customerID,
-          itemTypes: itemTypes,
-          description,
-          alternative: true,
-        });
-        customer = this.customerService.handlePhoneNumbers(customer);
-        trip.customer = customer;
-        delete trip.customerID;
         pendingTrips.push(trip);
         this.adminGateway.sendTripsToAdmins();
         this.adminGateway.sendDriversArrayToAdmins();
         this.adminGateway.sendTripReceivedNotification(trip.tripID, null);
-        return { tripID: trip.tripID };
       }
+      return { tripID: trip.tripID };
     }
   }
 
-  async createNewCustomer(
-    customerName: string,
-    customerPhoneNumber: string,
-    customerLocation: object,
-  ) {
-    const customer = await this.customerRepository.save({
-      name: customerName,
-      phoneNumber: [customerPhoneNumber],
-      location: customerLocation,
+  async updatePhoneNumber(customerID: string, phoneNumber: string) {
+    if (!customerID) return [phoneNumber];
+    const customer = await this.customerRepository.findOne({
+      where: { customerID },
+      select: ['phoneNumber'],
     });
-    this.adminGateway.newCustomer(customer);
-    return customer;
-  }
-
-  async createNewVendor(
-    vendorName: string,
-    vendorPhoneNumber: string,
-    vendorLocation: object,
-  ) {
-    const vendor = await this.vendorRepository.save({
-      name: vendorName,
-      phoneNumber: vendorPhoneNumber,
-      location: vendorLocation,
-    });
-    this.adminGateway.newVendor(vendor);
-    return vendor;
-  }
-
-  async updateCustomer(
-    customerID: string,
-    customerName: string,
-    customerPhoneNumber: string,
-    customerLocation: object,
-  ) {
-    let customer = await this.customerRepository.findOneBy({ customerID });
-    if (!customer) throw new NotFoundException();
-    if (customerPhoneNumber)
-      customer.phoneNumber = [
-        customerPhoneNumber,
-        ...customer.phoneNumber.filter((p) => p !== customerPhoneNumber),
-      ];
-    const filteredSource = Object.fromEntries(
-      Object.entries({ name: customerName, location: customerLocation }).filter(
-        ([_, value]) => value !== undefined,
-      ),
-    );
-    Object.assign(customer, filteredSource);
-    await this.customerRepository.save(customer);
-    customer = this.customerService.handlePhoneNumbers(customer);
-    this.adminGateway.updateCustomer(customer);
-    return customer;
-  }
-
-  async updateVendor(
-    vendorID: string,
-    vendorName: string,
-    vendorPhoneNumber: string,
-    vendorLocation: object,
-  ) {
-    if (!vendorID) throw new NotFoundException();
-    const vendor = await this.vendorRepository
-      .update(vendorID, {
-        name: vendorName,
-        phoneNumber: vendorPhoneNumber,
-        location: vendorLocation,
-      })
-      .then(() => this.vendorRepository.findOneBy({ vendorID }));
-    this.adminGateway.updateVendor(vendor);
-    return vendor;
-  }
-
-  async getVendor(vendorID: string) {
-    return await this.vendorRepository.findOneBy({ vendorID });
-  }
-
-  async getCustomer(customerID: string) {
-    return await this.customerRepository.findOneBy({ customerID });
+    if (!customer) return [phoneNumber];
+    return [
+      phoneNumber,
+      ...customer.phoneNumber.filter((p) => p !== phoneNumber),
+    ];
   }
 
   async findAll() {
-    const allTrips = await this.tripRepository.find();
+    const allTrips = await this.tripRepository
+      .createQueryBuilder('trip')
+      .leftJoinAndSelect('trip.customer', 'customer')
+      .leftJoin('trip.vendor', 'vendor')
+      .addSelect([
+        'vendor.vendorID',
+        'vendor.name',
+        'vendor.phoneNumber',
+        'vendor.location',
+      ])
+      .getMany();
     return allTrips;
   }
 
@@ -290,7 +169,18 @@ export class TripService {
   }
 
   async findOne(tripID: string) {
-    const trip = await this.tripRepository.findOneBy({ tripID });
+    const trip = await this.tripRepository
+      .createQueryBuilder('trip')
+      .where('trip.tripID = :tripID', { tripID })
+      .leftJoinAndSelect('trip.customer', 'customer')
+      .leftJoin('trip.vendor', 'vendor')
+      .addSelect([
+        'vendor.vendorID',
+        'vendor.name',
+        'vendor.phoneNumber',
+        'vendor.location',
+      ])
+      .getOne();
     if (!trip) throw new NotFoundException();
     return trip;
   }

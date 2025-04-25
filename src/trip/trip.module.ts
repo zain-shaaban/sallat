@@ -6,13 +6,12 @@ import { AdminSocketModule } from 'src/sockets/admin-socket/admin-socket.module'
 import { DriverSocketModule } from 'src/sockets/driver-sokcet/driver-sokcet.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from 'src/customer/entities/customer.entity';
-import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { LocationEntity } from './entities/location.entity';
 import { CustomerModule } from 'src/customer/customer.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Trip, Customer, Vendor, LocationEntity]),
+    TypeOrmModule.forFeature([Trip, Customer, LocationEntity]),
     forwardRef(() => AdminSocketModule),
     forwardRef(() => DriverSocketModule),
     forwardRef(() => CustomerModule),

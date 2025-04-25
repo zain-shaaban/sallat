@@ -146,8 +146,8 @@ export class DriverSocketGateway
         client.emit('onConnection', { available: true });
       } else {
         driver.socketID = client.id;
-        if(new Date().getTime() - Number(clientDate) <= 1000 * 30) {
-          console.log("Reconnect location accepted");
+        if (new Date().getTime() - Number(clientDate) <= 1000 * 30) {
+          console.log('Reconnect location accepted');
           driver.location = { lng: Number(lng), lat: Number(lat) };
           driver.lastLocation = Date.now();
         }
@@ -449,7 +449,7 @@ export class DriverSocketGateway
           matchedDistance = 0;
         }
         trip.success = true;
-        await this.tripRepository.update(trip.tripID, {
+        this.tripRepository.update(trip.tripID, {
           driverID: trip.driverID,
           success: trip.success,
           rawPath: trip.rawPath,
@@ -460,7 +460,7 @@ export class DriverSocketGateway
           itemPrice,
           time: trip.time,
         });
-        await this.vendorRepository
+        this.vendorRepository
           .update(trip.vendor.vendorID, { location: trip.vendor.location })
           .then(async ({ affected }) => {
             if (affected == 1) {
@@ -470,7 +470,7 @@ export class DriverSocketGateway
               this.adminSocketGateway.updateVendor(vendor);
             }
           });
-        await this.customerRepository
+        this.customerRepository
           .update(trip.customer.customerID, {
             location: trip.customer.location,
           })
@@ -523,7 +523,7 @@ export class DriverSocketGateway
           matchedDistance = 0;
         }
         trip.success = true;
-        await this.tripRepository.update(trip.tripID, {
+        this.tripRepository.update(trip.tripID, {
           driverID: trip.driverID,
           success: trip.success,
           rawPath: trip.rawPath,
@@ -534,7 +534,7 @@ export class DriverSocketGateway
           itemPrice,
           time: trip.time,
         });
-        await this.customerRepository
+        this.customerRepository
           .update(trip.customer.customerID, {
             location: trip.customer.location,
           })

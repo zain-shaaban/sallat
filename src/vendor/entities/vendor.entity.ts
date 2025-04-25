@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
+import { Trip } from 'src/trip/entities/trip.entity';
 import {
   Column,
-  CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -15,7 +16,7 @@ class location {
   lat: number;
 }
 
-@Entity('sallat_vendors', { orderBy: { createdAt: 'ASC' } })
+@Entity('sallat_vendors')
 export class Vendor {
   @ApiProperty({
     type: 'string',
@@ -29,7 +30,7 @@ export class Vendor {
   phoneNumber: string;
 
   @ApiProperty({ type: 'string', example: 'example example' })
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar'})
   name: string;
 
   @ApiProperty({ type: location })
@@ -52,7 +53,6 @@ export class Vendor {
   @Column({ type: 'varchar', nullable: true })
   password: string;
 
-  @CreateDateColumn()
-  @Exclude()
-  createdAt: Date;
+  @OneToMany(() => Trip, (trip) => trip.vendor)
+  trips: Trip[];
 }
