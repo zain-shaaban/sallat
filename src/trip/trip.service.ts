@@ -92,7 +92,6 @@ export class TripService {
         pendingTrips.push(trip);
         this.adminGateway.sendTripsToAdmins();
         this.adminGateway.sendDriversArrayToAdmins();
-        this.adminGateway.sendTripReceivedNotification(trip.tripID, null);
       }
       return { tripID: trip.tripID };
     } else {
@@ -122,7 +121,6 @@ export class TripService {
         pendingTrips.push(trip);
         this.adminGateway.sendTripsToAdmins();
         this.adminGateway.sendDriversArrayToAdmins();
-        this.adminGateway.sendTripReceivedNotification(trip.tripID, null);
       }
       return { tripID: trip.tripID };
     }
