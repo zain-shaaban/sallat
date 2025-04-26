@@ -1,34 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Category } from './entities/category.entity';
-import { Item } from './entities/item.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-    @InjectRepository(Item) private itemRepository: Repository<Item>,
   ) {}
 
   async getAll() {
-    let allCategories: any = await this.categoryRepository.find();
-    allCategories = await Promise.all(
-      allCategories.map(async (category) => {
-        const types = await this.itemRepository.find({
-          select: ['type'],
-          where: { category: category.type },
-        });
-        return {
-          ...category,
-          types,
-        };
-      }),
-    );
+    let allCategories = await this.categoryRepository.find();
     return allCategories;
   }
 
@@ -59,9 +45,12 @@ export class CategoryService {
     const existingCategory = await this.categoryRepository.findOneBy({
       type: category,
     });
-    if (!existingCategory)
-      await this.categoryRepository.insert({ type: category });
-    await this.itemRepository.insert({ type, category });
+    if (!existingCategory) {
+      this.categoryRepository.insert({ type: category, types: [type] });
+    } else {
+      existingCategory.types.push(type);
+      this.categoryRepository.save(existingCategory);
+    }
     return null;
   }
 
@@ -70,20 +59,17 @@ export class CategoryService {
       type: newType,
     });
     if (!affected) throw new NotFoundException();
-
-    await this.itemRepository.update(
-      { category: oldType },
-      { category: newType },
-    );
     return null;
   }
 
   async updatedItem(oldType: string, newType: string) {
-    const { affected } = await this.itemRepository.update(
-      { type: oldType },
-      { type: newType },
-    );
-    if (!affected) throw new NotFoundException();
+    const category = await this.categoryRepository.findOne({
+      where: { types: ArrayContains([oldType]) },
+    });
+    if (!category) throw new NotFoundException();
+    category.types = category.types.filter((item) => item !== oldType);
+    category.types.push(newType);
+    this.categoryRepository.save(category);
     return null;
   }
 
@@ -94,8 +80,12 @@ export class CategoryService {
   }
 
   async deleteItem(type: string) {
-    const { affected } = await this.itemRepository.delete({ type });
-    if (!affected) throw new NotFoundException();
+    const category = await this.categoryRepository.findOne({
+      where: { types: ArrayContains([type]) },
+    });
+    if (!category) throw new NotFoundException();
+    category.types = category.types.filter((item) => item !== type);
+    this.categoryRepository.save(category);
     return null;
   }
 }
