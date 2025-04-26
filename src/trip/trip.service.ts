@@ -30,6 +30,7 @@ export class TripService {
   ) {}
 
   async createNewTrip(createTripDto: CreateTripDto) {
+    const wasVendorIDProvided = createTripDto.vendorID ? true : false;
     let {
       driverID,
       vendorID,
@@ -93,7 +94,7 @@ export class TripService {
         this.adminGateway.sendTripsToAdmins();
         this.adminGateway.sendDriversArrayToAdmins();
       }
-      return { tripID: trip.tripID };
+      return { tripID: trip.tripID, vendorID: wasVendorIDProvided ? null : trip.vendor.vendorID };
     } else {
       let trip: any = await this.tripRepository.save({
         driverID,
