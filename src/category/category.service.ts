@@ -15,6 +15,10 @@ export class CategoryService {
 
   async getAll() {
     let allCategories = await this.categoryRepository.find();
+    allCategories = allCategories.map((category) => {
+      category.types = <any>category.types.map((type) => ({ type }));
+      return category;
+    });
     return allCategories;
   }
 
