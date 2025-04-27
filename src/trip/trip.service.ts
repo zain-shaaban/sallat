@@ -40,6 +40,7 @@ export class TripService {
       customerID,
       customerName,
       customerPhoneNumber,
+      customerAlternativePhoneNumbers,
       customerLocation,
       itemTypes,
       description,
@@ -49,10 +50,6 @@ export class TripService {
       routedPath,
       alternative,
     } = createTripDto;
-    const customerPhoneNumbersArray = await this.updatePhoneNumber(
-      customerID,
-      customerPhoneNumber,
-    );
     if (!alternative) {
       let trip: any = await this.tripRepository.save({
         driverID,
@@ -64,7 +61,10 @@ export class TripService {
         },
         customer: {
           customerID,
-          phoneNumber: customerPhoneNumbersArray,
+          phoneNumber: [
+            customerPhoneNumber,
+            ...customerAlternativePhoneNumbers,
+          ],
           name: customerName,
           location: customerLocation,
         },
@@ -94,13 +94,19 @@ export class TripService {
         this.adminGateway.sendTripsToAdmins();
         this.adminGateway.sendDriversArrayToAdmins();
       }
-      return { tripID: trip.tripID, vendorID: wasVendorIDProvided ? null : trip.vendor.vendorID };
+      return {
+        tripID: trip.tripID,
+        vendorID: wasVendorIDProvided ? null : trip.vendor.vendorID,
+      };
     } else {
       let trip: any = await this.tripRepository.save({
         driverID,
         customer: {
           customerID,
-          phoneNumber: customerPhoneNumbersArray,
+          phoneNumber: [
+            customerPhoneNumber,
+            ...customerAlternativePhoneNumbers,
+          ],
           name: customerName,
           location: customerLocation,
         },
@@ -125,19 +131,6 @@ export class TripService {
       }
       return { tripID: trip.tripID };
     }
-  }
-
-  async updatePhoneNumber(customerID: string, phoneNumber: string) {
-    if (!customerID) return [phoneNumber];
-    const customer = await this.customerRepository.findOne({
-      where: { customerID },
-      select: ['phoneNumber'],
-    });
-    if (!customer) return [phoneNumber];
-    return [
-      phoneNumber,
-      ...customer.phoneNumber.filter((p) => p !== phoneNumber),
-    ];
   }
 
   async findAll() {

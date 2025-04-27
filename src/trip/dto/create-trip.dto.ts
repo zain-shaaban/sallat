@@ -125,4 +125,8 @@ export class CreateTripDto {
   @IsOptional()
   @IsBoolean()
   alternative?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  customerAlternativePhoneNumbers: string[];
 }
