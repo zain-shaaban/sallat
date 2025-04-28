@@ -83,7 +83,6 @@ export class TripService {
         readyTrips.push(trip);
         this.adminGateway.submitNewTrip(trip);
         this.adminGateway.sendDriversArrayToAdmins();
-        this.adminGateway.sendTripReceivedNotification(trip.tripID, driverID);
         this.notificationService.send({
           title: 'رحلة جديدة',
           content: 'اضغط لعرض تفاصيل الرحلة',
@@ -118,7 +117,6 @@ export class TripService {
         readyTrips.push(trip);
         this.adminGateway.submitNewTrip(trip);
         this.adminGateway.sendDriversArrayToAdmins();
-        this.adminGateway.sendTripReceivedNotification(trip.tripID, driverID);
         this.notificationService.send({
           title: 'رحلة جديدة',
           content: 'اضغط لعرض تفاصيل الرحلة',
