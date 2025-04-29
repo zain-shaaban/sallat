@@ -94,9 +94,14 @@ export class DriverSocketGateway
       async () => {
         let beforeDelete = onlineDrivers.length;
         onlineDrivers = onlineDrivers.filter((driver) => {
+          const isDriverHasTrip = ongoingTrips.find(
+            (trip) => trip.driverID === driver.driverID,
+          );
+          console.log(isDriverHasTrip)
           if (
             Date.now() - driver.lastLocation > 1000 * 60 * 45 &&
-            driver.socketID == null
+            driver.socketID == null &&
+            !isDriverHasTrip
           ) {
             this.adminSocketGateway.sendDriverDisconnectNotification(
               driver.driverID,
@@ -121,7 +126,7 @@ export class DriverSocketGateway
         if (beforeDelete != onlineDrivers.length)
           this.adminSocketGateway.sendDriversArrayToAdmins();
       },
-      1000 * 60 * 6,
+      1000 *60*  6,
     );
   }
 

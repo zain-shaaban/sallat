@@ -147,15 +147,18 @@ export class TripService {
   }
 
   async customerSearch(phoneNumber: string) {
-    const customer: any = await this.customerRepository.findOne({
+    let allCustomers: any = await this.customerRepository.find({
       select: ['customerID', 'name', 'location', 'phoneNumber'],
       where: { phoneNumber: ArrayContains([phoneNumber]) },
     });
-    if (!customer) throw new NotFoundException();
-    customer.alternativePhoneNumbers =
-      customer.phoneNumber.filter((n) => n != phoneNumber) || [];
-    delete customer.phoneNumber;
-    return customer;
+    if (allCustomers.length == 0) throw new NotFoundException();
+    allCustomers = allCustomers.map((customer) => {
+      customer.alternativePhoneNumbers =
+        customer.phoneNumber.filter((n) => n != phoneNumber) || [];
+      delete customer.phoneNumber;
+      return customer;
+    });
+    return allCustomers;
   }
 
   async findOne(tripID: string) {

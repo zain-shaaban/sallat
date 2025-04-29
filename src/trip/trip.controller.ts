@@ -6,7 +6,6 @@ import {
   Get,
   Param,
   Delete,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
