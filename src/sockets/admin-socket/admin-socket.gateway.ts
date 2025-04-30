@@ -112,9 +112,15 @@ export class AdminSocketGateway implements OnGatewayConnection {
           (trip) => trip.driverID === setAvailableData.driverID,
         ) ||
         readyTrips.find((trip) => trip.driverID === setAvailableData.driverID);
-      if (!driver || isDriverHasAtrip) throw new NotFoundException('the driver not exist or he has a trip now');
+      if (!driver || isDriverHasAtrip)
+        throw new NotFoundException(
+          'the driver not exist or he has a trip now',
+        );
       driver.available = setAvailableData.available;
       this.sendDriversArrayToAdmins();
+      if (driver.socketID) {
+        this.io.server.of('/driver').to(driver.socketID).emit('availabilityChange', driver.available);
+      }
       return {
         status: true,
       };
