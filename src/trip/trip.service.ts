@@ -113,6 +113,7 @@ export class TripService {
         description,
         alternative: true,
       });
+      trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
       if (driverID) {
         readyTrips.push(trip);
         this.adminGateway.submitNewTrip(trip);

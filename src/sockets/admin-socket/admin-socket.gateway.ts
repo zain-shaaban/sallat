@@ -32,7 +32,8 @@ export class AdminSocketGateway implements OnGatewayConnection {
   constructor(
     private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
-    @InjectRepository(NotificationSocket) private readonly notificationSocketRepository: Repository<NotificationSocket>,
+    @InjectRepository(NotificationSocket)
+    private readonly notificationSocketRepository: Repository<NotificationSocket>,
   ) {}
 
   handleConnection(client: Socket) {
@@ -89,6 +90,34 @@ export class AdminSocketGateway implements OnGatewayConnection {
         });
       }
       return { status: true };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
+  }
+
+  @SubscribeMessage('setAvailable')
+  updateDriverAvailable(
+    @MessageBody() setAvailableData: { available: boolean; driverID: string },
+  ) {
+    try {
+      let driver = onlineDrivers.find(
+        (driver) => driver.driverID == setAvailableData.driverID,
+      );
+      const isDriverHasAtrip =
+        ongoingTrips.find(
+          (trip) => trip.driverID === setAvailableData.driverID,
+        ) ||
+        readyTrips.find((trip) => trip.driverID === setAvailableData.driverID);
+      if (!driver || isDriverHasAtrip) throw new NotFoundException('the driver not exist or he has a trip now');
+      driver.available = setAvailableData.available;
+      this.sendDriversArrayToAdmins();
+      return {
+        status: true,
+      };
     } catch (error) {
       this.logger.error(error.message, error.stack);
       return {
@@ -203,7 +232,10 @@ export class AdminSocketGateway implements OnGatewayConnection {
       .of('/notifications')
       .emit('tripReceived', { tripID, driverID });
 
-    this.notificationSocketRepository.save({ type: "tripReceived", data: { tripID, driverID } })
+    this.notificationSocketRepository.save({
+      type: 'tripReceived',
+      data: { tripID, driverID },
+    });
   }
 
   sendTripsToAdmins() {
@@ -270,14 +302,20 @@ export class AdminSocketGateway implements OnGatewayConnection {
 
   tripCancelledNotificationForAdmins(tripID: string) {
     this.io.server.of('/notifications').emit('tripCancelled', tripID);
-    this.notificationSocketRepository.save({ type: "tripCancelled", data: tripID });
+    this.notificationSocketRepository.save({
+      type: 'tripCancelled',
+      data: tripID,
+    });
   }
 
   tripPulledNotificationForAdmins(tripID: string, driverID: string) {
     this.io.server
       .of('/notifications')
       .emit('tripPulled', { tripID, driverID });
-      this.notificationSocketRepository.save({ type: "tripPulled", data: { tripID, driverID } })
+    this.notificationSocketRepository.save({
+      type: 'tripPulled',
+      data: { tripID, driverID },
+    });
   }
 
   tripCancelledForDriver(driver) {
@@ -329,9 +367,12 @@ export class AdminSocketGateway implements OnGatewayConnection {
       driverID,
       connection: false,
     });
-    this.notificationSocketRepository.save({ type: "driverConnection", data: {
-      driverID,
-      connection: false,
-    } })
+    this.notificationSocketRepository.save({
+      type: 'driverConnection',
+      data: {
+        driverID,
+        connection: false,
+      },
+    });
   }
 }
