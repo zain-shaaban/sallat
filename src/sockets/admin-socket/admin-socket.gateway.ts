@@ -71,6 +71,24 @@ export class AdminSocketGateway implements OnGatewayConnection {
     }
   }
 
+  @SubscribeMessage('assignRoutedPath')
+  assignRoutedPath(@MessageBody() receivedData: any) {
+    try {
+      const trip = pendingTrips.find(t => t.tripID == receivedData.tripID);
+      if(trip) {
+        trip.routedPath = receivedData.routedPath;  
+        this.sendTripsToAdmins();
+      }
+      return { status: true };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
+  }
+
   @SubscribeMessage('assignNewDriver')
   assignNewDriver(@MessageBody() idPairs: any) {
     try {
