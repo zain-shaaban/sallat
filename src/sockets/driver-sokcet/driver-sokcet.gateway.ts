@@ -97,7 +97,6 @@ export class DriverSocketGateway
           const isDriverHasTrip = ongoingTrips.find(
             (trip) => trip.driverID === driver.driverID,
           );
-          console.log(isDriverHasTrip)
           if (
             Date.now() - driver.lastLocation > 1000 * 60 * 45 &&
             driver.socketID == null &&
@@ -126,7 +125,7 @@ export class DriverSocketGateway
         if (beforeDelete != onlineDrivers.length)
           this.adminSocketGateway.sendDriversArrayToAdmins();
       },
-      1000 *60*  6,
+      1000 * 60 * 6,
     );
   }
 
@@ -139,11 +138,7 @@ export class DriverSocketGateway
           socketID: client.id,
           driverID,
           location: { lng: Number(lng), lat: Number(lat) },
-          available:
-            ongoingTrips.find((trip) => trip.driverID == driverID) ||
-            readyTrips.find((trip) => trip.driverID == driverID)
-              ? false
-              : true,
+          available: true,
           lastLocation: Date.now(),
           notificationSent: false,
         });
@@ -159,7 +154,6 @@ export class DriverSocketGateway
       } else {
         driver.socketID = client.id;
         if (new Date().getTime() - Number(clientDate) <= 1000 * 30) {
-          console.log('Reconnect location accepted');
           driver.location = { lng: Number(lng), lat: Number(lat) };
           driver.lastLocation = Date.now();
         }
@@ -167,17 +161,11 @@ export class DriverSocketGateway
         this.adminSocketGateway.sendDriversArrayToAdmins();
         client.emit('onConnection', { available: driver.available });
       }
-      let alreadyAssignedTrip = readyTrips.find(t => t.driverID == driverID);
-      if(alreadyAssignedTrip) {
-        client.emit('alreadyAssignedTrip', alreadyAssignedTrip);
-      } else {
-        alreadyAssignedTrip = ongoingTrips.find(t => t.driverID == driverID);
-        if(alreadyAssignedTrip) {
-          client.emit('alreadyAssignedTrip', alreadyAssignedTrip);
-        } else {
-          client.emit('alreadyAssignedTrip', null);
-        }
-      }
+      let alreadyAssignedTrip = [
+        ...readyTrips.filter((t) => t.driverID == driverID),
+        ...ongoingTrips.filter((t) => t.driverID == driverID),
+      ];
+      client.emit('alreadyAssignedTrip', alreadyAssignedTrip);
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -225,27 +213,26 @@ export class DriverSocketGateway
       const oneDriver = onlineDrivers.find(
         (driver) => driver.driverID == driverID,
       );
-      if (oneDriver) {
-        oneDriver.location = sendLocationData.location;
-        if (oneDriver.available == false) {
-          const oneTrip = ongoingTrips.find(
-            (trip) => trip.driverID == oneDriver.driverID,
-          );
-          if (oneTrip) {
-            if (oneTrip.alternative == false) {
-              if (typeof oneTrip.tripState.onVendor.time == 'number')
-                oneTrip.rawPath.push(sendLocationData.location);
-            } else if (oneTrip.alternative == true) {
-              if (oneTrip.tripState.wayPoints.length > 0)
-                oneTrip.rawPath.push(sendLocationData.location);
-            }
+      if (oneDriver)
+        throw new NotFoundException(
+          'driver id not exist in online drivers array',
+        );
+      oneDriver.location = sendLocationData.location;
+      ongoingTrips.map((trip) => {
+        if (trip.driverID == oneDriver.driverID) {
+          if (trip.alternative == false) {
+            if (typeof trip.tripState.onVendor.time == 'number')
+              trip.rawPath.push(sendLocationData.location);
+          } else if (trip.alternative == true) {
+            if (trip.tripState.wayPoints.length > 0)
+              trip.rawPath.push(sendLocationData.location);
           }
         }
-        this.io.server.of('/admin').emit('location', {
-          driverID: oneDriver.driverID,
-          location: sendLocationData.location,
-        });
-      }
+      });
+      this.io.server.of('/admin').emit('location', {
+        driverID: oneDriver.driverID,
+        location: sendLocationData.location,
+      });
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -257,20 +244,18 @@ export class DriverSocketGateway
   }
 
   @SubscribeMessage('rejectTrip')
-  caseRejectTrip(@ConnectedSocket() client: Socket) {
+  caseRejectTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() tripID: string,
+  ) {
     try {
       const driverID = this.getDriverID(client);
-      const oneTrip = readyTrips.find((trip) => trip.driverID == driverID);
-      onlineDrivers = onlineDrivers.map((driver) => {
-        if (driver.driverID == driverID) driver.available = true;
-        return driver;
-      });
+      const oneTrip = readyTrips.find((trip) => trip.tripID == tripID);
       this.adminSocketGateway.sendDriversArrayToAdmins();
       this.adminSocketGateway.moveTripFromReadyToPending(oneTrip);
       this.io.server
         .of('/notifications')
         .emit('tripRejected', { tripID: oneTrip.tripID, driverID });
-
       this.notificationSocketRepository.save({
         type: 'tripRejected',
         data: { tripID: oneTrip.tripID, driverID },
@@ -296,10 +281,9 @@ export class DriverSocketGateway
         time: startTripData.time,
       };
       const driverID = this.getDriverID(client);
-      onlineDrivers = onlineDrivers.map((driver) => {
-        return driver;
-      });
-      const trip = readyTrips.find((trip) => trip.driverID == driverID);
+      const trip = readyTrips.find(
+        (trip) => trip.tripID == startTripData.tripID,
+      );
       if (trip.alternative == true) {
         trip.tripState = {
           tripStart: startTrip,
@@ -335,12 +319,11 @@ export class DriverSocketGateway
 
   @SubscribeMessage('addWayPoint')
   addWayPoints(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() wayPoint: any,
+    @MessageBody() { wayPoint, tripID }: { wayPoint: any; tripID: string },
   ) {
     try {
-      const driverID = this.getDriverID(client);
-      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+      const trip = ongoingTrips.find((trip) => trip.tripID == tripID);
+      if (!trip) throw new NotFoundException('Trip id not exist');
       trip.tripState.wayPoints.push({ ...wayPoint });
       trip.rawPath.push(wayPoint.location.coords);
       if (wayPoint.type == 'customer') {
@@ -364,7 +347,7 @@ export class DriverSocketGateway
   ) {
     try {
       const driverID = this.getDriverID(client);
-      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+      const trip = ongoingTrips.find((trip) => trip.tripID == changeStateData.tripID);
       if (changeStateData.stateName == 'onVendor') {
         this.io.server.of('/notifications').emit('stateOnVendor', {
           tripID: trip.tripID,
@@ -463,16 +446,12 @@ export class DriverSocketGateway
     @MessageBody() endStateData: any,
   ) {
     try {
-      let {itemPrice,receipt} = endStateData;
+      let { itemPrice, receipt,tripID } = endStateData;
       delete endStateData?.itemPrice;
       delete endStateData?.receipt;
+      delete endStateData?.tripID;
       const driverID = this.getDriverID(client);
-      onlineDrivers = onlineDrivers.map((driver) => {
-        if (driver.driverID == driverID && driver.available == false)
-          driver.available = true;
-        return driver;
-      });
-      const trip = ongoingTrips.find((trip) => trip.driverID == driverID);
+      const trip = ongoingTrips.find((trip) => trip.tripID == tripID);
       if (!trip.alternative) {
         if (
           trip.customer.location.approximate == true &&
@@ -503,7 +482,7 @@ export class DriverSocketGateway
           price: trip.price,
           itemPrice,
           time: trip.time,
-          receipt
+          receipt,
         });
         this.vendorRepository
           .update(trip.vendor.vendorID, { location: trip.vendor.location })
@@ -559,7 +538,7 @@ export class DriverSocketGateway
             time: trip.time,
             distance: matchedDistance,
             price: trip.price,
-            receipt
+            receipt,
           },
         };
       } else {
@@ -591,7 +570,7 @@ export class DriverSocketGateway
           price: trip.price,
           itemPrice,
           time: trip.time,
-          receipt
+          receipt,
         });
         this.customerRepository
           .update(trip.customer.customerID, {
@@ -637,7 +616,7 @@ export class DriverSocketGateway
             time: trip.time,
             distance: matchedDistance,
             price: trip.price,
-            receipt
+            receipt,
           },
         };
       }

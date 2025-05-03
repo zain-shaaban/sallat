@@ -74,9 +74,9 @@ export class AdminSocketGateway implements OnGatewayConnection {
   @SubscribeMessage('assignRoutedPath')
   assignRoutedPath(@MessageBody() receivedData: any) {
     try {
-      const trip = pendingTrips.find(t => t.tripID == receivedData.tripID);
-      if(trip) {
-        trip.routedPath = receivedData.routedPath;  
+      const trip = pendingTrips.find((t) => t.tripID == receivedData.tripID);
+      if (trip) {
+        trip.routedPath = receivedData.routedPath;
         this.sendTripsToAdmins();
       }
       return { status: true };
@@ -125,19 +125,13 @@ export class AdminSocketGateway implements OnGatewayConnection {
       let driver = onlineDrivers.find(
         (driver) => driver.driverID == setAvailableData.driverID,
       );
-      const isDriverHasAtrip =
-        ongoingTrips.find(
-          (trip) => trip.driverID === setAvailableData.driverID,
-        ) ||
-        readyTrips.find((trip) => trip.driverID === setAvailableData.driverID);
-      if (!driver || isDriverHasAtrip)
-        throw new NotFoundException(
-          'the driver not exist or he has a trip now',
-        );
-      driver.available = setAvailableData.available;
+      if (!driver) driver.available = setAvailableData.available;
       this.sendDriversArrayToAdmins();
       if (driver.socketID) {
-        this.io.server.of('/driver').to(driver.socketID).emit('availabilityChange', driver.available);
+        this.io.server
+          .of('/driver')
+          .to(driver.socketID)
+          .emit('availabilityChange', driver.available);
       }
       return {
         status: true,
@@ -159,7 +153,6 @@ export class AdminSocketGateway implements OnGatewayConnection {
       let driver = onlineDrivers.find(
         (driver) => driver.driverID == trip.driverID,
       );
-      driver.available = true;
       this.notificationService.send({
         title: 'تم سحب الرحلة',
         content: 'كن جاهز لاستقبال رحلة مختلفة',
@@ -168,7 +161,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       this.tripPulledNotificationForAdmins(trip.tripID, trip.driverID);
       this.moveTripFromReadyToPending(trip);
       this.sendDriversArrayToAdmins();
-      this.tripPulledForDriver(driver);
+      this.tripPulledForDriver(driver.socketID, tripID);
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -188,8 +181,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
             (driver) => driver.driverID == trip.driverID,
           );
           if (driver) {
-            driver.available = true;
-            this.tripCancelledForDriver(driver);
+            this.tripCancelledForDriver(driver.socketID, tripID);
             this.notificationService.send({
               title: 'تم إلغاء الرحلة',
               content: 'الرحلة القائمة لديك تم إلغاؤها',
@@ -207,8 +199,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
             (driver) => driver.driverID == trip.driverID,
           );
           if (driver) {
-            driver.available = true;
-            this.tripCancelledForDriver(driver);
+            this.tripCancelledForDriver(driver.socketID,tripID);
             this.notificationService.send({
               title: 'تم إلغاء الرحلة',
               content: 'الرحلة القائمة لديك تم إلغاؤها',
@@ -244,10 +235,6 @@ export class AdminSocketGateway implements OnGatewayConnection {
   submitNewTrip(trip: Trip) {
     this.sendTripsToAdmins();
     this.sendTripToDriver(trip);
-    let driver = onlineDrivers.find(
-      (driver) => driver.driverID == trip.driverID && driver.available == true,
-    );
-    if (driver) driver.available = false;
     this.sendTripReceivedNotification(trip.tripID, trip.driverID);
   }
 
@@ -271,7 +258,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
   sendTripToDriver(trip: Trip) {
     const driverID = trip.driverID;
     const driver = onlineDrivers.find(
-      (driver) => driver.driverID == driverID && driver.available == true,
+      (driver) => driver.driverID == driverID
     );
     if (this.io.server.of('/driver').sockets.get(driver?.socketID)) {
       this.io.server.of('/driver').to(driver.socketID).emit('newTrip', trip);
@@ -342,12 +329,12 @@ export class AdminSocketGateway implements OnGatewayConnection {
     });
   }
 
-  tripCancelledForDriver(driver) {
-    this.io.server.of('/driver').to(driver.socketID).emit('tripCancelled');
+  tripCancelledForDriver(socketID: string, tripID: string) {
+    this.io.server.of('/driver').to(socketID).emit('tripCancelled', { tripID });
   }
 
-  tripPulledForDriver(driver) {
-    this.io.server.of('/driver').to(driver.socketID).emit('tripPulled');
+  tripPulledForDriver(socketID: string, tripID: string) {
+    this.io.server.of('/driver').to(socketID).emit('tripPulled', { tripID });
   }
 
   deleteVendor(vendorID) {

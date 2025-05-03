@@ -201,20 +201,16 @@ export class TripService {
     if (!oneDriver) throw new NotFoundException();
     oneDriver.location = location;
     oneDriver.lastLocation = Date.now();
-    if (oneDriver.available == false) {
-      const oneTrip = ongoingTrips.find(
-        (trip) => trip.driverID == oneDriver.driverID,
-      );
-      if (oneTrip) {
-        if (oneTrip.alternative == false) {
-          if (typeof oneTrip.tripState.onVendor.time == 'number')
-            oneTrip.rawPath.push(location);
-        } else if (oneTrip.alternative == true) {
-          if (oneTrip.tripState.wayPoints.length > 0)
-            oneTrip.rawPath.push(location);
+    ongoingTrips.map((trip) => {
+      if (trip.driverID == oneDriver.driverID) {
+        if (trip.alternative == false) {
+          if (typeof trip.tripState.onVendor.time == 'number')
+            trip.rawPath.push(location);
+        } else if (trip.alternative == true) {
+          if (trip.tripState.wayPoints.length > 0) trip.rawPath.push(location);
         }
       }
-    }
+    });
     this.adminGateway.sendNewLocation(driverID, location);
     return null;
   }
