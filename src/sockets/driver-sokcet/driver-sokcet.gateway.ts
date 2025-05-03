@@ -637,6 +637,7 @@ export class DriverSocketGateway
             time: trip.time,
             distance: matchedDistance,
             price: trip.price,
+            receipt
           },
         };
       }
