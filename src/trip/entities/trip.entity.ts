@@ -33,20 +33,6 @@ export class Trip {
   @Column({ type: 'varchar', nullable: true })
   driverID: string;
 
-  // @ApiProperty({
-  //   type: 'string',
-  //   example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-  // })
-  // @Column({ type: 'varchar', nullable: true })
-  // vendorID: string;
-
-  // @ApiProperty({
-  //   type: 'string',
-  //   example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-  // })
-  // @Column({ type: 'varchar', nullable: true })
-  // customerID: string;
-
   @ManyToOne(() => Vendor, (vendor) => vendor.trips, {
     onDelete: 'SET NULL',
     cascade: true,
@@ -159,4 +145,7 @@ export class Trip {
   @ApiProperty({ type: 'string', example: '2025-01-01 14:32:57.973928' })
   @CreateDateColumn()
   createAt: Date;
+
+  @Column({type:'jsonb',default:[]})
+  receipt:object[]
 }

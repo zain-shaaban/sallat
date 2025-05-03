@@ -458,8 +458,9 @@ export class DriverSocketGateway
     @MessageBody() endStateData: any,
   ) {
     try {
-      let itemPrice = endStateData.itemPrice;
+      let {itemPrice,receipt} = endStateData.itemPrice;
       delete endStateData?.itemPrice;
+      delete endStateData?.receipt;
       const driverID = this.getDriverID(client);
       onlineDrivers = onlineDrivers.map((driver) => {
         if (driver.driverID == driverID && driver.available == false)
@@ -497,6 +498,7 @@ export class DriverSocketGateway
           price: trip.price,
           itemPrice,
           time: trip.time,
+          receipt
         });
         this.vendorRepository
           .update(trip.vendor.vendorID, { location: trip.vendor.location })
@@ -583,6 +585,7 @@ export class DriverSocketGateway
           price: trip.price,
           itemPrice,
           time: trip.time,
+          receipt
         });
         this.customerRepository
           .update(trip.customer.customerID, {
