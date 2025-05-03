@@ -167,12 +167,17 @@ export class DriverSocketGateway
         this.adminSocketGateway.sendDriversArrayToAdmins();
         client.emit('onConnection', { available: driver.available });
       }
-      readyTrips.forEach((trip) => {
-        if (trip.driverID == driverID) client.emit('alreadyAssignedTrip', trip);
-      });
-      ongoingTrips.forEach((trip) => {
-        if (trip.driverID == driverID) client.emit('alreadyAssignedTrip', trip);
-      });
+      let alreadyAssignedTrip = readyTrips.find(t => t.driverID == driverID);
+      if(alreadyAssignedTrip) {
+        client.emit('alreadyAssignedTrip', alreadyAssignedTrip);
+      } else {
+        alreadyAssignedTrip = ongoingTrips.find(t => t.driverID == driverID);
+        if(alreadyAssignedTrip) {
+          client.emit('alreadyAssignedTrip', alreadyAssignedTrip);
+        } else {
+          client.emit('alreadyAssignedTrip', null);
+        }
+      }
       return { status: true };
     } catch (error) {
       this.logger.error(error.message, error.stack);
