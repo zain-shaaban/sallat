@@ -463,7 +463,7 @@ export class DriverSocketGateway
     @MessageBody() endStateData: any,
   ) {
     try {
-      let {itemPrice,receipt} = endStateData.itemPrice;
+      let {itemPrice,receipt} = endStateData;
       delete endStateData?.itemPrice;
       delete endStateData?.receipt;
       const driverID = this.getDriverID(client);
