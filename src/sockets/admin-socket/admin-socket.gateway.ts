@@ -199,7 +199,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
             (driver) => driver.driverID == trip.driverID,
           );
           if (driver) {
-            this.tripCancelledForDriver(driver.socketID,tripID);
+            this.tripCancelledForDriver(driver.socketID, tripID);
             this.notificationService.send({
               title: 'تم إلغاء الرحلة',
               content: 'الرحلة القائمة لديك تم إلغاؤها',
@@ -257,9 +257,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
 
   sendTripToDriver(trip: Trip) {
     const driverID = trip.driverID;
-    const driver = onlineDrivers.find(
-      (driver) => driver.driverID == driverID
-    );
+    const driver = onlineDrivers.find((driver) => driver.driverID == driverID);
     if (this.io.server.of('/driver').sockets.get(driver?.socketID)) {
       this.io.server.of('/driver').to(driver.socketID).emit('newTrip', trip);
     }
@@ -267,7 +265,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
 
   moveTripFromReadyToPending(myTrip: Trip) {
     readyTrips = readyTrips.filter(
-      (trip: Trip) => trip.driverID != myTrip.driverID,
+      (trip: Trip) => trip.tripID != myTrip.tripID,
     );
     myTrip.driverID = null;
     pendingTrips.push(myTrip);
@@ -289,9 +287,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.sendTripsToAdmins();
   }
   moveTripFromOngoingToPending(myTrip) {
-    ongoingTrips = ongoingTrips.filter(
-      (trip) => trip.driverID != myTrip.driverID,
-    );
+    ongoingTrips = ongoingTrips.filter((trip) => trip.tripID != myTrip.tripID);
     myTrip.driverID = null;
     myTrip.path = [];
     myTrip.tripState = {};
