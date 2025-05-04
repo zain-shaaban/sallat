@@ -326,11 +326,11 @@ export class AdminSocketGateway implements OnGatewayConnection {
   }
 
   tripCancelledForDriver(socketID: string, tripID: string) {
-    this.io.server.of('/driver').to(socketID).emit('tripCancelled', { tripID });
+    this.io.server.of('/driver').to(socketID).emit('tripCancelled', tripID);
   }
 
   tripPulledForDriver(socketID: string, tripID: string) {
-    this.io.server.of('/driver').to(socketID).emit('tripPulled', { tripID });
+    this.io.server.of('/driver').to(socketID).emit('tripPulled', tripID);
   }
 
   deleteVendor(vendorID) {
