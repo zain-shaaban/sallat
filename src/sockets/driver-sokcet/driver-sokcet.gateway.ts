@@ -243,6 +243,47 @@ export class DriverSocketGateway
     }
   }
 
+  @SubscribeMessage('changeIntoAlternative')
+  changeFromNormalTripToAlternative(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() tripID: string,
+  ) {
+    try {
+      const driverID = this.getDriverID(client);
+      const trip = ongoingTrips.find(
+        (trip) => trip.tripID === tripID && trip.alternative == false,
+      );
+      if (!trip) throw new NotFoundException('trip id not exist');
+      delete trip.routedPath;
+      delete trip.vendor;
+      delete trip.approxDistance;
+      delete trip.approxTime;
+      delete trip.approxPrice;
+      if (Object.keys(trip.tripState.onVendor).length > 0) {
+        delete trip.tripState.onVendor.location?.approximate;
+        trip.tripState.onVendor.type = 'vendor';
+        trip.tripState.wayPoints = [trip.tripState.onVendor];
+      }
+      delete trip.tripState?.onVendor;
+      delete trip.tripState?.leftVendor;
+      trip.alternative = true;
+      this.io.server
+        .of('/notifications')
+        .emit('tripChangedToAlternative', { tripID: trip.tripID, driverID });
+      this.adminSocketGateway.sendTripsToAdmins();
+      return {
+        status: true,
+        data: trip,
+      };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
+  }
+
   @SubscribeMessage('rejectTrip')
   caseRejectTrip(
     @ConnectedSocket() client: Socket,
@@ -347,7 +388,9 @@ export class DriverSocketGateway
   ) {
     try {
       const driverID = this.getDriverID(client);
-      const trip = ongoingTrips.find((trip) => trip.tripID == changeStateData.tripID);
+      const trip = ongoingTrips.find(
+        (trip) => trip.tripID == changeStateData.tripID,
+      );
       if (changeStateData.stateName == 'onVendor') {
         this.io.server.of('/notifications').emit('stateOnVendor', {
           tripID: trip.tripID,
@@ -446,7 +489,7 @@ export class DriverSocketGateway
     @MessageBody() endStateData: any,
   ) {
     try {
-      let { itemPrice, receipt,tripID } = endStateData;
+      let { itemPrice, receipt, tripID } = endStateData;
       delete endStateData?.itemPrice;
       delete endStateData?.receipt;
       delete endStateData?.tripID;
