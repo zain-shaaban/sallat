@@ -254,6 +254,7 @@ export class DriverSocketGateway
         (trip) => trip.tripID === tripID && trip.alternative == false,
       );
       if (!trip) throw new NotFoundException('trip id not exist');
+      let description = trip.vendor.location.description;
       delete trip.routedPath;
       delete trip.vendor;
       delete trip.approxDistance;
@@ -262,6 +263,7 @@ export class DriverSocketGateway
       if (Object.keys(trip.tripState.onVendor).length > 0) {
         delete trip.tripState.onVendor.location?.approximate;
         trip.tripState.onVendor.type = 'vendor';
+        trip.tripState.onVendor.location.description = description;
         trip.tripState.wayPoints = [trip.tripState.onVendor];
       }
       delete trip.tripState?.onVendor;
