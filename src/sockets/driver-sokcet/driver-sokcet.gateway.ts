@@ -606,6 +606,7 @@ export class DriverSocketGateway
         this.tripRepository.update(trip.tripID, {
           driverID: trip.driverID,
           success: trip.success,
+          vendor: null,
           rawPath: trip.rawPath,
           matchedPath,
           distance: matchedDistance,
@@ -614,6 +615,11 @@ export class DriverSocketGateway
           itemPrice,
           time: trip.time,
           receipt,
+          alternative: true,
+          approxDistance: null,
+          approxPrice: null,
+          approxTime: null,
+          routedPath: [],
         });
         this.customerRepository
           .update(trip.customer.customerID, {
