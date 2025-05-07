@@ -1,15 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
+  IsEmail,
+  IsEnum,
 } from 'class-validator';
+import { AccountRole } from '../account.service';
 
-export class CreateDriverDtoRequest {
+export class CreateAccountDtoRequest {
   @ApiProperty({ example: 'example example' })
   @IsString()
   @IsNotEmpty()
@@ -19,8 +21,8 @@ export class CreateDriverDtoRequest {
   @ApiProperty({ example: 'example@gmail.com' })
   @IsString()
   @IsNotEmpty()
-  @IsEmail()
   @MaxLength(200)
+  @IsEmail()
   email: string;
 
   @ApiProperty({
@@ -39,15 +41,20 @@ export class CreateDriverDtoRequest {
   @MaxLength(50)
   phoneNumber: string;
 
-  @ApiProperty({ example: 332211, required: false })
-  @IsOptional()
-  @IsString()
-  assignedVehicleNumber?: string;
+  @ApiProperty({ example: 'driver', required: true })
+  @IsNotEmpty()
+  @IsEnum(AccountRole, { message: 'Role is wrong' })
+  role: string;
 
   @ApiProperty({ example: 1500000.0, required: false })
   @IsOptional()
   @IsNumber()
   salary?: number;
+
+  @ApiProperty({ example: 332211, required: false })
+  @IsOptional()
+  @IsString()
+  assignedVehicleNumber?: string;
 
   @ApiProperty({ example: 'tokentokentoken', required: false })
   @IsOptional()
@@ -55,15 +62,15 @@ export class CreateDriverDtoRequest {
   notificationToken?: string;
 }
 
-class CreateDriverData {
+class CreateAccountData {
   @ApiProperty({ example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f' })
-  driverID: string;
+  id: string;
 }
 
-export class CreateDriverDtoResponse {
+export class CreateAccountDtoResponse {
   @ApiProperty({ example: true })
   status: boolean;
 
-  @ApiProperty({ type: CreateDriverData })
-  data: CreateDriverData;
+  @ApiProperty({ type: CreateAccountData })
+  data: CreateAccountData;
 }

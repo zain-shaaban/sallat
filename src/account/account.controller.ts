@@ -6,15 +6,14 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   HttpStatus,
 } from '@nestjs/common';
-import { ManagerService } from './manager.service';
+import { AccountService } from './account.service';
 import {
-  CreateManagerDtoRequest,
-  CreateManagerDtoResponse,
-} from './dto/create-manager.dto';
-import { UpdateManagerDto } from './dto/update-manager.dto';
+  CreateAccountDtoRequest,
+  CreateAccountDtoResponse,
+} from './dto/create-account.dto';
+import { UpdateAccountDto } from './dto/update-account.dto';
 import { asyncHandler } from 'src/common/utils/async-handler';
 import {
   ApiBearerAuth,
@@ -23,20 +22,20 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { GetAllManagersDto } from './dto/get-all-managers';
-import { GetSingleManagerDto } from './dto/get-single-manager.dto';
+import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
+import { GetSingleAccountDto } from './dto/get-single-account.dto';
 
 @ApiBearerAuth()
-@ApiTags('Account - Manager')
-@Controller('account/manager')
-export class ManagerController {
-  constructor(private readonly managerService: ManagerService) {}
+@ApiTags('Account')
+@Controller('account')
+export class AccountController {
+  constructor(private readonly accountService: AccountService) {}
 
-  @ApiOperation({ summary: 'Create new manager' })
+  @ApiOperation({ summary: 'Create new account' })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    type: CreateManagerDtoResponse,
-    description: 'The manager has been sumanageressfully added',
+    type: CreateAccountDtoResponse,
+    description: 'The account has been successfully added',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -58,14 +57,14 @@ export class ManagerController {
     },
   })
   @Post('create')
-  async create(@Body() createManagerDto: CreateManagerDtoRequest) {
-    return await asyncHandler(this.managerService.create(createManagerDto));
+  async create(@Body() createAccountDto: CreateAccountDtoRequest) {
+    return await asyncHandler(this.accountService.create(createAccountDto));
   }
 
-  @ApiOperation({ summary: 'Get all manager and their number' })
+  @ApiOperation({ summary: 'Get all accounts and their number' })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: GetAllManagersDto,
+    type: GetAllAccountsDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -77,20 +76,20 @@ export class ManagerController {
       },
     },
   })
-  @Get('getAll')
+  @Get('find')
   async findAll() {
-    return await asyncHandler(this.managerService.findAll());
+    return await asyncHandler(this.accountService.findAll());
   }
 
-  @ApiOperation({ summary: 'Get a single Manager by his ID' })
+  @ApiOperation({ summary: 'Get a single account by his ID' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Manager found successfully',
-    type: GetSingleManagerDto,
+    description: 'Account found successfully',
+    type: GetSingleAccountDto,
   })
   @ApiParam({
-    name: 'managerID',
-    description: 'The ID of the manager',
+    name: 'id',
+    description: 'The ID of the account',
     type: String,
     example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
@@ -114,14 +113,50 @@ export class ManagerController {
       },
     },
   })
-  @Get('get/:managerID')
-  async findOne(@Param('managerID') managerID: string) {
-    return await asyncHandler(this.managerService.findOne(managerID));
+  @Get('find/:id')
+  async findOne(@Param('id') id: string) {
+    return await asyncHandler(this.accountService.findOne(id));
+  }
+
+  @ApiOperation({ summary: 'Get all accounts by role' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: GetAllAccountsDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'invalid or missing token',
+    schema: {
+      example: {
+        status: false,
+        message: 'invalid token',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Wrong role',
+    schema: {
+      example: {
+        status: false,
+        message: 'role not exist',
+      },
+    },
+  })
+  @ApiParam({
+    name: 'role',
+    description: 'The role of accounts',
+    type: String,
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+  })
+  @Get('findbyrole/:role')
+  async findByRole(@Param('role') role: string) {
+    return await asyncHandler(this.accountService.findByRole(role));
   }
 
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Manager updated successfully',
+    description: 'Account updated successfully',
     schema: {
       type: 'object',
       properties: {
@@ -131,8 +166,8 @@ export class ManagerController {
     },
   })
   @ApiParam({
-    name: 'managerID',
-    description: 'The ID of the Manager',
+    name: 'id',
+    description: 'The ID of the Account',
     type: String,
     example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
@@ -165,20 +200,18 @@ export class ManagerController {
       },
     },
   })
-  @ApiOperation({ summary: 'Update single Manager data' })
-  @Patch('update/:managerID')
+  @ApiOperation({ summary: 'Update single Account data' })
+  @Patch('update/:id')
   async update(
-    @Param('managerID') managerID: string,
-    @Body() updateManagerDto: UpdateManagerDto,
+    @Param('id') id: string,
+    @Body() updateAccountDto: UpdateAccountDto,
   ) {
-    return await asyncHandler(
-      this.managerService.update(managerID, updateManagerDto),
-    );
+    return await asyncHandler(this.accountService.update(id, updateAccountDto));
   }
 
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Manager deleted successfully',
+    description: 'Account deleted successfully',
     schema: {
       type: 'object',
       properties: {
@@ -188,8 +221,8 @@ export class ManagerController {
     },
   })
   @ApiParam({
-    name: 'managerID',
-    description: 'The ID of the Manager',
+    name: 'id',
+    description: 'The ID of the Account',
     type: String,
     example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
   })
@@ -213,9 +246,9 @@ export class ManagerController {
       },
     },
   })
-  @ApiOperation({ summary: 'Delete single Manager' })
-  @Delete('delete/:managerID')
-  async remove(@Param('managerID') managerID: string) {
-    return await asyncHandler(this.managerService.remove(managerID));
+  @ApiOperation({ summary: 'Delete single Account' })
+  @Delete('delete/:id')
+  async remove(@Param('id') id: string) {
+    return await asyncHandler(this.accountService.remove(id));
   }
 }

@@ -1,10 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import dbConfig from './config/db.config';
-import { CcModule } from './account/cc/cc.module';
-import { ManagerModule } from './account/manager/manager.module';
-import { AccountVendorModule } from './account/vendor/vendor.module';
-import { DriverModule } from './account/driver/driver.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './category/category.module';
@@ -18,6 +14,7 @@ import { ErrorLoggerModule } from './common/error_logger/error_logger.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { NotificationModule } from './notification/notification.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -45,21 +42,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       }),
       inject: [ConfigService],
     }),
-    CcModule,
-    ManagerModule,
     VendorModule,
-    DriverModule,
     AuthModule,
     CategoryModule,
     DriverSocketModule,
     AdminSocketModule,
     TripModule,
     CustomerModule,
-    AccountVendorModule,
     NotificationSocketModule,
     ErrorLoggerModule,
     FirebaseModule,
     NotificationModule,
+    AccountModule,
   ],
 })
 export class AppModule {}
