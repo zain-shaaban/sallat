@@ -213,7 +213,7 @@ export class DriverSocketGateway
       const oneDriver = onlineDrivers.find(
         (driver) => driver.driverID == driverID,
       );
-      if (oneDriver)
+      if (!oneDriver)
         throw new NotFoundException(
           'driver id not exist in online drivers array',
         );
