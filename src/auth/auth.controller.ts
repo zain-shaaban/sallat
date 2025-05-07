@@ -2,20 +2,26 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { asyncHandler } from 'src/common/utils/async-handler';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({ summary: 'Login with email and password' })
+  @ApiOperation({
+    summary: 'User authentication',
+    description: `
+Authenticates a user and returns a JWT token for subsequent API requests.`,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: LoginResponseDto,
+    description: 'Authentication successful',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid email or password',
+    description: 'Authentication failed',
     schema: {
       example: {
         status: false,

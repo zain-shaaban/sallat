@@ -25,20 +25,52 @@ import {
 import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
 import { GetSingleAccountDto } from './dto/get-single-account.dto';
 
-@ApiBearerAuth()
-@ApiTags('Account')
+@ApiBearerAuth('JWT-auth')
+@ApiTags('Accounts')
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @ApiOperation({ summary: 'Create new account' })
+  @ApiOperation({
+    summary: 'Create new account',
+    description: `
+Creates a new user account in the system.
+
+### Account Types
+- Super Admin: Full system access and can manage all system settings and users
+- Manager: Can manage orders, drivers and call center staff
+- Call Center: Handles customer support and order management through the web system
+- Driver: Delivers orders and updates delivery status through mobile app
+
+### Security
+- Password is automatically hashed
+- Email must be unique
+- Phone number must be unique
+- Role-based access control enforced
+
+### Validation
+- Email format validation
+- Password strength requirements
+- Phone number format validation
+- Required fields validation
+    `,
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     type: CreateAccountDtoResponse,
-    description: 'The account has been successfully added',
+    description: 'The account has been successfully created',
+    schema: {
+      example: {
+        status: true,
+        data: {
+          id: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
     schema: {
       example: {
         status: false,
@@ -47,8 +79,18 @@ export class AccountController {
     },
   })
   @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Email or phone number already exists',
+    schema: {
+      example: {
+        status: false,
+        message: 'Email already exists',
+      },
+    },
+  })
+  @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    description: 'Invalid or missing authentication token',
     schema: {
       example: {
         status: false,
@@ -61,14 +103,19 @@ export class AccountController {
     return await asyncHandler(this.accountService.create(createAccountDto));
   }
 
-  @ApiOperation({ summary: 'Get all accounts and their number' })
+  @ApiOperation({
+    summary: 'Get all accounts',
+    description: `
+Retrieves a list of all accounts in the system`,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: GetAllAccountsDto,
+    description: 'List of accounts retrieved successfully',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    description: 'Invalid or missing authentication token',
     schema: {
       example: {
         status: false,
@@ -81,7 +128,12 @@ export class AccountController {
     return await asyncHandler(this.accountService.findAll());
   }
 
-  @ApiOperation({ summary: 'Get a single account by his ID' })
+  @ApiOperation({
+    summary: 'Get account by ID',
+    description: `
+Retrieves detailed information about a specific account.
+    `,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Account found successfully',
@@ -89,13 +141,13 @@ export class AccountController {
   })
   @ApiParam({
     name: 'id',
-    description: 'The ID of the account',
+    description: 'The unique identifier of the account',
     type: String,
-    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Wrong ID',
+    description: 'Account not found',
     schema: {
       example: {
         status: false,
@@ -105,7 +157,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    description: 'Invalid or missing authentication token',
     schema: {
       example: {
         status: false,
@@ -118,24 +170,26 @@ export class AccountController {
     return await asyncHandler(this.accountService.findOne(id));
   }
 
-  @ApiOperation({ summary: 'Get all accounts by role' })
+  @ApiOperation({
+    summary: 'Get accounts by role',
+    description: `
+Retrieves all accounts with a specific role.
+
+### Available Roles
+- Super Admin
+- Manager
+- Call Center
+- Driver
+    `,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: GetAllAccountsDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
-    schema: {
-      example: {
-        status: false,
-        message: 'invalid token',
-      },
-    },
+    description: 'Accounts retrieved successfully',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Wrong role',
+    description: 'Invalid role specified',
     schema: {
       example: {
         status: false,
@@ -143,37 +197,52 @@ export class AccountController {
       },
     },
   })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'invalid token',
+      },
+    },
+  })
   @ApiParam({
     name: 'role',
-    description: 'The role of accounts',
+    description: 'The role to filter accounts by',
     type: String,
-    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+    example: 'driver',
+    enum: ['superadmin', 'manager', 'cc', 'driver'],
   })
   @Get('findbyrole/:role')
   async findByRole(@Param('role') role: string) {
     return await asyncHandler(this.accountService.findByRole(role));
   }
 
+  @ApiOperation({
+    summary: 'Update account',
+    description: `
+Updates an existing account's information.`,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Account updated successfully',
     schema: {
-      type: 'object',
-      properties: {
-        status: { type: 'boolean', example: true },
-        data: { type: 'null', example: null },
+      example: {
+        status: true,
+        data: null,
       },
     },
   })
   @ApiParam({
     name: 'id',
-    description: 'The ID of the Account',
+    description: 'The unique identifier of the account to update',
     type: String,
-    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Wrong ID',
+    description: 'Account not found',
     schema: {
       example: {
         status: false,
@@ -183,6 +252,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid update data',
     schema: {
       example: {
         status: false,
@@ -192,7 +262,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    description: 'Invalid or missing authentication token',
     schema: {
       example: {
         status: false,
@@ -200,7 +270,6 @@ export class AccountController {
       },
     },
   })
-  @ApiOperation({ summary: 'Update single Account data' })
   @Patch('update/:id')
   async update(
     @Param('id') id: string,
@@ -209,26 +278,30 @@ export class AccountController {
     return await asyncHandler(this.accountService.update(id, updateAccountDto));
   }
 
+  @ApiOperation({
+    summary: 'Delete account',
+    description: `
+Permanently deletes an account from the system.`,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Account deleted successfully',
     schema: {
-      type: 'object',
-      properties: {
-        status: { type: 'boolean', example: true },
-        data: { type: 'null', example: null },
+      example: {
+        status: true,
+        data: null,
       },
     },
   })
   @ApiParam({
     name: 'id',
-    description: 'The ID of the Account',
+    description: 'The unique identifier of the account to delete',
     type: String,
-    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Wrong ID',
+    description: 'Account not found',
     schema: {
       example: {
         status: false,
@@ -238,7 +311,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    description: 'Invalid or missing authentication token',
     schema: {
       example: {
         status: false,
@@ -246,7 +319,6 @@ export class AccountController {
       },
     },
   })
-  @ApiOperation({ summary: 'Delete single Account' })
   @Delete('delete/:id')
   async remove(@Param('id') id: string) {
     return await asyncHandler(this.accountService.remove(id));
