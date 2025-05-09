@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { asyncHandler } from 'src/common/utils/async-handler';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
@@ -21,9 +26,10 @@ import { GetAllCategoriesDto } from './dto/get-all-categories.dto';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all categories',
-    description: 'Retrieves a list of all categories and their associated types. Returns a hierarchical structure of categories and their items.'
+    description:
+      'Retrieves all categories and their associated types. Each category contains an array of types, where each type is represented as an object with a type property. The response maintains the hierarchical relationship between categories and their types.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -36,7 +42,7 @@ export class CategoryController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -45,9 +51,10 @@ export class CategoryController {
     return await asyncHandler(this.categoryService.getAll());
   }
 
-  @ApiOperation({ 
-    summary: 'Create new category',
-    description: 'Creates a new category or type. If category field is provided, it creates a type under that category. If no category is provided, it creates a new category.'
+  @ApiOperation({
+    summary: 'Create new category or type',
+    description:
+      'Creates a new category or type in the system. If category field is provided, it creates a type under that category. If no category is provided, it creates a new top-level category. The type name must be unique within its parent category. Categories are stored in a flat structure where each category has an array of types.',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -65,17 +72,17 @@ export class CategoryController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
   @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input data',
+    status: HttpStatus.CONFLICT,
+    description: 'Category/Type already exists in the specified category',
     schema: {
       example: {
         status: false,
-        message: 'Invalid input data',
+        message: 'Category/Type already exists',
       },
     },
   })
@@ -84,9 +91,10 @@ export class CategoryController {
     return await asyncHandler(this.categoryService.add(createCategoryDto));
   }
 
-  @ApiOperation({ 
-    summary: 'Update category',
-    description: 'Updates an existing category or type. Use isCategory flag to specify whether updating a category or a type.'
+  @ApiOperation({
+    summary: 'Update category or type',
+    description:
+      'Updates an existing category or type name. Use isCategory flag to specify whether updating a category or a type. For categories, it updates the primary key. For types, it updates the type name within its parent category. The update is performed in a single transaction.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -104,7 +112,7 @@ export class CategoryController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -114,7 +122,7 @@ export class CategoryController {
     schema: {
       example: {
         status: false,
-        message: 'Category not found',
+        message: 'Category/type not found',
       },
     },
   })
@@ -123,9 +131,10 @@ export class CategoryController {
     return await asyncHandler(this.categoryService.update(updateCategoryDto));
   }
 
-  @ApiOperation({ 
-    summary: 'Delete category',
-    description: 'Deletes an existing category or type. Use isCategory flag to specify whether deleting a category or a type.'
+  @ApiOperation({
+    summary: 'Delete category or type',
+    description:
+      "Deletes an existing category or type. Use isCategory flag to specify whether deleting a category or a type. For categories, it removes the entire category record. For types, it removes the type from its parent category's types array. The deletion is performed in a single transaction.",
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -143,7 +152,7 @@ export class CategoryController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -153,7 +162,7 @@ export class CategoryController {
     schema: {
       example: {
         status: false,
-        message: 'Category not found',
+        message: 'Category/type not found',
       },
     },
   })

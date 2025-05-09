@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -10,32 +14,29 @@ import { ArrayContains, Repository } from 'typeorm';
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
+    private readonly categoryRepository: Repository<Category>,
   ) {}
 
   async getAll() {
-    let allCategories = await this.categoryRepository.find();
-    allCategories = allCategories.map((category) => {
+    let categories = await this.categoryRepository.find();
+    categories = categories.map((category) => {
       category.types = <any>category.types.map((type) => ({ type }));
       return category;
     });
-    return allCategories;
+    return categories;
   }
 
-  async add(data: CreateCategoryDto) {
-    const { type, category } = data;
+  async add({ type, category }: CreateCategoryDto) {
     if (!category) return await this.createCategory(type);
     return await this.createItem(type, category);
   }
 
-  async update(data: UpdateCategoryDto) {
-    const { isCategory, oldType, newType } = data;
+  async update({ isCategory, oldType, newType }: UpdateCategoryDto) {
     if (isCategory) return await this.updateCategory(oldType, newType);
     return await this.updatedItem(oldType, newType);
   }
 
-  async delete(data: DeleteCategoryDto) {
-    const { isCategory, type } = data;
+  async delete({ isCategory, type }: DeleteCategoryDto) {
     if (isCategory) return await this.deleteCategory(type);
     return await this.deleteItem(type);
   }
@@ -52,6 +53,8 @@ export class CategoryService {
     if (!existingCategory) {
       this.categoryRepository.insert({ type: category, types: [type] });
     } else {
+      if (existingCategory.types.includes(type))
+        throw new ConflictException('Item already exists');
       existingCategory.types.push(type);
       this.categoryRepository.save(existingCategory);
     }
@@ -62,7 +65,7 @@ export class CategoryService {
     const { affected } = await this.categoryRepository.update(oldType, {
       type: newType,
     });
-    if (!affected) throw new NotFoundException();
+    if (!affected) throw new NotFoundException('Category not found');
     return null;
   }
 
@@ -70,7 +73,7 @@ export class CategoryService {
     const category = await this.categoryRepository.findOne({
       where: { types: ArrayContains([oldType]) },
     });
-    if (!category) throw new NotFoundException();
+    if (!category) throw new NotFoundException('Item not found');
     category.types = category.types.filter((item) => item !== oldType);
     category.types.push(newType);
     this.categoryRepository.save(category);
@@ -79,7 +82,7 @@ export class CategoryService {
 
   async deleteCategory(type: string) {
     const { affected } = await this.categoryRepository.delete({ type });
-    if (!affected) throw new NotFoundException();
+    if (!affected) throw new NotFoundException('Category not found');
     return null;
   }
 
@@ -87,7 +90,7 @@ export class CategoryService {
     const category = await this.categoryRepository.findOne({
       where: { types: ArrayContains([type]) },
     });
-    if (!category) throw new NotFoundException();
+    if (!category) throw new NotFoundException('Item not found');
     category.types = category.types.filter((item) => item !== type);
     this.categoryRepository.save(category);
     return null;

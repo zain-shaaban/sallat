@@ -13,7 +13,7 @@ export class DeleteCategoryDto {
     description: 'Flag to indicate whether deleting a category (true) or a type (false)'
   })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'isCategory flag is required' })
   isCategory: boolean;
 
   @ApiProperty({ 
@@ -23,7 +23,7 @@ export class DeleteCategoryDto {
     maxLength: 100
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
+  @IsNotEmpty({ message: 'Type name is required' })
+  @MaxLength(100, { message: 'Type name must not exceed 100 characters' })
   type: string;
 }

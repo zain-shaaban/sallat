@@ -8,7 +8,7 @@ export class UpdateCategoryDto {
     description: 'Flag to indicate whether updating a category (true) or a type (false)'
   })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'isCategory flag is required' })
   isCategory: boolean;
 
   @ApiProperty({ 
@@ -18,18 +18,18 @@ export class UpdateCategoryDto {
     maxLength: 100
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
+  @IsNotEmpty({ message: 'Current name is required' })
+  @MaxLength(100, { message: 'Current name must not exceed 100 characters' })
   oldType: string;
 
   @ApiProperty({ 
     type: 'string', 
     example: 'بطاطا صاج',
     description: 'The new name to update the category or type to',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
+  @IsNotEmpty({ message: 'New name is required' })
+  @MaxLength(100, { message: 'New name must not exceed 100 characters' })
   newType: string;
 }
