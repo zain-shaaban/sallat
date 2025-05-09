@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DriverMetadata } from './driverMetadata.entity';
+import { AccountRole } from '../enums/account-role.enum';
+
 
 @Entity('sallat_accounts', { orderBy: { createdAt: 'ASC' } })
 export class Account {
@@ -34,18 +36,24 @@ export class Account {
   @Column()
   phoneNumber: string;
 
-  @ApiProperty({ example: 'driver', required: true })
-  @Column()
-  role: string;
+  @ApiProperty({
+    example: 'cc',
+    required: true,
+    enum: AccountRole,
+    description: 'Account role in the system',
+  })
+  @Column({
+    type: 'enum',
+    enum: AccountRole,
+  })
+  role: AccountRole;
 
   @ApiProperty({ type: 'number', example: 1500000.0 })
   @Column({ type: 'float', nullable: true })
   salary: number;
 
-  @OneToOne(() => DriverMetadata, (profile) => profile.account, {
-    cascade: true,
-  })
-  driverMetadata?: DriverMetadata;
+  @OneToOne(() => DriverMetadata, (profile) => profile.account)
+  driverMetadata: DriverMetadata;
 
   @CreateDateColumn()
   @Exclude()

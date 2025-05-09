@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import {
@@ -74,7 +75,7 @@ Creates a new user account in the system.
     schema: {
       example: {
         status: false,
-        message: 'validation error',
+        message: 'Validation error',
       },
     },
   })
@@ -94,7 +95,7 @@ Creates a new user account in the system.
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -119,7 +120,7 @@ Retrieves a list of all accounts in the system`,
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -151,7 +152,8 @@ Retrieves detailed information about a specific account.
     schema: {
       example: {
         status: false,
-        message: 'not found',
+        message:
+          'Account with ID 78f45450-9532-452d-b606-ed67778bde0b not found',
       },
     },
   })
@@ -161,7 +163,7 @@ Retrieves detailed information about a specific account.
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -193,7 +195,7 @@ Retrieves all accounts with a specific role.
     schema: {
       example: {
         status: false,
-        message: 'role not exist',
+        message: 'Invalid role: customer',
       },
     },
   })
@@ -203,7 +205,7 @@ Retrieves all accounts with a specific role.
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -246,7 +248,8 @@ Updates an existing account's information.`,
     schema: {
       example: {
         status: false,
-        message: 'not found',
+        message:
+          'Account with ID 440cbc27-e325-499a-9468-295aad93c378 not found',
       },
     },
   })
@@ -256,7 +259,7 @@ Updates an existing account's information.`,
     schema: {
       example: {
         status: false,
-        message: 'validation error',
+        message: 'Validation error',
       },
     },
   })
@@ -266,7 +269,7 @@ Updates an existing account's information.`,
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -305,7 +308,8 @@ Permanently deletes an account from the system.`,
     schema: {
       example: {
         status: false,
-        message: 'not found',
+        message:
+          'Account with ID 440cbc27-e325-499a-9468-295aad93c378 not found',
       },
     },
   })
@@ -315,7 +319,7 @@ Permanently deletes an account from the system.`,
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })

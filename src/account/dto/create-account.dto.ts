@@ -9,16 +9,30 @@ import {
   IsEmail,
   IsEnum,
 } from 'class-validator';
-import { AccountRole } from '../account.service';
+import { AccountRole } from '../enums/account-role.enum';
+import {
+  IAccountResponse,
+  ICreateAccountRequest,
+} from '../interfaces/account.interface';
 
-export class CreateAccountDtoRequest {
-  @ApiProperty({ example: 'example example' })
+export class CreateAccountDtoRequest implements ICreateAccountRequest {
+  @ApiProperty({
+    example: 'Lucas Davis',
+    description: 'Full name of the account holder',
+    minLength: 2,
+    maxLength: 200,
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
+  @MinLength(2)
   name: string;
 
-  @ApiProperty({ example: 'example@gmail.com' })
+  @ApiProperty({
+    example: 'lucas@gmail.com',
+    description: 'Unique email address for the account',
+    maxLength: 200,
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
@@ -27,7 +41,9 @@ export class CreateAccountDtoRequest {
 
   @ApiProperty({
     example: 'example123',
-    description: 'Minimum length is 6 character',
+    description: 'Account password (min 6 characters)',
+    minLength: 6,
+    maxLength: 200,
   })
   @IsString()
   @IsNotEmpty()
@@ -35,42 +51,69 @@ export class CreateAccountDtoRequest {
   @MaxLength(200)
   password: string;
 
-  @ApiProperty({ example: '0999888777' })
+  @ApiProperty({
+    example: '+1234567890',
+    description: 'Phone number',
+    maxLength: 50,
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
   phoneNumber: string;
 
-  @ApiProperty({ example: 'driver', required: true })
+  @ApiProperty({
+    example: 'driver',
+    description: 'Account role in the system',
+    enum: AccountRole,
+    required: true,
+  })
   @IsNotEmpty()
-  @IsEnum(AccountRole, { message: 'Role is wrong' })
-  role: string;
+  @IsEnum(AccountRole, { message: 'Invalid role specified' })
+  role: AccountRole;
 
-  @ApiProperty({ example: 1500000.0, required: false })
+  @ApiProperty({
+    example: 1500000.0,
+    description: 'Monthly salary',
+    required: false,
+    type: Number,
+  })
   @IsOptional()
   @IsNumber()
   salary?: number;
 
-  @ApiProperty({ example: 332211, required: false })
+  @ApiProperty({
+    example: 'ABC123',
+    description: 'Vehicle number assigned to driver',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   assignedVehicleNumber?: string;
 
-  @ApiProperty({ example: 'tokentokentoken', required: false })
+  @ApiProperty({
+    example: 'fcm-token-123',
+    description: 'Firebase Cloud Messaging token for notifications',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   notificationToken?: string;
 }
 
-class CreateAccountData {
-  @ApiProperty({ example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f' })
-  id: string;
-}
-
-export class CreateAccountDtoResponse {
-  @ApiProperty({ example: true })
+export class CreateAccountDtoResponse implements IAccountResponse {
+  @ApiProperty({
+    example: true,
+    description: 'Operation status',
+  })
   status: boolean;
 
-  @ApiProperty({ type: CreateAccountData })
-  data: CreateAccountData;
+  @ApiProperty({
+    example: {
+      id: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+    },
+    description: 'Created account data',
+  })
+  data: {
+    id: string;
+  };
 }

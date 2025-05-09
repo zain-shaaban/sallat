@@ -1,39 +1,42 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateAccountDtoRequest } from './dto/create-account.dto';
-import { UpdateAccountDto } from './dto/update-account.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Account } from './entities/account.entity';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DriverMetadata } from './entities/driverMetadata.entity';
-
-export enum AccountRole {
-  DRIVER = 'driver',
-  CC = 'cc',
-  MANAGER = 'manager',
-  SUPERADMIN = 'superadmin',
-}
+import {
+  IAccount,
+  IDriverAccount,
+  ICreateAccountRequest,
+  IUpdateAccountRequest,
+} from './interfaces/account.interface';
+import { AccountRole } from './enums/account-role.enum';
+import { AccountController } from './account.controller';
 
 @Injectable()
 export class AccountService {
   constructor(
-    @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @InjectRepository(Account)
+    private readonly accountRepository: Repository<Account>,
     @InjectRepository(DriverMetadata)
-    private driverRepository: Repository<DriverMetadata>,
+    private readonly driverRepository: Repository<DriverMetadata>,
   ) {}
 
-  async create(createAccountDto: CreateAccountDtoRequest) {
-    let {
-      name,
-      email,
-      password,
-      phoneNumber,
-      salary,
-      role,
-      assignedVehicleNumber,
-      notificationToken,
-    } = createAccountDto;
+  async create({
+    name,
+    email,
+    password,
+    phoneNumber,
+    salary,
+    role,
+    assignedVehicleNumber,
+    notificationToken,
+  }: ICreateAccountRequest): Promise<{ id: string }> {
     password = bcrypt.hashSync(password, bcrypt.genSaltSync());
     const { id } = await this.accountRepository.save({
       name,
@@ -43,8 +46,8 @@ export class AccountService {
       salary,
       role,
     });
-    if (role == 'driver') {
-      this.driverRepository.insert({
+    if (role === AccountRole.DRIVER) {
+      await this.driverRepository.insert({
         id,
         assignedVehicleNumber,
         notificationToken,
@@ -53,52 +56,80 @@ export class AccountService {
     return { id };
   }
 
-  async findAll() {
-    let allAccounts = await this.accountRepository.find({
+  async findAll(): Promise<(IAccount | IDriverAccount)[]> {
+    const accounts = await this.accountRepository.find({
       relations: ['driverMetadata'],
     });
-    allAccounts = allAccounts.map((account) => {
-      if (account.role == 'driver') {
-        account = { ...account, ...account.driverMetadata };
+
+    const transformed = accounts.map((account) => {
+      if (account.role === AccountRole.DRIVER && account.driverMetadata) {
+        return plainToInstance(Account, {
+          ...account,
+          ...account.driverMetadata,
+          driverMetadata: undefined,
+        });
       }
-      delete account.driverMetadata;
-      return account;
+
+      return plainToInstance(Account, {
+        ...account,
+        driverMetadata: undefined,
+      });
     });
-    return plainToInstance(Account, allAccounts);
+
+    return transformed;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<IAccount | IDriverAccount> {
     let account = await this.accountRepository.findOne({
       where: { id },
       relations: ['driverMetadata'],
     });
-    if (!account) throw new NotFoundException();
-    if (account.role == 'driver') {
-      account = { ...account, ...account.driverMetadata };
+
+    if (!account)
+      throw new NotFoundException(`Account with ID ${id} not found`);
+
+    if (account.role === AccountRole.DRIVER) {
+      return plainToInstance(Account, {
+        ...account,
+        ...account.driverMetadata,
+        driverMetadata: undefined,
+      });
     }
-    delete account.driverMetadata;
-    return plainToInstance(Account, account);
+
+    return account;
   }
 
-  async findByRole(role: string) {
-    if (!Object.values(AccountRole).includes(role as AccountRole))
-      throw new NotFoundException('role not exist');
-    let allAccounts = await this.accountRepository.find({
-      where: { role },
+  async findByRole(role: string): Promise<(IAccount | IDriverAccount)[]> {
+    if (!Object.values(AccountRole).includes(role as AccountRole)) {
+      throw new BadRequestException(`Invalid role: ${role}`);
+    }
+
+    let accounts = await this.accountRepository.find({
+      where: { role: role as AccountRole },
       relations: ['driverMetadata'],
     });
-    allAccounts = allAccounts.map((account) => {
-      if (account.role == 'driver') {
-        account = { ...account, ...account.driverMetadata };
+
+    const transformed = accounts.map((account) => {
+      if (account.role === AccountRole.DRIVER) {
+        return plainToInstance(Account, {
+          ...account,
+          ...account.driverMetadata,
+          driverMetadata: undefined,
+        });
       }
-      delete account.driverMetadata;
-      return account;
+
+      return plainToInstance(Account, {
+        ...account,
+        driverMetadata: undefined,
+      });
     });
-    return plainToInstance(Account, allAccounts);
+
+    return transformed;
   }
 
-  async update(id: string, updateAccountDto: UpdateAccountDto) {
-    let {
+  async update(
+    id: string,
+    {
       name,
       email,
       password,
@@ -107,14 +138,16 @@ export class AccountService {
       role,
       assignedVehicleNumber,
       notificationToken,
-    } = updateAccountDto;
-    if (password) password = bcrypt.hashSync(password, bcrypt.genSaltSync());
+    }: IUpdateAccountRequest,
+  ): Promise<null> {
     const { affected: accountAffected } = await this.accountRepository.update(
       id,
       {
         name,
         email,
-        password,
+        password: password
+          ? bcrypt.hashSync(password, bcrypt.genSaltSync())
+          : undefined,
         phoneNumber,
         salary,
         role,
@@ -127,14 +160,15 @@ export class AccountService {
         assignedVehicleNumber,
       },
     );
-    if (accountAffected == 0 && driverAffected == 0)
-      throw new NotFoundException();
+    if (accountAffected === 0 && driverAffected === 0)
+      throw new NotFoundException(`Account with ID ${id} not found`);
     return null;
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<null> {
     const { affected } = await this.accountRepository.delete(id);
-    if (affected == 0) throw new NotFoundException();
+    if (affected === 0)
+      throw new NotFoundException(`Account with ID ${id} not found`);
     return null;
   }
 }
