@@ -12,6 +12,7 @@ export class AuthService {
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     private readonly jwtService: JwtService,
   ) {}
+
   async login(loginDto: LoginRequestDto) {
     const { email, password } = loginDto;
     const account = await this.accountRepository.findOne({

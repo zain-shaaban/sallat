@@ -24,8 +24,10 @@ export class AccountAuthGuard implements CanActivate {
       if (!token) throw new UnauthorizedException('Invalid token');
 
       const { id } = this.jwtService.verify(token);
-      const account = await this.accountRepository.findOneBy(id);
+      const account = await this.accountRepository.findOne({ where: { id } });
+
       if (!account) throw new UnauthorizedException('Invalid token');
+
       request.user = { id: account.id, role: account.role };
       return true;
     } catch (error) {

@@ -17,15 +17,15 @@ Authenticates a user and returns a JWT token for subsequent API requests.`,
   @ApiResponse({
     status: HttpStatus.OK,
     type: LoginResponseDto,
-    description: 'Authentication successful',
+    description: 'Authentication successful - Returns JWT token',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Authentication failed',
+    description: 'Authentication failed - Invalid credentials',
     schema: {
       example: {
         status: false,
-        message: 'wrong credentials',
+        message: 'Wrong credentials',
       },
     },
   })

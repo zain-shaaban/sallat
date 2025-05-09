@@ -25,6 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
 import { GetSingleAccountDto } from './dto/get-single-account.dto';
+import { AccountAuthGuard } from 'src/common/guards/account.guard';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Accounts')
