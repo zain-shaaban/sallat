@@ -25,6 +25,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LocationEntity } from 'src/trip/entities/location.entity';
 import { NotificationSocket } from '../notification-socket/entites/notification-socket.entity';
+import { logger } from 'src/common/error_logger/logger.util';
 
 export let onlineDrivers: any[] = [];
 
@@ -85,7 +86,6 @@ export class DriverSocketGateway
     private locationRepository: Repository<LocationEntity>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-    private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
     @InjectRepository(NotificationSocket)
     private readonly notificationSocketRepository: Repository<NotificationSocket>,
@@ -168,7 +168,7 @@ export class DriverSocketGateway
       client.emit('alreadyAssignedTrip', alreadyAssignedTrip);
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       client.disconnect();
     }
   }
@@ -184,7 +184,7 @@ export class DriverSocketGateway
         status: true,
       };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -235,7 +235,7 @@ export class DriverSocketGateway
       });
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -262,7 +262,7 @@ export class DriverSocketGateway
       });
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -309,7 +309,7 @@ export class DriverSocketGateway
       });
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -332,7 +332,7 @@ export class DriverSocketGateway
       }
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -347,7 +347,9 @@ export class DriverSocketGateway
   ) {
     try {
       const driverID = this.getDriverID(client);
-      const trip = ongoingTrips.find((trip) => trip.tripID == changeStateData.tripID);
+      const trip = ongoingTrips.find(
+        (trip) => trip.tripID == changeStateData.tripID,
+      );
       if (changeStateData.stateName == 'onVendor') {
         this.io.server.of('/notifications').emit('stateOnVendor', {
           tripID: trip.tripID,
@@ -391,7 +393,7 @@ export class DriverSocketGateway
       }
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -411,7 +413,7 @@ export class DriverSocketGateway
   //     client.disconnect();
   //     return { status: true };
   //   } catch (error) {
-  //     this.logger.error(error.message, error.stack);
+  //     logger.error(error.message, error.stack);
   //     return {
   //       status: false,
   //       message: error.message,
@@ -432,7 +434,7 @@ export class DriverSocketGateway
         status: true,
       };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -446,7 +448,7 @@ export class DriverSocketGateway
     @MessageBody() endStateData: any,
   ) {
     try {
-      let { itemPrice, receipt,tripID } = endStateData;
+      let { itemPrice, receipt, tripID } = endStateData;
       delete endStateData?.itemPrice;
       delete endStateData?.receipt;
       delete endStateData?.tripID;
@@ -621,7 +623,7 @@ export class DriverSocketGateway
         };
       }
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,

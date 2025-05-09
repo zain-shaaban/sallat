@@ -41,10 +41,12 @@ export class ErrorLoggerController {
   @ApiResponse({
     status: 404,
     description: 'Error log not found',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
+    schema: {
+      example: {
+        status: false,
+        message: 'Error not found',
+      }
+    }
   })
   async findOne(@Param('errorID', ParseIntPipe) errorID: number) {
     return await asyncHandler(this.errorLoggerService.findOne(errorID));

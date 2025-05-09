@@ -14,6 +14,7 @@ import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationSocket } from '../notification-socket/entites/notification-socket.entity';
+import { logger } from 'src/common/error_logger/logger.util';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
@@ -30,7 +31,6 @@ export class AdminSocketGateway implements OnGatewayConnection {
   io: Namespace;
 
   constructor(
-    private readonly logger: ErrorLoggerService,
     @Inject() private readonly notificationService: NotificationService,
     @InjectRepository(NotificationSocket)
     private readonly notificationSocketRepository: Repository<NotificationSocket>,
@@ -46,7 +46,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       });
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -63,7 +63,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       onlineDrivers.length = 0;
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -81,7 +81,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       }
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -109,7 +109,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       }
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -137,7 +137,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
         status: true,
       };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -164,7 +164,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
       this.tripPulledForDriver(driver.socketID, tripID);
       return { status: true };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
@@ -224,7 +224,7 @@ export class AdminSocketGateway implements OnGatewayConnection {
         status: true,
       };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      logger.error(error.message, error.stack);
       return {
         status: false,
         message: error.message,
