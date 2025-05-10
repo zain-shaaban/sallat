@@ -2,7 +2,6 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Customer } from './entities/customer.entity';
 import { CreateCustomerDtoRequest } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Trip } from 'src/trip/entities/trip.entity';
 import { AdminSocketGateway } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,16 +10,14 @@ import { Repository } from 'typeorm';
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
-    private customerRepository: Repository<Customer>,
-    @InjectRepository(Trip) private tripRepository: Repository<Trip>,
+    private readonly customerRepository: Repository<Customer>,
     @Inject() private readonly adminGateway: AdminSocketGateway,
   ) {}
 
-  async create(createCustomerDto: CreateCustomerDtoRequest) {
-    let { name, phoneNumber, location } = createCustomerDto;
-    let customer = await this.customerRepository.save({
+  async create({ name, phoneNumbers, location }: CreateCustomerDtoRequest) {
+    let customer: any = await this.customerRepository.save({
       name,
-      phoneNumber: [phoneNumber],
+      phoneNumbers,
       location,
     });
     customer = this.handlePhoneNumbers(customer);
@@ -29,38 +26,29 @@ export class CustomerService {
   }
 
   async findAll() {
-    let allCustomers: any = await this.customerRepository.find();
-    for (let i in allCustomers) {
-      // const trips: any = await this.tripRepository.find({
-      //   where: { customerID: allCustomers[i].customerID },
-      // });
-      // allCustomers[i].trips = trips;
-      allCustomers[i] = this.handlePhoneNumbers(allCustomers[i]);
-    }
-    return allCustomers;
+    let customers: any = await this.customerRepository.find();
+    customers = customers.map(this.handlePhoneNumbers);
+    return customers;
   }
 
   async findOne(customerID: string) {
     let customer: any = await this.customerRepository.findOneBy({ customerID });
-    if (!customer) throw new NotFoundException();
-    // const trips: any = await this.tripRepository.find({
-    //   where: { customerID: customer.customerID },
-    // });
-    // customer.trips = trips;
+    if (!customer)
+      throw new NotFoundException(`Customer with ID ${customerID} not found`);
     customer = this.handlePhoneNumbers(customer);
     return customer;
   }
 
-  async update(customerID: string, updateCustomerDto: UpdateCustomerDto) {
-    let { name, phoneNumber, location } = updateCustomerDto;
-    let customer = await this.customerRepository.findOneBy({ customerID });
-    if (!customer) throw new NotFoundException('Customer not found');
-
-    if (phoneNumber && !customer.phoneNumber.includes(phoneNumber))
-      customer.phoneNumber.push(phoneNumber);
+  async update(
+    customerID: string,
+    { name, phoneNumbers, location }: UpdateCustomerDto,
+  ) {
+    let customer: any = await this.customerRepository.findOneBy({ customerID });
+    if (!customer)
+      throw new NotFoundException(`Customer with ID ${customerID} not found`);
 
     let updates = Object.fromEntries(
-      Object.entries({ name, location }).filter(
+      Object.entries({ name, phoneNumbers, location }).filter(
         ([_, value]) => value !== undefined,
       ),
     );
@@ -73,21 +61,22 @@ export class CustomerService {
 
   async remove(customerID: string) {
     const { affected } = await this.customerRepository.delete(customerID);
-    if (affected == 0) throw new NotFoundException();
+    if (affected == 0)
+      throw new NotFoundException(`Customer with ID ${customerID} not found`);
     this.adminGateway.deleteCustomer(customerID);
     return null;
   }
 
   async findOnMap() {
-    const allCustomersOnMap = await this.customerRepository.find({
+    const customersOnMap = await this.customerRepository.find({
       select: ['customerID', 'name', 'location'],
     });
-    return allCustomersOnMap;
+    return customersOnMap;
   }
 
   handlePhoneNumbers(customer: any) {
-    const phoneNumbers = customer.phoneNumber;
-    customer.phoneNumber = phoneNumbers[0];
+    const phoneNumbers = customer.phoneNumbers;
+    customer.phoneNumbers = phoneNumbers[0];
     customer.alternativePhoneNumbers = phoneNumbers.slice(1);
     return customer;
   }

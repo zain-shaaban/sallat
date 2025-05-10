@@ -9,18 +9,15 @@ import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 @Injectable()
 export class NotificationService {
   constructor(
-    @InjectRepository(DriverMetadata) private driverRepository: Repository<DriverMetadata>,
+    @InjectRepository(DriverMetadata)
+    private driverRepository: Repository<DriverMetadata>,
     private readonly firebaseService: FirebaseService,
   ) {}
 
   async send(createNotificationDto: CreateNotificationDto) {
     const { content, driverID, title } = createNotificationDto;
-    const driver = await this.driverRepository.findOneBy({ id:driverID });
+    const driver = await this.driverRepository.findOneBy({ id: driverID });
     if (!driver) throw new NotFoundException();
-    if (!driver?.notificationToken) {
-      logger.error('not found token', '');
-      return;
-    }
     const message = {
       token: driver.notificationToken,
       notification: {
@@ -28,7 +25,12 @@ export class NotificationService {
         body: content,
       },
     };
-    await this.firebaseService.messaging().send(message);
+    try {
+      await this.firebaseService.messaging().send(message);
+    } catch (error) {
+      logger.error(error.message, error.stack);
+      return;
+    }
     return null;
   }
 }

@@ -12,7 +12,7 @@ import { sendLocationDto } from './dto/new-location.dto';
 import { onlineDrivers } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Repository } from 'typeorm';
+import { ArrayContains, DeepPartial, Repository } from 'typeorm';
 import { LocationEntity } from './entities/location.entity';
 import { CustomerService } from 'src/customer/customer.service';
 
@@ -61,13 +61,13 @@ export class TripService {
         },
         customer: {
           customerID,
-          phoneNumber: [
+          phoneNumbers: [
             customerPhoneNumber,
             ...customerAlternativePhoneNumbers,
           ],
           name: customerName,
           location: customerLocation,
-        },
+        } as DeepPartial<Customer>,
         itemTypes,
         description,
         approxDistance,
@@ -102,13 +102,13 @@ export class TripService {
         driverID,
         customer: {
           customerID,
-          phoneNumber: [
+          phoneNumbers: [
             customerPhoneNumber,
             ...customerAlternativePhoneNumbers,
           ],
           name: customerName,
           location: customerLocation,
-        },
+        } as DeepPartial<Customer>,
         itemTypes,
         description,
         alternative: true,
@@ -149,14 +149,14 @@ export class TripService {
 
   async customerSearch(phoneNumber: string) {
     let allCustomers: any = await this.customerRepository.find({
-      select: ['customerID', 'name', 'location', 'phoneNumber'],
-      where: { phoneNumber: ArrayContains([phoneNumber]) },
+      select: ['customerID', 'name', 'location', 'phoneNumbers'],
+      where: { phoneNumbers: ArrayContains([phoneNumber]) },
     });
     if (allCustomers.length == 0) throw new NotFoundException();
     allCustomers = allCustomers.map((customer) => {
       customer.alternativePhoneNumbers =
-        customer.phoneNumber.filter((n) => n != phoneNumber) || [];
-      delete customer.phoneNumber;
+        customer.phoneNumbers.filter((n) => n != phoneNumber) || [];
+      delete customer.phoneNumbers;
       return customer;
     });
     return allCustomers;

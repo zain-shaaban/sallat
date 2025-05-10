@@ -34,12 +34,14 @@ export class CustomerController {
 
   @ApiOperation({
     summary: 'Create new customer',
-    description: 'Creates a new customer',
+    description:
+      'Creates a new customer with the provided information including name, phone number, and optional location data.',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
     type: CreateCustomerDtoResponse,
-    description: 'The customer has been successfully created',
+    description:
+      'The customer has been successfully created. Returns the customer ID.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -47,7 +49,7 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'validation error',
+        message: 'Validation error',
       },
     },
   })
@@ -57,7 +59,7 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -69,12 +71,13 @@ export class CustomerController {
   @ApiOperation({
     summary: 'Get all customers',
     description:
-      'Retrieves a list of all customers with their details including trips',
+      'Retrieves a list of all customers with their complete details including trips, contact information, and location data.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     type: GetAllCustomersDto,
-    description: 'List of customers retrieved successfully',
+    description:
+      'List of customers retrieved successfully. Returns an array of customer objects with their complete details.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -82,7 +85,7 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -93,11 +96,12 @@ export class CustomerController {
 
   @ApiOperation({
     summary: 'Update customer',
-    description: "Updates an existing customer's information by their ID",
+    description:
+      "Updates an existing customer's information by their ID. Can update name, phone numbers, and location data.",
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Customer updated successfully',
+    description: 'Customer updated successfully. Returns a success status.',
     schema: {
       type: 'object',
       properties: {
@@ -108,17 +112,19 @@ export class CustomerController {
   })
   @ApiParam({
     name: 'customerID',
-    description: 'The unique identifier of the customer',
+    description: 'The unique identifier of the customer to update',
     type: String,
     example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Customer not found with the provided ID',
+    description:
+      'Customer not found with the provided ID. The specified customer ID does not exist in the system.',
     schema: {
       example: {
         status: false,
-        message: 'not found',
+        message:
+          'Customer with ID c1a8b798-4f3e-4f3f-a7fd-e77c1ea1fbe5 not found',
       },
     },
   })
@@ -128,7 +134,7 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'validation error',
+        message: 'Validation error',
       },
     },
   })
@@ -138,7 +144,7 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -155,12 +161,13 @@ export class CustomerController {
   @ApiOperation({
     summary: 'Get customers on map',
     description:
-      'Retrieves a list of customers with their location data for map display',
+      'Retrieves a list of customers with their location data for map display. Returns only the essential data needed for map visualization.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     type: GetAllCustomersOnMapDto,
-    description: 'List of customers with location data retrieved successfully',
+    description:
+      'List of customers with location data retrieved successfully. Returns an array of customer objects with their ID, name, and location coordinates.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -168,7 +175,7 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -183,7 +190,7 @@ export class CustomerController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Customer deleted successfully',
+    description: 'Customer deleted successfully. Returns a success status.',
     schema: {
       type: 'object',
       properties: {
@@ -200,11 +207,13 @@ export class CustomerController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Customer not found with the provided ID',
+    description:
+      'Customer not found with the provided ID. The specified customer ID does not exist in the system.',
     schema: {
       example: {
         status: false,
-        message: 'not found',
+        message:
+          'Customer with ID c1a8b798-4f3e-4f3f-a7fd-e77c1ea1fbe5 not found',
       },
     },
   })
@@ -214,7 +223,7 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -230,22 +239,25 @@ export class CustomerController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Customer found successfully',
+    description:
+      'Customer found successfully. Returns the complete customer data.',
     type: GetSingleCustomerDto,
   })
   @ApiParam({
     name: 'customerID',
-    description: 'The unique identifier of the customer',
+    description: 'The unique identifier of the customer to retrieve',
     type: String,
     example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Customer not found with the provided ID',
+    description:
+      'Customer not found with the provided ID. The specified customer ID does not exist in the system.',
     schema: {
       example: {
         status: false,
-        message: 'not found',
+        message:
+          'Customer with ID c1a8b798-4f3e-4f3f-a7fd-e77c1ea1fbe5 not found',
       },
     },
   })
@@ -255,11 +267,11 @@ export class CustomerController {
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
-  @Get('/:customerID')
+  @Get(':customerID')
   async findOne(@Param('customerID') customerID: string) {
     return await asyncHandler(this.customerService.findOne(customerID));
   }
