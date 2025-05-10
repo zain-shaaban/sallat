@@ -35,6 +35,7 @@ export class FirebaseService implements OnModuleInit {
 
   messaging(): admin.messaging.Messaging {
     if (!this.firebaseAdmin) {
+      logger.error('Firebase Admin is not initialized','src/firebase/firebase.service.ts_38')
       throw new Error('Firebase Admin is not initialized');
     }
     return this.firebaseAdmin.messaging();
