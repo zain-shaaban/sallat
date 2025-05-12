@@ -9,7 +9,10 @@ class location {
 }
 
 export class GetVendorData {
-  @ApiProperty({ type:'string',example: '3c559f4a-ef14-4e62-8874-384a89c8689e' })
+  @ApiProperty({
+    type: 'string',
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
   vendorID: string;
 
   @ApiProperty({ example: '0999888777' })
@@ -21,17 +24,11 @@ export class GetVendorData {
   @ApiProperty({ type: location })
   location: location;
 
-  @ApiProperty({type:'boolean',example:false})
-  partner:boolean
-
-  @ApiProperty({type:'string',example:'example@gmail.com'})
-  email:string
-
   @ApiProperty({ type: Trip, isArray: true })
   trips: Trip[];
 }
 
-export class GetAllVendorsDto2 {
+export class GetAllVendorsDto {
   @ApiProperty({ example: true })
   status: boolean;
 

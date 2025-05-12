@@ -1,55 +1,44 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
+import { LocationDto } from 'src/customer/dto/location.dto';
 
-class location {
-  @ApiProperty({ type: 'number', example: 65.565656 })
-  @IsNumber()
-  @IsNotEmpty()
-  lat: number;
-
-  @ApiProperty({ type: 'number', example: 98.989898 })
-  @IsNumber()
-  @IsNotEmpty()
-  lng: number;
-}
-
-export class CreateVendorDtoRequest2 {
-  @ApiProperty({ example: '0999888777' })
-  @IsString()
-  @IsOptional()
-  phoneNumber: string;
-
+export class CreateVendorDtoRequest {
   @ApiProperty({ example: 'example example' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   name: string;
 
-  @ApiProperty({ type: location })
-  @IsOptional()
-  location: location;
-
-  @ApiProperty({ type: 'boolean', example: false })
-  @IsOptional()
-  @IsBoolean()
-  partner: boolean;
-
-  @ApiProperty({ type: 'string', example: 'example@gmail.com' })
-  @IsOptional()
+  @ApiProperty({
+    example: '+1234567890',
+    description: 'Phone number',
+    maxLength: 50,
+  })
   @IsString()
-  email: string;
+  @IsNotEmpty()
+  @MaxLength(50)
+  phoneNumber: string;
 
-  @ApiProperty({ type: 'string', example: 'example123' })
+  @ApiProperty({
+    type: LocationDto,
+    description: 'Geographic location of the customer',
+    example: {
+      coords: {
+        lat: 58.16543232,
+        lng: 36.18875421,
+      },
+      approximate: true,
+      description: 'بجانب المحكمة',
+    },
+    required: false,
+  })
   @IsOptional()
-  @IsString()
-  password: string;
+  location: LocationDto;
 }
 
 class CreateVendorData {
@@ -58,9 +47,19 @@ class CreateVendorData {
 }
 
 export class CreateVendorDtoResponse {
-  @ApiProperty({ example: true })
+  @ApiProperty({
+    example: true,
+    description: 'Operation status',
+  })
   status: boolean;
 
-  @ApiProperty({ type: CreateVendorData })
-  data: CreateVendorData;
+  @ApiProperty({
+    example: {
+      id: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+    },
+    description: 'Created vendor id',
+  })
+  data: {
+    vendorID: string;
+  };
 }

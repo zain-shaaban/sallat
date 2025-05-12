@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import {
-  CreateVendorDtoRequest2,
+  CreateVendorDtoRequest,
   CreateVendorDtoResponse,
 } from './dto/create-vendor.dto';
 import { asyncHandler } from 'src/common/utils/async-handler';
@@ -21,10 +21,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { GetAllVendorsDto2 } from './dto/get-all-vendors.dto';
-import { GetSingleVendorDto2 } from './dto/get-single-vendor.dto';
+import { GetAllVendorsDto } from './dto/get-all-vendors.dto';
+import { GetSingleVendorDto } from './dto/get-single-vendor.dto';
 import { GetAllVendorsOnMapDto } from './dto/get-all-vendors-on-map.dto';
-import { UpdateVendorDto2 } from './dto/update-vendor.dto';
+import { UpdateVendorDto } from './dto/update-vendor.dto';
 
 @ApiBearerAuth()
 @ApiTags('Vendors')
@@ -64,7 +64,7 @@ Creates a new vendor in the system.
     }
   })
   @Post('add')
-  async create(@Body() createVendorDto: CreateVendorDtoRequest2) {
+  async create(@Body() createVendorDto: CreateVendorDtoRequest) {
     return await asyncHandler(this.vendorService.create(createVendorDto));
   }
 
@@ -75,7 +75,7 @@ Retrieves a list of all vendors in the system.`
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: GetAllVendorsDto2,
+    type: GetAllVendorsDto,
     description: 'List of vendors retrieved successfully'
   })
   @ApiResponse({
@@ -148,7 +148,7 @@ Updates an existing vendor's information.`
   @Patch('update/:vendorID')
   async update(
     @Param('vendorID') vendorID: string,
-    @Body() updateVendorDto: UpdateVendorDto2,
+    @Body() updateVendorDto: UpdateVendorDto,
   ) {
     return await asyncHandler(
       this.vendorService.update(vendorID, updateVendorDto),
@@ -236,7 +236,7 @@ Retrieves detailed information about a specific vendor. `
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Vendor found successfully',
-    type: GetSingleVendorDto2
+    type: GetSingleVendorDto
   })
   @ApiParam({
     name: 'vendorID',

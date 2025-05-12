@@ -1,11 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  Max,
+  ValidateNested,
 } from 'class-validator';
+import { CoordinatesDto } from 'src/customer/dto/location.dto';
 
 class location {
   @ApiProperty({ type: 'number', example: 65.565656 })
@@ -28,9 +30,18 @@ export class sendLocationDto {
   @IsNotEmpty()
   driverID: string;
 
-  @ApiProperty({ type: location })
-  @IsOptional()
-  location: location;
+  @ApiProperty({
+    type: CoordinatesDto,
+    description: 'Geographic coordinates of the location',
+    example: {
+      lat: 58.16543232,
+      lng: 36.18875421,
+    },
+  })
+  @ValidateNested()
+  @Type(() => CoordinatesDto)
+  @IsNotEmpty()
+  location: CoordinatesDto;
 
   @ApiProperty({ type: 'number', example: 6565656 })
   @IsNumber()

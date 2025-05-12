@@ -111,7 +111,7 @@ export class CreateAccountDtoResponse implements IAccountResponse {
     example: {
       id: '3c559f4a-ef14-4e62-8874-384a89c8689e',
     },
-    description: 'Created account data',
+    description: 'Created account id',
   })
   data: {
     id: string;

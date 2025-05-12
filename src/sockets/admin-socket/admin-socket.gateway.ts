@@ -15,6 +15,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationSocket } from '../notification-socket/entites/notification-socket.entity';
 import { logger } from 'src/common/error_logger/logger.util';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { Customer } from 'src/customer/entities/customer.entity';
+import { Account } from 'src/account/entities/account.entity';
 
 export let readyTrips: any[] = [];
 export let ongoingTrips: any[] = [];
@@ -299,11 +302,11 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.sendTripsToAdmins();
   }
 
-  newVendor(vendor) {
+  newVendor(vendor:Vendor) {
     this.io.server.of('/admin').emit('newVendor', vendor);
   }
 
-  newCustomer(customer) {
+  newCustomer(customer:Customer) {
     this.io.server.of('/admin').emit('newCustomer', customer);
   }
 
@@ -337,27 +340,27 @@ export class AdminSocketGateway implements OnGatewayConnection {
     this.io.server.of('/driver').to(socketID).emit('tripPulled', { tripID });
   }
 
-  deleteVendor(vendorID) {
+  deleteVendor(vendorID:string) {
     this.io.server.of('/admin').emit('deleteVendor', { vendorID });
   }
 
-  deleteCustomer(customerID) {
+  deleteCustomer(customerID:string) {
     this.io.server.of('/admin').emit('deleteCustomer', { customerID });
   }
 
-  deleteDriver(driverID) {
+  deleteDriver(driverID:string) {
     this.io.server.of('/admin').emit('deleteDriver', { driverID });
   }
 
-  updateVendor(vendor) {
+  updateVendor(vendor:Vendor) {
     this.io.server.of('/admin').emit('updateVendor', vendor);
   }
 
-  updateCustomer(customer) {
+  updateCustomer(customer:Customer) {
     this.io.server.of('/admin').emit('updateCustomer', customer);
   }
 
-  updateDriver(driver) {
+  updateDriver(driver:Account) {
     this.io.server.of('/admin').emit('updateDriver', driver);
   }
 

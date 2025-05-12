@@ -1,20 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { LocationDto } from 'src/customer/dto/location.dto';
 import { Trip } from 'src/trip/entities/trip.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-
-class location {
-  @ApiProperty({ type: 'number', example: 4544.232 })
-  lng: number;
-
-  @ApiProperty({ type: 'number', example: 454.232 })
-  lat: number;
-}
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('sallat_vendors')
 export class Vendor {
@@ -30,28 +17,24 @@ export class Vendor {
   phoneNumber: string;
 
   @ApiProperty({ type: 'string', example: 'example example' })
-  @Column({ type: 'varchar'})
+  @Column({ type: 'varchar' })
   name: string;
 
-  @ApiProperty({ type: location })
-  @Column({
-    type: 'jsonb',
-    default: {},
+  @ApiProperty({
+    type: LocationDto,
+    description: 'Geographic location of the customer',
+    example: {
+      coords: {
+        lat: 58.16543232,
+        lng: 36.18875421,
+      },
+      approximate: true,
+      description: 'بجانب المحكمة',
+    },
+    required: false,
   })
-  location: location;
-
-  @ApiProperty({ type: 'boolean', example: false })
-  @Column({ type: 'boolean', default: false })
-  partner: boolean;
-
-  @ApiProperty({ type: 'string', example: 'example@gmail.com' })
-  @Column({ type: 'varchar', nullable: true })
-  email: string;
-
-  @ApiProperty({ type: 'string', example: 'example123' })
-  @Exclude()
-  @Column({ type: 'varchar', nullable: true })
-  password: string;
+  @Column({ type: 'jsonb' })
+  location: LocationDto;
 
   @OneToMany(() => Trip, (trip) => trip.vendor)
   trips: Trip[];

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CoordinatesDto } from 'src/customer/dto/location.dto';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import {
@@ -55,10 +56,6 @@ export class Trip {
   @Column({ type: 'boolean', default: false })
   alternative: boolean;
 
-  @ApiProperty({ type: 'boolean', example: false })
-  @Column({ type: 'boolean', default: false })
-  partnership: boolean;
-
   @ApiProperty({ type: 'array', example: ['شاورما', 'بطاطا مقلية'] })
   @Column({ type: 'jsonb', default: [] })
   itemTypes: string[];
@@ -114,7 +111,7 @@ export class Trip {
     ],
   })
   @Column({ type: 'jsonb', default: [] })
-  rawPath: object[];
+  rawPath: CoordinatesDto[];
 
   @ApiProperty({
     type: 'array',
@@ -125,7 +122,7 @@ export class Trip {
     ],
   })
   @Column({ type: 'jsonb', default: [] })
-  routedPath: object[];
+  routedPath: CoordinatesDto[];
 
   @ApiProperty({
     type: 'array',
@@ -136,7 +133,7 @@ export class Trip {
     ],
   })
   @Column({ type: 'jsonb', default: [] })
-  matchedPath: object[];
+  matchedPath: CoordinatesDto[];
 
   @ApiProperty({ type: 'boolean', example: true })
   @Column({ type: 'boolean', default: false })
@@ -146,6 +143,6 @@ export class Trip {
   @CreateDateColumn()
   createAt: Date;
 
-  @Column({type:'jsonb',default:[]})
-  receipt:object[]
+  @Column({ type: 'jsonb', default: [] })
+  receipt: object[];
 }
