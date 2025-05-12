@@ -50,8 +50,10 @@ export class VendorService {
       location,
     });
 
-    if (!updateVendorDto)
+    if (!updatedVendor)
       throw new NotFoundException(`Vendor with ID ${vendorID} not found`);
+
+    this.vendorRepository.save(updatedVendor);
 
     this.adminGateway.updateVendor(updatedVendor);
 
@@ -61,7 +63,7 @@ export class VendorService {
   async remove(vendorID: string) {
     const { affected } = await this.vendorRepository.delete(vendorID);
 
-    if (affected == 0)
+    if (affected === 0)
       throw new NotFoundException(`Vendor with ID ${vendorID} not found`);
 
     this.adminGateway.deleteVendor(vendorID);

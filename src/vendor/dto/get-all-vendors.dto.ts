@@ -1,37 +1,72 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Trip } from 'src/trip/entities/trip.entity';
-class location {
-  @ApiProperty({ type: 'number', example: 65.565656 })
-  lat: number;
+import { LocationDto } from 'src/customer/dto/location.dto';
 
-  @ApiProperty({ type: 'number', example: 98.989898 })
-  lng: number;
-}
-
-export class GetVendorData {
+class VendorData {
   @ApiProperty({
     type: 'string',
-    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+    description: 'Unique identifier for the vendor',
   })
   vendorID: string;
 
-  @ApiProperty({ example: '0999888777' })
-  phoneNumber: string;
-
-  @ApiProperty({ example: 'example example' })
+  @ApiProperty({
+    type: 'string',
+    example: 'Restaurant Name',
+    description: 'Name of the vendor business',
+  })
   name: string;
 
-  @ApiProperty({ type: location })
-  location: location;
+  @ApiProperty({
+    type: 'string',
+    example: '+962798765432',
+    description: "Vendor's contact phone number in international format",
+  })
+  phoneNumber: string;
+
+  @ApiProperty({
+    type: LocationDto,
+    description: 'Geographic location of the vendor',
+    example: {
+      coords: {
+        lat: 31.9539,
+        lng: 35.9106,
+      },
+      approximate: true,
+      description: 'بجانب المحكمة',
+    },
+  })
+  location: LocationDto;
 
   @ApiProperty({ type: Trip, isArray: true })
   trips: Trip[];
 }
 
 export class GetAllVendorsDto {
-  @ApiProperty({ example: true })
+  @ApiProperty({
+    example: true,
+    description: 'Operation status indicating success or failure',
+  })
   status: boolean;
 
-  @ApiProperty({ type: GetVendorData, isArray: true })
-  data: GetVendorData[];
+  @ApiProperty({
+    type: [VendorData],
+    description: 'Array of vendor data',
+    example: [
+      {
+        vendorID: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+        name: 'Restaurant Name',
+        phoneNumber: '+962798765432',
+        location: {
+          coords: {
+            lat: 31.9539,
+            lng: 35.9106,
+          },
+          approximate: false,
+          description: 'بجانب المحكمة',
+        },
+      },
+    ],
+  })
+  data: VendorData[];
 }

@@ -1,63 +1,69 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
-  IsOptional,
   IsString,
   MaxLength,
+  IsPhoneNumber,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { LocationDto } from 'src/customer/dto/location.dto';
 
 export class CreateVendorDtoRequest {
-  @ApiProperty({ example: 'example example' })
+  @ApiProperty({
+    example: 'Restaurant Name',
+    description: 'Name of the vendor business',
+    maxLength: 200,
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   name: string;
 
   @ApiProperty({
-    example: '+1234567890',
-    description: 'Phone number',
-    maxLength: 50,
+    example: '+962798765432',
+    description: "Vendor's contact phone number in international format",
+    maxLength: 20,
+    required: true,
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(50)
+  @IsPhoneNumber()
+  @MaxLength(20)
   phoneNumber: string;
 
   @ApiProperty({
     type: LocationDto,
-    description: 'Geographic location of the customer',
+    description: 'Geographic location of the vendor',
     example: {
       coords: {
-        lat: 58.16543232,
-        lng: 36.18875421,
+        lat: 31.9539,
+        lng: 35.9106,
       },
       approximate: true,
       description: 'بجانب المحكمة',
     },
-    required: false,
+    required: true,
   })
-  @IsOptional()
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => LocationDto)
   location: LocationDto;
-}
-
-class CreateVendorData {
-  @ApiProperty({ example: '83e9c864-b8be-49ce-bb37-2c91ff963928' })
-  vendorID: string;
 }
 
 export class CreateVendorDtoResponse {
   @ApiProperty({
     example: true,
-    description: 'Operation status',
+    description: 'Operation status indicating success or failure',
   })
   status: boolean;
 
   @ApiProperty({
+    description: "Data containing the created vendor's ID",
     example: {
-      id: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+      vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
     },
-    description: 'Created vendor id',
   })
   data: {
     vendorID: string;

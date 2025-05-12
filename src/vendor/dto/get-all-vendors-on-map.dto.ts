@@ -1,23 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LocationDto } from 'src/customer/dto/location.dto';
 
-class GetVendorsOnMapData {
+class VendorOnMapData {
   @ApiProperty({
     type: 'string',
-    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+    example: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+    description: 'Unique identifier for the vendor',
   })
   vendorID: string;
 
-  @ApiProperty({ type: 'string', example: 'example example' })
+  @ApiProperty({
+    type: 'string',
+    example: 'Restaurant Name',
+    description: 'Name of the vendor business',
+  })
   name: string;
 
   @ApiProperty({
     type: LocationDto,
-    description: 'Geographic location of the customer',
+    description: 'Geographic location of the vendor',
     example: {
       coords: {
-        lat: 58.16543232,
-        lng: 36.18875421,
+        lat: 31.9539,
+        lng: 35.9106,
       },
       approximate: true,
       description: 'بجانب المحكمة',
@@ -28,9 +33,29 @@ class GetVendorsOnMapData {
 }
 
 export class GetAllVendorsOnMapDto {
-  @ApiProperty({ example: true })
+  @ApiProperty({
+    example: true,
+    description: 'Operation status indicating success or failure',
+  })
   status: boolean;
 
-  @ApiProperty({ type: GetVendorsOnMapData, isArray: true })
-  data: GetVendorsOnMapData[];
+  @ApiProperty({
+    type: [VendorOnMapData],
+    description: 'Array of vendor data optimized for map display',
+    example: [
+      {
+        vendorID: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
+        name: 'حلويات لطش',
+        location: {
+          coords: {
+            lat: 31.9539,
+            lng: 35.9106,
+          },
+          approximate: false,
+          description: 'قرب دوار امية',
+        },
+      },
+    ],
+  })
+  data: VendorOnMapData[];
 }

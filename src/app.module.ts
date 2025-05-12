@@ -28,7 +28,7 @@ import { AccountModule } from './account/account.module';
         password: configService.get('database.password'),
         database: configService.get('database.name'),
         autoLoadEntities: true,
-        retryAttempts: 2,
+        retryAttempts: 0,
         synchronize: true,
         logging: false,
       }),
