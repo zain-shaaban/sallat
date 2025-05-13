@@ -6,10 +6,13 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Max,
+  IsUUID,
   MaxLength,
+  Min,
+  ValidateNested,
 } from 'class-validator';
-import { LocationDto } from 'src/customer/dto/location.dto';
+import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
+import { Type } from 'class-transformer';
 
 export class CreateTripDto {
   @ApiProperty({
@@ -20,6 +23,7 @@ export class CreateTripDto {
     required: false,
   })
   @IsString()
+  @IsUUID()
   @IsOptional()
   driverID: string;
 
@@ -32,6 +36,7 @@ export class CreateTripDto {
   })
   @IsOptional()
   @IsString()
+  @IsUUID()
   vendorID?: string;
 
   @ApiProperty({
@@ -42,6 +47,7 @@ export class CreateTripDto {
   })
   @IsOptional()
   @IsString()
+  @IsUUID()
   customerID?: string;
 
   @ApiProperty({
@@ -70,18 +76,20 @@ export class CreateTripDto {
 
   @ApiProperty({
     type: LocationDto,
-    description: 'Geographic location of the customer',
+    description: 'Geographic location of the vendor',
     example: {
       coords: {
         lat: 58.16543232,
-        lng: 36.18875421
+        lng: 36.18875421,
       },
       approximate: true,
-      description: 'بجانب المحكمة'
+      description: 'بجانب المحكمة',
     },
     required: false,
   })
   @IsOptional()
+  @ValidateNested()
+  @Type(() => LocationDto)
   vendorLocation?: LocationDto;
 
   @ApiProperty({
@@ -103,7 +111,6 @@ export class CreateTripDto {
     maxLength: 100,
     required: false,
   })
-  @IsOptional()
   @IsString()
   @MaxLength(100)
   customerPhoneNumber?: string;
@@ -114,14 +121,16 @@ export class CreateTripDto {
     example: {
       coords: {
         lat: 58.16543232,
-        lng: 36.18875421
+        lng: 36.18875421,
       },
       approximate: true,
-      description: 'بجانب المحكمة'
+      description: 'بجانب المحكمة',
     },
     required: false,
   })
   @IsOptional()
+  @ValidateNested()
+  @Type(() => LocationDto)
   customerLocation?: LocationDto;
 
   @ApiProperty({
@@ -134,6 +143,7 @@ export class CreateTripDto {
   })
   @IsArray()
   @IsString({ each: true })
+  @IsNotEmpty()
   itemTypes: string[];
 
   @ApiProperty({
@@ -144,6 +154,7 @@ export class CreateTripDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @ApiProperty({
@@ -151,9 +162,11 @@ export class CreateTripDto {
     example: 5200,
     description: 'Approximate distance of the trip in meters',
     required: false,
+    minimum: 0,
   })
   @IsNumber()
   @IsOptional()
+  @Min(0)
   approxDistance?: number;
 
   @ApiProperty({
@@ -161,9 +174,11 @@ export class CreateTripDto {
     example: 80000,
     description: 'Approximate price of the trip in the local currency',
     required: false,
+    minimum: 0,
   })
   @IsOptional()
   @IsNumber()
+  @Min(0)
   approxPrice?: number;
 
   @ApiProperty({
@@ -186,16 +201,20 @@ export class CreateTripDto {
   })
   @IsArray()
   @IsOptional()
-  routedPath?: object[];
+  @ValidateNested({ each: true })
+  @Type(() => CoordinatesDto)
+  routedPath?: CoordinatesDto[];
 
   @ApiProperty({
     type: 'number',
     example: 133266423,
     description: 'Approximate time for the trip in milliseconds',
     required: false,
+    minimum: 0,
   })
   @IsOptional()
   @IsNumber()
+  @Min(0)
   approxTime?: number;
 
   @ApiProperty({
@@ -219,7 +238,8 @@ export class CreateTripDto {
       type: 'string',
     },
   })
-  @IsOptional()
   @IsArray()
+  @IsString({ each: true })
+  @MaxLength(100, { each: true })
   customerAlternativePhoneNumbers: string[];
 }

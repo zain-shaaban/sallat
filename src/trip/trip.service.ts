@@ -76,12 +76,12 @@ export class TripService {
     trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
 
     driverID
-      ? this.handleSocketsIfTripIsNewAndDriverIdExist(trip)
+      ? await this.handleSocketsIfTripIsNewAndDriverIdExist(trip)
       : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip);
 
     return {
       tripID: trip.tripID,
-      vendorID: vendorID ? null : trip.vendor.vendorID,
+      vendorID: vendorID ? null : trip.vendor?.vendorID,
     };
   }
 
@@ -159,11 +159,11 @@ export class TripService {
     return null;
   }
 
-  handleSocketsIfTripIsNewAndDriverIdExist(trip) {
+  async handleSocketsIfTripIsNewAndDriverIdExist(trip) {
     readyTrips.push(trip);
     this.adminGateway.submitNewTrip(trip);
     this.adminGateway.sendDriversArrayToAdmins();
-    this.notificationService.send({
+    await this.notificationService.send({
       title: 'رحلة جديدة',
       content: 'اضغط لعرض تفاصيل الرحلة',
       driverID: trip.driverID,

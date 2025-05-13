@@ -13,7 +13,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       'message' in exceptionResponse
     ) {
       const msg = (exceptionResponse as any).message;
-      message = Array.isArray(msg) ? 'Validation error' : msg;
+      message = Array.isArray(msg) ? msg.join(', ') : msg;
     }
     return response.status(status).json({
       status: false,
