@@ -76,7 +76,7 @@ export class DriverService {
         ...this.tripService.readyTrips.filter((t) => t.driverID == driverID),
         ...this.tripService.ongoingTrips.filter((t) => t.driverID == driverID),
       ];
-      client.emit('alreadyAssignedTrip', alreadyAssignedTrips);
+      client.emit('alreadyAssignedTrip', { alreadyAssignedTrips });
     }
 
     this.adminService.sendDriversArrayToAdmins();
