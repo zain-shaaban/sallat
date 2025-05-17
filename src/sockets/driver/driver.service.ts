@@ -425,7 +425,7 @@ export class DriverService {
     );
     return (
       driver.lastLocation > 1000 * 60 * 45 &&
-      !driver.socketID &&
+      !driver?.socketID &&
       !hasOngoingTrip
     );
   }
@@ -433,7 +433,7 @@ export class DriverService {
   private canSendNotification(driver) {
     return (
       Date.now() - driver.lastLocation > 1000 * 60 * 15 &&
-      !driver.socketID &&
+      !driver?.socketID &&
       !driver.notificationSent
     );
   }
