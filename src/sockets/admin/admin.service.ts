@@ -50,7 +50,7 @@ export class AdminService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    this.moveTripFromPendingToReady(trip);
+    this.moveTripFromPendingToReady(trip,driverID);
 
     this.submitNewTrip(trip);
 
@@ -179,10 +179,13 @@ export class AdminService {
     this.sendTripsToAdmins();
   }
 
-  moveTripFromPendingToReady(trip: ITripInSocketsArray) {
+  moveTripFromPendingToReady(trip: ITripInSocketsArray,driverID:string) {
     this.tripService.pendingTrips = this.tripService.pendingTrips.filter(
       (t) => t.tripID !== trip.tripID,
     );
+
+    trip.driverID=driverID
+
     this.tripService.readyTrips.push(trip);
   }
 
@@ -217,7 +220,7 @@ export class AdminService {
       (d) => d.driverID === trip.driverID,
     );
 
-    if (!driver.socketID)
+    if (!driver?.socketID)
       throw new WsException(`Driver with ID ${trip.driverID} not online`);
 
     this.io.server.of('/driver').to(driver.socketID).emit('newTrip', { trip });
