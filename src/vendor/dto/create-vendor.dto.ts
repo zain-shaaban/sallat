@@ -29,7 +29,7 @@ export class CreateVendorDtoRequest {
   })
   @IsString()
   @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsPhoneNumber("SY")
   @MaxLength(20)
   phoneNumber: string;
 

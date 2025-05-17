@@ -233,7 +233,7 @@ export class AdminService {
   }
 
   sendTripPulledNotification(tripID: string, driverID: string) {
-    this.server.of('/notification').emit('tripPulled', { tripID, driverID });
+    this.server.of('/notifications').emit('tripPulled', { tripID, driverID });
 
     this.notificationSocketRepository.save({
       type: 'tripPulled',
