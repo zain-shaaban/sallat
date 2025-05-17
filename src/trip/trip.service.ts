@@ -2,29 +2,30 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { Trip } from './entities/trip.entity';
 import { Customer } from '../customer/entities/customer.entity';
-import {
-  AdminSocketGateway,
-  ongoingTrips,
-  pendingTrips,
-  readyTrips,
-} from 'src/sockets/admin-socket/admin-socket.gateway';
 import { sendLocationDto } from './dto/new-location.dto';
-import { onlineDrivers } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, DeepPartial, Repository } from 'typeorm';
 import { LocationEntity } from './entities/location.entity';
 import { CustomerService } from 'src/customer/customer.service';
+import { ITripInSocketsArray } from './interfaces/trip-socket';
+import { AdminService } from 'src/sockets/admin/admin.service';
+import { DriverService } from 'src/sockets/driver/driver.service';
 
 @Injectable()
 export class TripService {
+  public readyTrips: ITripInSocketsArray[] = [];
+  public ongoingTrips: ITripInSocketsArray[] = [];
+  public pendingTrips: ITripInSocketsArray[] = [];
+
   constructor(
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     @InjectRepository(LocationEntity)
     private readonly locationRepository: Repository<LocationEntity>,
-    @Inject() private readonly adminGateway: AdminSocketGateway,
+    @Inject() private readonly adminService: AdminService,
+    @Inject() private readonly driverService: DriverService,
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly customerService: CustomerService,
   ) {}
@@ -134,16 +135,18 @@ export class TripService {
       serverDate: Date.now(),
     });
 
-    this.adminGateway.sendHttpLocation(driverID, location);
+    this.adminService.sendHttpLocation(driverID, location);
 
-    let driver = onlineDrivers.find((d) => d.driverID === driverID);
+    let driver = this.driverService.onlineDrivers.find(
+      (d) => d.driverID === driverID,
+    );
 
     if (!driver)
       throw new NotFoundException(`Driver with ID ${driverID} not exist`);
 
     driver = { ...driver, location, lastLocation: Date.now() };
 
-    ongoingTrips.map((trip) => {
+    this.ongoingTrips.map((trip) => {
       if (trip.driverID === driver.driverID) {
         if (trip.alternative === false) {
           if (Object.values(trip.tripState.onVendor).length > 0)
@@ -154,15 +157,15 @@ export class TripService {
       }
     });
 
-    this.adminGateway.sendNewLocation(driverID, location);
+    this.adminService.sendNewLocation(driverID, location);
 
     return null;
   }
 
-  async handleSocketsIfTripIsNewAndDriverIdExist(trip) {
-    readyTrips.push(trip);
-    this.adminGateway.submitNewTrip(trip);
-    this.adminGateway.sendDriversArrayToAdmins();
+  async handleSocketsIfTripIsNewAndDriverIdExist(trip: ITripInSocketsArray) {
+    this.readyTrips.push(trip);
+    this.adminService.submitNewTrip(trip);
+    this.adminService.sendDriversArrayToAdmins();
     await this.notificationService.send({
       title: 'رحلة جديدة',
       content: 'اضغط لعرض تفاصيل الرحلة',
@@ -170,9 +173,9 @@ export class TripService {
     });
   }
 
-  handleSocketsIfTripIsNewAndDriverIdNotExist(trip) {
-    pendingTrips.push(trip);
-    this.adminGateway.sendTripsToAdmins();
-    this.adminGateway.sendDriversArrayToAdmins();
+  handleSocketsIfTripIsNewAndDriverIdNotExist(trip: ITripInSocketsArray) {
+    this.pendingTrips.push(trip);
+    this.adminService.sendTripsToAdmins();
+    this.adminService.sendDriversArrayToAdmins();
   }
 }

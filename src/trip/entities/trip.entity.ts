@@ -240,7 +240,7 @@ export class Trip {
     description: 'Path matched with the planned route',
   })
   @Column({ type: 'jsonb', default: [] })
-  matchedPath: CoordinatesDto[];
+  matchedPath: [number, number][];
 
   @ApiProperty({
     type: 'boolean',
@@ -269,5 +269,5 @@ export class Trip {
     ],
   })
   @Column({ type: 'jsonb', default: [] })
-  receipt: object[];
+  receipt: { name: string; price: number }[];
 }

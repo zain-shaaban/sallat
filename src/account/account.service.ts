@@ -16,7 +16,6 @@ import {
   IUpdateAccountRequest,
 } from './interfaces/account.interface';
 import { AccountRole } from './enums/account-role.enum';
-import { AccountController } from './account.controller';
 
 @Injectable()
 export class AccountService {

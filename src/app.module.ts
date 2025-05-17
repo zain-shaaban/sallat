@@ -4,17 +4,15 @@ import dbConfig from './config/db.config';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './category/category.module';
-import { DriverSocketModule } from './sockets/driver-sokcet/driver-sokcet.module';
-import { AdminSocketModule } from './sockets/admin-socket/admin-socket.module';
 import { TripModule } from './trip/trip.module';
 import { CustomerModule } from './customer/customer.module';
 import { VendorModule } from './vendor/vendor.module';
-import { NotificationSocketModule } from './sockets/notification-socket/notification-socket.module';
 import { ErrorLoggerModule } from './common/error_logger/error_logger.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { NotificationModule } from './notification/notification.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountModule } from './account/account.module';
+import { SocketsModule } from './sockets/sockets.module';
 
 @Module({
   imports: [
@@ -45,11 +43,9 @@ import { AccountModule } from './account/account.module';
     VendorModule,
     AuthModule,
     CategoryModule,
-    DriverSocketModule,
-    AdminSocketModule,
+    SocketsModule,
     TripModule,
     CustomerModule,
-    NotificationSocketModule,
     ErrorLoggerModule,
     FirebaseModule,
     NotificationModule,

@@ -2,16 +2,16 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Customer } from './entities/customer.entity';
 import { CreateCustomerDtoRequest } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { AdminSocketGateway } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AdminService } from 'src/sockets/admin/admin.service';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-    @Inject() private readonly adminGateway: AdminSocketGateway,
+    @Inject() private readonly adminService: AdminService,
   ) {}
 
   async create({ name, phoneNumbers, location }: CreateCustomerDtoRequest) {
@@ -21,7 +21,7 @@ export class CustomerService {
       location,
     });
     customer = this.handlePhoneNumbers(customer);
-    this.adminGateway.newCustomer(customer);
+    this.adminService.newCustomer(customer);
     return { customerID: customer.customerID };
   }
 
@@ -55,7 +55,7 @@ export class CustomerService {
     Object.assign(customer, updates);
     await this.customerRepository.save(customer);
     customer = this.handlePhoneNumbers(customer);
-    this.adminGateway.updateCustomer(customer);
+    this.adminService.updateCustomer(customer);
     return null;
   }
 
@@ -63,7 +63,7 @@ export class CustomerService {
     const { affected } = await this.customerRepository.delete(customerID);
     if (affected == 0)
       throw new NotFoundException(`Customer with ID ${customerID} not found`);
-    this.adminGateway.deleteCustomer(customerID);
+    this.adminService.deleteCustomer(customerID);
     return null;
   }
 
@@ -76,7 +76,7 @@ export class CustomerService {
 
   handlePhoneNumbers(customer: any) {
     const phoneNumbers = customer.phoneNumbers;
-    customer.phoneNumbers = phoneNumbers[0];
+    customer.phoneNumber = phoneNumbers[0];
     customer.alternativePhoneNumbers = phoneNumbers.slice(1);
     return customer;
   }

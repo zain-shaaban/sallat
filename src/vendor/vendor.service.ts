@@ -2,16 +2,16 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Vendor } from './entities/vendor.entity';
 import { CreateVendorDtoRequest } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
-import { AdminSocketGateway } from 'src/sockets/admin-socket/admin-socket.gateway';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
+import { AdminService } from 'src/sockets/admin/admin.service';
 
 @Injectable()
 export class VendorService {
   constructor(
     @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
-    @Inject() private readonly adminGateway: AdminSocketGateway,
+    @Inject() private readonly adminService: AdminService,
   ) {}
 
   async create({ name, phoneNumber, location }: CreateVendorDtoRequest) {
@@ -21,7 +21,7 @@ export class VendorService {
       location,
     });
 
-    this.adminGateway.newVendor(vendor);
+    this.adminService.newVendor(vendor);
 
     return { vendorID: vendor.vendorID };
   }
@@ -55,7 +55,7 @@ export class VendorService {
 
     this.vendorRepository.save(updatedVendor);
 
-    this.adminGateway.updateVendor(updatedVendor);
+    this.adminService.updateVendor(updatedVendor);
 
     return null;
   }
@@ -66,7 +66,7 @@ export class VendorService {
     if (affected === 0)
       throw new NotFoundException(`Vendor with ID ${vendorID} not found`);
 
-    this.adminGateway.deleteVendor(vendorID);
+    this.adminService.deleteVendor(vendorID);
 
     return null;
   }
