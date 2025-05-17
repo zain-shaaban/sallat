@@ -8,7 +8,7 @@ import {
   ConnectedSocket,
   OnGatewayInit,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { logger } from 'src/common/error_logger/logger.util';
 import { DriverService } from './driver.service';
 import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
@@ -24,7 +24,7 @@ export class DriverSocketGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
   @WebSocketServer()
-  server: Server;
+  server: Namespace;
 
   constructor(@Inject() private driverService: DriverService) {}
 

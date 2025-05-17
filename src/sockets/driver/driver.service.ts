@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Repository } from 'typeorm';
@@ -21,7 +21,7 @@ import { AdminService } from '../admin/admin.service';
 
 @Injectable()
 export class DriverService {
-  private server: Server;
+  private io: Namespace;
 
   onlineDrivers: IDriver[] = [];
 
@@ -55,7 +55,7 @@ export class DriverService {
         location: { lat: Number(lat), lng: Number(lng) },
       });
 
-      this.server
+      this.io.server
         .of('/notifications')
         .emit('driverConnection', { driverID, connection: true });
 
@@ -121,7 +121,7 @@ export class DriverService {
         trip.rawPath.push(coords);
     });
 
-    this.server.of('/admin').emit('location', {
+    this.io.server.of('/admin').emit('location', {
       driverID: driver.driverID,
       location: coords,
     });
@@ -154,7 +154,9 @@ export class DriverService {
 
     this.adminService.moveTripFromReadyToOnGoing(trip);
 
-    this.server.of('/notifications').emit('tripAccepted', { tripID, driverID });
+    this.io.server
+      .of('/notifications')
+      .emit('tripAccepted', { tripID, driverID });
 
     this.notificationSocketRepository.save({
       type: 'tripAccepted',
@@ -171,7 +173,9 @@ export class DriverService {
 
     this.adminService.moveTripFromReadyToPending(trip);
 
-    this.server.of('/notifications').emit('tripRejected', { tripID, driverID });
+    this.io.server
+      .of('/notifications')
+      .emit('tripRejected', { tripID, driverID });
 
     this.notificationSocketRepository.save({
       type: 'tripRejected',
@@ -205,7 +209,7 @@ export class DriverService {
     const trip = this.tripService.ongoingTrips.find((t) => t.tripID === tripID);
 
     if (stateName === 'onVendor') {
-      this.server.of('/notifications').emit('stateOnVendor', {
+      this.io.server.of('/notifications').emit('stateOnVendor', {
         tripID,
         driverID,
         vendorID: trip.vendor.vendorID,
@@ -239,7 +243,7 @@ export class DriverService {
     }
     trip.tripState.leftVendor = stateData;
 
-    this.server.of('/notifications').emit('stateLeftVendor', {
+    this.io.server.of('/notifications').emit('stateLeftVendor', {
       tripID: trip.tripID,
       driverID,
       vendorID: trip.vendor.vendorID,
@@ -326,7 +330,7 @@ export class DriverService {
       receipt,
     });
 
-    this.server.of('/notifications').emit('tripCompleted', {
+    this.io.server.of('/notifications').emit('tripCompleted', {
       tripID: trip.tripID,
       driverID,
       success: true,
@@ -434,8 +438,8 @@ export class DriverService {
     );
   }
 
-  public initIO(server: Server) {
-    this.server = server;
+  public initIO(server: Namespace) {
+    this.io = server;
   }
 
   private toCoordsArray(latlngObject: CoordinatesDto[]): [number, number][] {

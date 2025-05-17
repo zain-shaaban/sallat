@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Server, Socket } from 'socket.io';
 import { TripService } from 'src/trip/trip.service';
 import { DriverService } from '../driver/driver.service';
 import { WsException } from '@nestjs/websockets';
@@ -15,7 +15,7 @@ import { Account } from 'src/account/entities/account.entity';
 
 @Injectable()
 export class AdminService {
-  private server: Server;
+  private io: Namespace;
 
   constructor(
     @Inject(forwardRef(()=>TripService)) private readonly tripService: TripService,
@@ -39,7 +39,7 @@ export class AdminService {
     this.tripService.readyTrips.length = 0;
     this.tripService.pendingTrips.length = 0;
     this.tripService.ongoingTrips.length = 0;
-    const namespace = this.server.of('/driver');
+    const namespace = this.io.server.of('/driver');
     for (const [socketId, socket] of namespace.sockets) {
       socket.disconnect();
     }
@@ -75,7 +75,7 @@ export class AdminService {
     this.sendDriversArrayToAdmins();
 
     if (driver?.socketID)
-      this.server
+      this.io.server
         .of('/driver')
         .to(driver.socketID)
         .emit('availabilityChange', { available });
@@ -205,7 +205,7 @@ export class AdminService {
   }
 
   sendTripsToAdmins() {
-    this.server.of('/admin').emit('tripUpdate', {
+    this.io.server.of('/admin').emit('tripUpdate', {
       readyTrips: this.tripService.readyTrips,
       pendingTrips: this.tripService.pendingTrips,
       ongoingTrips: this.tripService.ongoingTrips,
@@ -220,11 +220,11 @@ export class AdminService {
     if (!driver.socketID)
       throw new WsException(`Driver with ID ${trip.driverID} not online`);
 
-    this.server.of('/driver').to(driver.socketID).emit('newTrip', { trip });
+    this.io.server.of('/driver').to(driver.socketID).emit('newTrip', { trip });
   }
 
   sendTripReceivedNotification(tripID: string, driverID: string) {
-    this.server.of('/notifications').emit('tripReceived', { tripID, driverID });
+    this.io.server.of('/notifications').emit('tripReceived', { tripID, driverID });
 
     this.notificationSocketRepository.save({
       type: 'tripReceived',
@@ -233,7 +233,7 @@ export class AdminService {
   }
 
   sendTripPulledNotification(tripID: string, driverID: string) {
-    this.server.of('/notifications').emit('tripPulled', { tripID, driverID });
+    this.io.server.of('/notifications').emit('tripPulled', { tripID, driverID });
 
     this.notificationSocketRepository.save({
       type: 'tripPulled',
@@ -242,21 +242,21 @@ export class AdminService {
   }
 
   sendDriversArrayToAdmins() {
-    this.server.of('/admin').emit('driverConnection', {
+    this.io.server.of('/admin').emit('driverConnection', {
       onlineDrivers: this.driverService.onlineDrivers,
     });
   }
 
   sendTripPulledForDriver(socketID: string, tripID: string) {
-    this.server.of('/driver').to(socketID).emit('tripPulled', { tripID });
+    this.io.server.of('/driver').to(socketID).emit('tripPulled', { tripID });
   }
 
   sendTripCancelledForDriver(socketID: string, tripID: string) {
-    this.server.of('/driver').to(socketID).emit('tripCancelled', { tripID });
+    this.io.server.of('/driver').to(socketID).emit('tripCancelled', { tripID });
   }
 
   sendTripCancelledNotificationForAdmin(tripID: string) {
-    this.server.of('/notifications').emit('tripCancelled', { tripID });
+    this.io.server.of('/notifications').emit('tripCancelled', { tripID });
 
     this.notificationSocketRepository.save({
       type: 'tripCancelled',
@@ -265,51 +265,51 @@ export class AdminService {
   }
 
   newVendor(vendor: Vendor) {
-    this.server.of('/admin').emit('newVendor', { vendor });
+    this.io.server.of('/admin').emit('newVendor', { vendor });
   }
 
   newCustomer(customer: Customer) {
-    this.server.of('/admin').emit('newCustomer', { customer });
+    this.io.server.of('/admin').emit('newCustomer', { customer });
   }
 
   newDriver(driver: Account) {
-    this.server.of('/admin').emit('newDriver', { driver });
+    this.io.server.of('/admin').emit('newDriver', { driver });
   }
 
   deleteVendor(vendorID: string) {
-    this.server.of('/admin').emit('deleteVendor', { vendorID });
+    this.io.server.of('/admin').emit('deleteVendor', { vendorID });
   }
 
   deleteCustomer(customerID: string) {
-    this.server.of('/admin').emit('deleteCustomer', { customerID });
+    this.io.server.of('/admin').emit('deleteCustomer', { customerID });
   }
 
   deleteDriver(driverID: string) {
-    this.server.of('/admin').emit('deleteDriver', { driverID });
+    this.io.server.of('/admin').emit('deleteDriver', { driverID });
   }
 
   updateVendor(vendor: Partial<Vendor>) {
-    this.server.of('/admin').emit('updateVendor', { vendor });
+    this.io.server.of('/admin').emit('updateVendor', { vendor });
   }
 
   updateCustomer(customer: Partial<Customer>) {
-    this.server.of('/admin').emit('updateCustomer', { customer });
+    this.io.server.of('/admin').emit('updateCustomer', { customer });
   }
 
   updateDriver(driver: Account) {
-    this.server.of('/admin').emit('updateDriver', { driver });
+    this.io.server.of('/admin').emit('updateDriver', { driver });
   }
 
   sendNewLocation(driverID: string, location: object) {
-    this.server.of('/admin').emit('location', { driverID, location });
+    this.io.server.of('/admin').emit('location', { driverID, location });
   }
 
   sendHttpLocation(driverID: string, location: CoordinatesDto) {
-    this.server.of('/admin').emit('httpLocation', { driverID, location });
+    this.io.server.of('/admin').emit('httpLocation', { driverID, location });
   }
 
   sendDriverDisconnectNotification(driverID: string) {
-    this.server.of('/notifications').emit('driverConnection', {
+    this.io.server.of('/notifications').emit('driverConnection', {
       driverID,
       connection: false,
     });
@@ -323,7 +323,7 @@ export class AdminService {
     });
   }
 
-  initIO(server: Server) {
-    this.server = server;
+  initIO(server: Namespace) {
+    this.io = server;
   }
 }

@@ -6,7 +6,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Server, Socket } from 'socket.io';
 import { Inject } from '@nestjs/common';
 import { logger } from 'src/common/error_logger/logger.util';
 import { AdminService } from './admin.service';
@@ -20,7 +20,7 @@ import { CoordinatesDto } from 'src/customer/dto/location.dto';
 })
 export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   @WebSocketServer()
-  server: Server;
+  server: Namespace;
 
   constructor(@Inject() private readonly adminService: AdminService) {}
 

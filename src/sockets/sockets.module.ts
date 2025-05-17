@@ -15,7 +15,6 @@ import { TripModule } from 'src/trip/trip.module';
 @Module({
   imports: [
     forwardRef(()=>TripModule),
-    //forwardRef(() => TripModule),
     TypeOrmModule.forFeature([
       NotificationSocket,
       Trip,
