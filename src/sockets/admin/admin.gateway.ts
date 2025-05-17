@@ -9,11 +9,19 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Namespace, Server, Socket } from 'socket.io';
-import { Inject } from '@nestjs/common';
+import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { logger } from 'src/common/error_logger/logger.util';
 import { AdminService } from './admin.service';
-import { CoordinatesDto } from 'src/customer/dto/location.dto';
+import {
+  AssignRoutedPathDto,
+  AssignNewDriverDto,
+  SetAvailableDto,
+  TripIdDto,
+} from '../dto/admin.dto';
+import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
 
+@UseFilters(ValidationSocketExceptionFilter)
+@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @WebSocketGateway({
   namespace: 'admin',
   cors: {
@@ -57,11 +65,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   @SubscribeMessage('assignRoutedPath')
   assignRoutedPath(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    receivedData: {
-      tripID: string;
-      routedPath: CoordinatesDto[];
-    },
+    @MessageBody() receivedData: AssignRoutedPathDto,
   ) {
     try {
       this.adminService.handleAssignRoutedPath(
@@ -85,7 +89,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   @SubscribeMessage('assignNewDriver')
   assignNewDriver(
     @ConnectedSocket() client: Socket,
-    @MessageBody() idPairs: { tripID: string; driverID: string },
+    @MessageBody() idPairs: AssignNewDriverDto,
   ) {
     try {
       this.adminService.handleAssignNewDriverToTheTrip(
@@ -109,7 +113,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   @SubscribeMessage('setAvailable')
   updateDriverAvailable(
     @ConnectedSocket() client: Socket,
-    @MessageBody() setAvailableData: { available: boolean; driverID: string },
+    @MessageBody() setAvailableData: SetAvailableDto,
   ) {
     try {
       this.adminService.handleChangeDriverAvailability(
@@ -133,9 +137,12 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   }
 
   @SubscribeMessage('pullTrip')
-  pullTrip(@ConnectedSocket() client: Socket, @MessageBody() tripID: string) {
+  pullTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() pullTripData: TripIdDto,
+  ) {
     try {
-      this.adminService.handlePullTrip(tripID);
+      this.adminService.handlePullTrip(pullTripData.tripID);
       return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
@@ -151,9 +158,12 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   }
 
   @SubscribeMessage('cancelTrip')
-  cancelTrip(@ConnectedSocket() client: Socket, @MessageBody() tripID: string) {
+  cancelTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() cancelTripData: TripIdDto,
+  ) {
     try {
-      this.adminService.handleCancelTrip(tripID);
+      this.adminService.handleCancelTrip(cancelTripData.tripID);
       return {
         status: true,
       };

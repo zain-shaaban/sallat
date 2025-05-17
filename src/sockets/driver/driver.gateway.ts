@@ -12,9 +12,20 @@ import {
 import { Namespace, Socket } from 'socket.io';
 import { logger } from 'src/common/error_logger/logger.util';
 import { DriverService } from './driver.service';
-import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
-import { Inject } from '@nestjs/common';
+import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  LocationUpdateDto,
+  AcceptTripDto,
+  AddWayPointDto,
+  ChangeStateDto,
+  EndTripDto,
+  TripIdDto,
+  AvailabilityDto,
+} from '../dto/driver.dto';
+import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
 
+@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+@UseFilters(ValidationSocketExceptionFilter)
 @WebSocketGateway({
   namespace: 'driver',
   cors: {
@@ -50,11 +61,7 @@ export class DriverSocketGateway
   @SubscribeMessage('sendLocation')
   handleLocationUpdate(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    location: {
-      coords: CoordinatesDto;
-      clientDate: number;
-    },
+    @MessageBody() location: LocationUpdateDto,
   ) {
     try {
       this.driverService.handleNewLocation(
@@ -64,23 +71,22 @@ export class DriverSocketGateway
       );
       return { status: true };
     } catch (error) {
-        if (!(error instanceof WsException))
-          logger.error(error.message, error.stack);
-        client.emit('exception', {
-          eventName: 'sendLocation',
-          message: error.message,
-        });
-        return {
-          status: false,
-        };
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'sendLocation',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
     }
   }
 
   @SubscribeMessage('acceptTrip')
   caseAcceptTrip(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    tripStartData: { tripID: string; location: LocationDto; time: number },
+    @MessageBody() tripStartData: AcceptTripDto,
   ) {
     try {
       this.driverService.handleAcceptTrip(
@@ -106,10 +112,13 @@ export class DriverSocketGateway
   @SubscribeMessage('rejectTrip')
   caseRejectTrip(
     @ConnectedSocket() client: Socket,
-    @MessageBody() tripID: string,
+    @MessageBody() rejectTripData: TripIdDto,
   ) {
     try {
-      this.driverService.handleRejectTrip(client.data.driverID, tripID);
+      this.driverService.handleRejectTrip(
+        client.data.driverID,
+        rejectTripData.tripID,
+      );
       return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
@@ -127,17 +136,13 @@ export class DriverSocketGateway
   @SubscribeMessage('addWayPoint')
   addWayPoints(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    {
-      wayPoint,
-      tripID,
-    }: {
-      wayPoint: { location: LocationDto; time: number; type: string };
-      tripID: string;
-    },
+    @MessageBody() wayPointData: AddWayPointDto,
   ) {
     try {
-      this.driverService.handleNewPoint(wayPoint, tripID);
+      this.driverService.handleNewPoint(
+        wayPointData.wayPoint,
+        wayPointData.tripID,
+      );
       return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
@@ -155,16 +160,11 @@ export class DriverSocketGateway
   @SubscribeMessage('changeState')
   changeState(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    changeStateData: {
-      tripID: string;
-      stateName: string;
-      stateData: { location: LocationDto; time: number };
-    },
+    @MessageBody() changeStateData: ChangeStateDto,
   ) {
     try {
       this.driverService.handleChangeStateOfTheNormalTrip(
-        client.data.dirverID,
+        client.data.driverID,
         changeStateData.tripID,
         changeStateData.stateName,
         changeStateData.stateData,
@@ -186,10 +186,13 @@ export class DriverSocketGateway
   @SubscribeMessage('cancelTrip')
   canselTripByDriver(
     @ConnectedSocket() client: Socket,
-    @MessageBody() tripID: string,
+    @MessageBody() cancelTripData: TripIdDto,
   ) {
     try {
-      this.driverService.handleCancelTrip(client.data.driverID, tripID);
+      this.driverService.handleCancelTrip(
+        client.data.driverID,
+        cancelTripData.tripID,
+      );
       return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
@@ -207,12 +210,13 @@ export class DriverSocketGateway
   @SubscribeMessage('setAvailable')
   updateDriverAvailability(
     @ConnectedSocket() client: Socket,
-    @MessageBody() available: boolean,
+    @MessageBody() setAvailableData: AvailabilityDto,
   ) {
     try {
+      console.log(setAvailableData);
       this.driverService.handleUpdateDriverAvailability(
         client.data.driverID,
-        available,
+        setAvailableData.available,
       );
       return {
         status: true,
@@ -233,15 +237,7 @@ export class DriverSocketGateway
   @SubscribeMessage('endTrip')
   async endTrip(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    endStateData: {
-      tripID: string;
-      receipt: { name: string; price: number }[];
-      itemPrice: number;
-      location: LocationDto;
-      type: string;
-      time: number;
-    },
+    @MessageBody() endStateData: EndTripDto,
   ) {
     try {
       await this.driverService.handleEndTrip(
@@ -253,6 +249,7 @@ export class DriverSocketGateway
         endStateData.type,
         endStateData.time,
       );
+      return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
         logger.error(error.message, error.stack);
