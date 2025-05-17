@@ -1,10 +1,12 @@
 import {
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Server, Socket } from 'socket.io';
 import { Inject } from '@nestjs/common';
@@ -30,29 +32,31 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
       return { status: true };
     } catch (error) {
       logger.error(error.message, error.stack);
-      return {
-        status: false,
-        message: error.message,
-      };
+      client.disconnect();
     }
   }
 
   @SubscribeMessage('resetEnvironment')
-  resetServerEnvirnoment() {
+  resetServerEnvirnoment(@ConnectedSocket() client: Socket) {
     try {
       this.adminService.resetServerEnvironment();
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'resetEnvironment',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
 
   @SubscribeMessage('assignRoutedPath')
   assignRoutedPath(
+    @ConnectedSocket() client: Socket,
     @MessageBody()
     receivedData: {
       tripID: string;
@@ -66,16 +70,21 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
       );
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'assignRoutedPath',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
 
   @SubscribeMessage('assignNewDriver')
   assignNewDriver(
+    @ConnectedSocket() client: Socket,
     @MessageBody() idPairs: { tripID: string; driverID: string },
   ) {
     try {
@@ -85,16 +94,21 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
       );
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'assignNewDriver',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
 
   @SubscribeMessage('setAvailable')
   updateDriverAvailable(
+    @ConnectedSocket() client: Socket,
     @MessageBody() setAvailableData: { available: boolean; driverID: string },
   ) {
     try {
@@ -106,40 +120,52 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
         status: true,
       };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'setAvailable',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
 
   @SubscribeMessage('pullTrip')
-  pullTrip(@MessageBody() tripID: string) {
+  pullTrip(@ConnectedSocket() client: Socket, @MessageBody() tripID: string) {
     try {
       this.adminService.handlePullTrip(tripID);
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'pullTrip',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
 
   @SubscribeMessage('cancelTrip')
-  cancelTrip(@MessageBody() tripID: string) {
+  cancelTrip(@ConnectedSocket() client: Socket, @MessageBody() tripID: string) {
     try {
       this.adminService.handleCancelTrip(tripID);
       return {
         status: true,
       };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'cancelTrip',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }

@@ -7,6 +7,7 @@ import {
   OnGatewayDisconnect,
   ConnectedSocket,
   OnGatewayInit,
+  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { logger } from 'src/common/error_logger/logger.util';
@@ -42,10 +43,7 @@ export class DriverSocketGateway
       this.driverService.handleDriverDisconnect(client);
     } catch (error) {
       logger.error(error.message, error.stack);
-      return {
-        status: false,
-        message: error.message,
-      };
+      client.disconnect();
     }
   }
 
@@ -66,11 +64,15 @@ export class DriverSocketGateway
       );
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
-      return {
-        status: false,
-        message: error.message,
-      };
+        if (!(error instanceof WsException))
+          logger.error(error.message, error.stack);
+        client.emit('exception', {
+          eventName: 'sendLocation',
+          message: error.message,
+        });
+        return {
+          status: false,
+        };
     }
   }
 
@@ -89,10 +91,14 @@ export class DriverSocketGateway
       );
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'acceptTrip',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
@@ -106,16 +112,21 @@ export class DriverSocketGateway
       this.driverService.handleRejectTrip(client.data.driverID, tripID);
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'rejectTrip',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
 
   @SubscribeMessage('addWayPoint')
   addWayPoints(
+    @ConnectedSocket() client: Socket,
     @MessageBody()
     {
       wayPoint,
@@ -129,10 +140,14 @@ export class DriverSocketGateway
       this.driverService.handleNewPoint(wayPoint, tripID);
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'addWayPoint',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
@@ -156,10 +171,14 @@ export class DriverSocketGateway
       );
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'changeState',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
@@ -173,10 +192,14 @@ export class DriverSocketGateway
       this.driverService.handleCancelTrip(client.data.driverID, tripID);
       return { status: true };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'cancelTrip',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
@@ -195,10 +218,14 @@ export class DriverSocketGateway
         status: true,
       };
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'setAvailable',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
@@ -227,10 +254,14 @@ export class DriverSocketGateway
         endStateData.time,
       );
     } catch (error) {
-      logger.error(error.message, error.stack);
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'endTrip',
+        message: error.message,
+      });
       return {
         status: false,
-        message: error.message,
       };
     }
   }
