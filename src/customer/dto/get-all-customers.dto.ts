@@ -1,37 +1,54 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Trip } from 'src/trip/entities/trip.entity';
-class location {
-  @ApiProperty({ type: 'number', example: 65.565656 })
-  lat: number;
-
-  @ApiProperty({ type: 'number', example: 98.989898 })
-  lng: number;
-}
+import { LocationDto } from './location.dto';
 
 export class GetCustomerData {
   @ApiProperty({
     type: 'string',
     example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+    description: 'Unique identifier of the customer',
   })
   customerID: string;
 
-  @ApiProperty({ type: 'string', example: '0999888777' })
-  phoneNumber: string;
+  @ApiProperty({
+    type: [String],
+    example: ['+96399887766', '+96399988877'],
+    description: 'Array of phone numbers associated with the customer',
+  })
+  phoneNumbers: string[];
 
-  @ApiProperty({ type: 'string', example: 'example example' })
+  @ApiProperty({
+    type: 'string',
+    example: 'John Doe',
+    description: 'Full name of the customer',
+  })
   name: string;
 
-  @ApiProperty({ type: location })
-  location: location;
-
-  @ApiProperty({ type: Trip, isArray: true })
-  trips: Trip[];
+  @ApiProperty({
+    type: LocationDto,
+    description: 'Geographic location of the customer',
+    example: {
+      coords: {
+        lat: 58.16543232,
+        lng: 36.18875421
+      },
+      approximate: true,
+      description: 'بجانب المحكمة'
+    }
+  })
+  location: LocationDto;
 }
 
 export class GetAllCustomersDto {
-  @ApiProperty({ example: true })
+  @ApiProperty({
+    example: true,
+    description: 'Indicates if the operation was successful',
+  })
   status: boolean;
 
-  @ApiProperty({ type: GetCustomerData, isArray: true })
+  @ApiProperty({
+    type: GetCustomerData,
+    isArray: true,
+    description: 'Array of customer data',
+  })
   data: GetCustomerData[];
 }

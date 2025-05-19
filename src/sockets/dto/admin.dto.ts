@@ -1,0 +1,39 @@
+import { IsString, IsBoolean, IsArray, ValidateNested, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CoordinatesDto } from 'src/customer/dto/location.dto';
+
+export class TripIdDto {
+  @IsString()
+  @IsNotEmpty()
+  tripID: string;
+} 
+
+export class AssignRoutedPathDto {
+  @IsString()
+  @IsNotEmpty()
+  tripID: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CoordinatesDto)
+  routedPath: CoordinatesDto[];
+}
+
+export class AssignNewDriverDto {
+  @IsString()
+  @IsNotEmpty()
+  tripID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  driverID: string;
+}
+
+export class SetAvailableDto {
+  @IsBoolean()
+  available: boolean;
+
+  @IsString()
+  @IsNotEmpty()
+  driverID: string;
+}

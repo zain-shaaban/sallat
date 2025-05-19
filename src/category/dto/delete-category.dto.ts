@@ -7,14 +7,23 @@ import {
 } from 'class-validator';
 
 export class DeleteCategoryDto {
-  @ApiProperty({ type: 'boolean', example: false })
+  @ApiProperty({ 
+    type: 'boolean', 
+    example: false,
+    description: 'Flag to indicate whether deleting a category (true) or a type (false)'
+  })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'isCategory flag is required' })
   isCategory: boolean;
 
-  @ApiProperty({ type: 'string', example: 'شاورما' })
+  @ApiProperty({ 
+    type: 'string', 
+    example: 'شاورما',
+    description: 'The name of the category or type to be deleted',
+    maxLength: 100
+  })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
+  @IsNotEmpty({ message: 'Type name is required' })
+  @MaxLength(100, { message: 'Type name must not exceed 100 characters' })
   type: string;
 }

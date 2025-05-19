@@ -1,15 +1,20 @@
 import { ArgumentsHost, ExceptionFilter, HttpException } from '@nestjs/common';
 import { Response } from 'express';
-import { logger } from '../error_logger/logger.util';
 
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
     let status = exception.getStatus();
-    let message = exception.getResponse();
-    // if (status == 400) message = 'validation error';
-    // if (message == 'validation error') status = 400;
-    logger.error(exception.message, exception.stack);
+    let exceptionResponse = exception.getResponse();
+    let message: string;
+    if (typeof exceptionResponse === 'string') message = exceptionResponse;
+    if (
+      typeof exceptionResponse === 'object' &&
+      'message' in exceptionResponse
+    ) {
+      const msg = (exceptionResponse as any).message;
+      message = Array.isArray(msg) ? msg.join(', ') : msg;
+    }
     return response.status(status).json({
       status: false,
       message,

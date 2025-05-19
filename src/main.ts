@@ -19,24 +19,51 @@ async function bootstrap() {
       transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
-      // disableErrorMessages: true,
+      disableErrorMessages: false,
     }),
   );
 
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
-    .setTitle('Sallat API')
-    .addServer('https://sallat.onrender.com')
-    .setDescription('Straightforward API documentation for Sallat')
+    .setTitle('Sallat Backend API Documentation')
+    .setDescription(
+      `
+## Overview
+Sallat is a comprehensive delivery management system that handles trips, customers, vendors, and real-time notifications.
+    `,
+    )
     .setVersion('1.0')
+    .addTag('Accounts', 'Account management endpoints')
+    .addTag('Trips', 'Trip management endpoints')
+    .addTag('Customers', 'Customer management endpoints')
+    .addTag('Vendors', 'Vendor management endpoints')
+    .addTag('Auth', 'Authentication endpoints')
+    .addTag('Categories', 'Category management endpoints')
+    .addTag('Error Logs', 'Error log management endpoints')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addServer('https://sallat.onrender.com', 'Production Server')
+    .addServer('http://localhost:3000', 'Local Development')
     .build();
-  const documentFactory = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('docs', app, documentFactory, {
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
+      persistAuthorization: true,
       defaultModelsExpandDepth: -1,
     },
+    customSiteTitle: 'Sallat API Documentation',
   });
 
   await app.listen(process.env.PORT ?? 3000);

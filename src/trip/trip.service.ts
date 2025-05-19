@@ -2,46 +2,69 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { Trip } from './entities/trip.entity';
 import { Customer } from '../customer/entities/customer.entity';
-import {
-  AdminSocketGateway,
-  ongoingTrips,
-  pendingTrips,
-  readyTrips,
-} from 'src/sockets/admin-socket/admin-socket.gateway';
 import { sendLocationDto } from './dto/new-location.dto';
-import { onlineDrivers } from 'src/sockets/driver-sokcet/driver-sokcet.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Repository } from 'typeorm';
+import { ArrayContains, DeepPartial, Repository } from 'typeorm';
 import { LocationEntity } from './entities/location.entity';
 import { CustomerService } from 'src/customer/customer.service';
+import { ITripInSocketsArray } from './interfaces/trip-socket';
+import { AdminService } from 'src/sockets/admin/admin.service';
+import { DriverService } from 'src/sockets/driver/driver.service';
 
 @Injectable()
 export class TripService {
+  public readyTrips: ITripInSocketsArray[] = [];
+  public ongoingTrips: ITripInSocketsArray[] = [];
+  public pendingTrips: ITripInSocketsArray[] = [];
+
   constructor(
-    @InjectRepository(Trip) private tripRepository: Repository<Trip>,
+    @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Customer)
-    private customerRepository: Repository<Customer>,
+    private readonly customerRepository: Repository<Customer>,
     @InjectRepository(LocationEntity)
-    private locationRepository: Repository<LocationEntity>,
-    @Inject() private readonly adminGateway: AdminSocketGateway,
+    private readonly locationRepository: Repository<LocationEntity>,
+    @Inject() private readonly adminService: AdminService,
+    @Inject() private readonly driverService: DriverService,
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly customerService: CustomerService,
   ) {}
 
-  async createNewTrip(createTripDto: CreateTripDto) {
-    const wasVendorIDProvided = createTripDto.vendorID ? true : false;
-    let {
+  async createNewTrip({
+    driverID,
+    vendorID,
+    vendorName,
+    vendorPhoneNumber,
+    vendorLocation,
+    customerID,
+    customerName,
+    customerPhoneNumber,
+    customerAlternativePhoneNumbers,
+    customerLocation,
+    itemTypes,
+    description,
+    approxDistance,
+    approxPrice,
+    approxTime,
+    routedPath,
+    alternative,
+  }: CreateTripDto) {
+    let trip: any = await this.tripRepository.save({
       driverID,
-      vendorID,
-      vendorName,
-      vendorPhoneNumber,
-      vendorLocation,
-      customerID,
-      customerName,
-      customerPhoneNumber,
-      customerAlternativePhoneNumbers,
-      customerLocation,
+      vendor: !alternative
+        ? {
+            vendorID,
+            phoneNumber: vendorPhoneNumber,
+            name: vendorName,
+            location: vendorLocation,
+          }
+        : undefined,
+      customer: {
+        customerID,
+        phoneNumbers: [customerPhoneNumber, ...customerAlternativePhoneNumbers],
+        name: customerName,
+        location: customerLocation,
+      } as DeepPartial<Customer>,
       itemTypes,
       description,
       approxDistance,
@@ -49,144 +72,61 @@ export class TripService {
       approxTime,
       routedPath,
       alternative,
-    } = createTripDto;
-    if (!alternative) {
-      let trip: any = await this.tripRepository.save({
-        driverID,
-        vendor: {
-          vendorID,
-          phoneNumber: vendorPhoneNumber,
-          name: vendorName,
-          location: vendorLocation,
-        },
-        customer: {
-          customerID,
-          phoneNumber: [
-            customerPhoneNumber,
-            ...customerAlternativePhoneNumbers,
-          ],
-          name: customerName,
-          location: customerLocation,
-        },
-        itemTypes,
-        description,
-        approxDistance,
-        approxPrice,
-        approxTime,
-        routedPath,
-        alternative: false,
-      });
-      const { vendorID: ID, phoneNumber, name, location } = trip.vendor;
-      trip.vendor = { vendorID: ID, phoneNumber, name, location };
-      trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
-      if (driverID) {
-        readyTrips.push(trip);
-        this.adminGateway.submitNewTrip(trip);
-        this.adminGateway.sendDriversArrayToAdmins();
-        this.notificationService.send({
-          title: 'رحلة جديدة',
-          content: 'اضغط لعرض تفاصيل الرحلة',
-          driverID: trip.driverID,
-        });
-      } else {
-        pendingTrips.push(trip);
-        this.adminGateway.sendTripsToAdmins();
-        this.adminGateway.sendDriversArrayToAdmins();
-      }
-      return {
-        tripID: trip.tripID,
-        vendorID: wasVendorIDProvided ? null : trip.vendor.vendorID,
-      };
-    } else {
-      let trip: any = await this.tripRepository.save({
-        driverID,
-        customer: {
-          customerID,
-          phoneNumber: [
-            customerPhoneNumber,
-            ...customerAlternativePhoneNumbers,
-          ],
-          name: customerName,
-          location: customerLocation,
-        },
-        itemTypes,
-        description,
-        alternative: true,
-      });
-      trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
-      if (driverID) {
-        readyTrips.push(trip);
-        this.adminGateway.submitNewTrip(trip);
-        this.adminGateway.sendDriversArrayToAdmins();
-        this.notificationService.send({
-          title: 'رحلة جديدة',
-          content: 'اضغط لعرض تفاصيل الرحلة',
-          driverID: trip.driverID,
-        });
-      } else {
-        pendingTrips.push(trip);
-        this.adminGateway.sendTripsToAdmins();
-        this.adminGateway.sendDriversArrayToAdmins();
-      }
-      return { tripID: trip.tripID };
-    }
+    });
+
+    trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
+
+    driverID
+      ? await this.handleSocketsIfTripIsNewAndDriverIdExist(trip)
+      : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip);
+
+    return {
+      tripID: trip.tripID,
+      vendorID: vendorID ? null : trip.vendor?.vendorID,
+    };
   }
 
   async findAll() {
-    const allTrips = await this.tripRepository
-      .createQueryBuilder('trip')
-      .leftJoinAndSelect('trip.customer', 'customer')
-      .leftJoin('trip.vendor', 'vendor')
-      .addSelect([
-        'vendor.vendorID',
-        'vendor.name',
-        'vendor.phoneNumber',
-        'vendor.location',
-      ])
-      .getMany();
-    return allTrips;
+    const trips = await this.tripRepository.find({
+      relations: ['customer', 'vendor'],
+    });
+    return trips;
   }
 
   async customerSearch(phoneNumber: string) {
-    let allCustomers: any = await this.customerRepository.find({
-      select: ['customerID', 'name', 'location', 'phoneNumber'],
-      where: { phoneNumber: ArrayContains([phoneNumber]) },
+    let customers: any = await this.customerRepository.find({
+      where: { phoneNumbers: ArrayContains([phoneNumber]) },
     });
-    if (allCustomers.length == 0) throw new NotFoundException();
-    allCustomers = allCustomers.map((customer) => {
+    if (customers.length === 0)
+      throw new NotFoundException(
+        `Customer with phone number ${phoneNumber} not found`,
+      );
+    customers = customers.map((customer) => {
       customer.alternativePhoneNumbers =
-        customer.phoneNumber.filter((n) => n != phoneNumber) || [];
-      delete customer.phoneNumber;
+        customer.phoneNumbers.filter((n) => n !== phoneNumber) || [];
+      delete customer.phoneNumbers;
       return customer;
     });
-    return allCustomers;
+    return customers;
   }
 
   async findOne(tripID: string) {
-    const trip = await this.tripRepository
-      .createQueryBuilder('trip')
-      .where('trip.tripID = :tripID', { tripID })
-      .leftJoinAndSelect('trip.customer', 'customer')
-      .leftJoin('trip.vendor', 'vendor')
-      .addSelect([
-        'vendor.vendorID',
-        'vendor.name',
-        'vendor.phoneNumber',
-        'vendor.location',
-      ])
-      .getOne();
-    if (!trip) throw new NotFoundException();
+    const trip = await this.tripRepository.findOne({
+      where: { tripID },
+      relations: ['vendor', 'customer'],
+    });
+    if (!trip) throw new NotFoundException(`trip with ID ${tripID} not found`);
     return trip;
   }
 
   async remove(tripID: string) {
     const { affected } = await this.tripRepository.delete(tripID);
-    if (affected == 0) throw new NotFoundException();
+    if (affected === 0)
+      throw new NotFoundException(`Trip with ID ${tripID} not found`);
     return null;
   }
 
-  async sendNewLocation(sendLocationData: sendLocationDto) {
-    const { driverID, location, clientDate } = sendLocationData;
+  async sendNewLocation({ driverID, location, clientDate }: sendLocationDto) {
     await this.locationRepository.insert({
       driverID,
       location,
@@ -194,24 +134,48 @@ export class TripService {
       clientDate,
       serverDate: Date.now(),
     });
-    this.adminGateway.sendHttpLocation(driverID, location);
-    const oneDriver = onlineDrivers.find(
-      (driver) => driver.driverID == driverID,
+
+    this.adminService.sendHttpLocation(driverID, location);
+
+    let driver = this.driverService.onlineDrivers.find(
+      (d) => d.driverID === driverID,
     );
-    if (!oneDriver) throw new NotFoundException();
-    oneDriver.location = location;
-    oneDriver.lastLocation = Date.now();
-    ongoingTrips.map((trip) => {
-      if (trip.driverID == oneDriver.driverID) {
-        if (trip.alternative == false) {
-          if (typeof trip.tripState.onVendor.time == 'number')
+
+    if (!driver)
+      throw new NotFoundException(`Driver with ID ${driverID} not exist`);
+
+    driver = { ...driver, location, lastLocation: Date.now() };
+
+    this.ongoingTrips.map((trip) => {
+      if (trip.driverID === driver.driverID) {
+        if (trip.alternative === false) {
+          if (Object.values(trip.tripState.onVendor).length > 0)
             trip.rawPath.push(location);
-        } else if (trip.alternative == true) {
+        } else if (trip.alternative === true) {
           if (trip.tripState.wayPoints.length > 0) trip.rawPath.push(location);
         }
       }
     });
-    this.adminGateway.sendNewLocation(driverID, location);
+
+    this.adminService.sendNewLocation(driverID, location);
+
     return null;
+  }
+
+  async handleSocketsIfTripIsNewAndDriverIdExist(trip: ITripInSocketsArray) {
+    this.readyTrips.push(trip);
+    this.adminService.submitNewTrip(trip);
+    this.adminService.sendDriversArrayToAdmins();
+    await this.notificationService.send({
+      title: 'رحلة جديدة',
+      content: 'اضغط لعرض تفاصيل الرحلة',
+      driverID: trip.driverID,
+    });
+  }
+
+  handleSocketsIfTripIsNewAndDriverIdNotExist(trip: ITripInSocketsArray) {
+    this.pendingTrips.push(trip);
+    this.adminService.sendTripsToAdmins();
+    this.adminService.sendDriversArrayToAdmins();
   }
 }

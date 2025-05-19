@@ -1,4 +1,4 @@
-import { Injectable, LoggerService, LogLevel } from '@nestjs/common';
+import { Injectable, LoggerService, LogLevel, NotFoundException } from '@nestjs/common';
 import { ErrorLogger } from './entities/error_logger.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -21,7 +21,9 @@ export class ErrorLoggerService implements LoggerService {
   }
 
   async findOne(errorID: number) {
-    return await this.errorLoggerRepository.findOneBy({ errorID });
+    const error = await this.errorLoggerRepository.findOneBy({ errorID });
+    if (!error) throw new NotFoundException('Error not found');
+    return error;
   }
   log(message: string) {}
 

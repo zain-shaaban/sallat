@@ -10,43 +10,113 @@ import {
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { asyncHandler } from 'src/common/utils/async-handler';
-import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 import { CustomerSearchDtoResponse } from './dto/customer-search.dto';
 import { GetAllTripsDto } from './dto/get-all-trips.dto';
 import { GetSingleTripDto } from './dto/get-single-trip.dto';
 import { sendLocationDto } from './dto/new-location.dto';
 
+@ApiTags('Trips')
+@ApiBearerAuth('JWT-auth')
 @Controller('trip')
 export class TripController {
   constructor(private readonly tripService: TripService) {}
 
-  @ApiOperation({ summary: 'submit new trip' })
+  @ApiOperation({
+    summary: 'Create a new trip',
+    description: `
+Creates a new trip with the provided details. The trip can be either a regular delivery trip or an alternative trip.
+
+### Regular Trip
+- Requires vendor and customer information
+- Includes item types, description, and pricing details
+- Can be assigned to a driver immediately or left pending
+
+### Alternative Trip
+- Only requires customer information
+- Used for special delivery cases
+- Can be assigned to a driver immediately or left pending
+
+### Response
+- Returns the created trip ID
+- For new vendors, also returns the vendor ID
+    `,
+  })
+  @ApiBody({
+    type: CreateTripDto,
+    description: 'Trip creation data',
+    examples: {
+      regularTrip: {
+        value: {
+          driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerPhoneNumber: '+96399887766',
+          customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
+          itemTypes: ['شاورما', 'بطاطا مقلية'],
+          description: 'كتر كتشب',
+          approxDistance: 5200,
+          approxPrice: 80000,
+          approxTime: 133266423,
+          routedPath: [
+            { lng: 111.111, lat: 112.222 },
+            { lng: 888.888, lat: 999.999 },
+            { lng: 555.555, lat: 333.333 },
+          ],
+        },
+        summary: 'Regular Trip Example',
+      },
+      alternativeTrip: {
+        value: {
+          driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerPhoneNumber: '+96399887766',
+          customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
+          itemTypes: ['شاورما', 'بطاطا مقلية'],
+          description: 'كتر كتشب',
+          alternative: true,
+        },
+        summary: 'Alternative Trip Example',
+      },
+    },
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     schema: {
       example: {
         status: true,
-        data: { tripID: '3c559f4a-ef14-4e62-8874-384a89c8689e' },
+        data: {
+          tripID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        },
       },
     },
-    description: 'The trip has been successfully submited',
+    description: 'The trip has been successfully created',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     schema: {
       example: {
         status: false,
-        message: 'validation error',
+        message: 'Validation error',
       },
     },
+    description: 'Invalid input data',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    description: 'Invalid or missing authentication token',
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
@@ -55,107 +125,27 @@ export class TripController {
     return await asyncHandler(this.tripService.createNewTrip(createTripDto));
   }
 
-  @ApiOperation({ summary: 'Get all trips' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: GetAllTripsDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
-    schema: {
-      example: {
-        status: false,
-        message: 'invalid token',
-      },
-    },
-  })
-  @Get('')
-  async findAll() {
-    return await asyncHandler(this.tripService.findAll());
-  }
+  @ApiOperation({
+    summary: 'Send new location for offline driver',
+    description: `
+Updates the location of a driver when they are offline. This endpoint is used to track driver locations even when they are not actively connected to the system.
 
-  @ApiOperation({ summary: 'Get a single customer by his phone number' })
-  @ApiParam({
-    name: 'phoneNumber',
-    type: String,
-    description: 'Customer number to find his trips',
-    example: '+9639998877',
+    `,
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Customer found successfully',
-    type: CustomerSearchDtoResponse,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Wrong Phone Number',
+  @ApiBody({
+    type: sendLocationDto,
+    description: 'Driver location data',
     schema: {
       example: {
-        status: false,
-        message: 'not found',
+        driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        location: {
+          lat: 58.16543232,
+          lng: 36.18875421,
+        },
+        clientDate: 1640995200000,
       },
     },
   })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
-    schema: {
-      example: {
-        status: false,
-        message: 'invalid token',
-      },
-    },
-  })
-  @Get('customerSearch/:phoneNumber')
-  async customerSearch(@Param('phoneNumber') phoneNumber: string) {
-    return await asyncHandler(this.tripService.customerSearch(phoneNumber));
-  }
-
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Trip deleted successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        status: { type: 'boolean', example: true },
-        data: { type: 'null', example: null },
-      },
-    },
-  })
-  @ApiParam({
-    name: 'tripID',
-    description: 'The ID of the trip',
-    type: String,
-    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Wrong ID',
-    schema: {
-      example: {
-        status: false,
-        message: 'not found',
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
-    schema: {
-      example: {
-        status: false,
-        message: 'invalid token',
-      },
-    },
-  })
-  @ApiOperation({ summary: 'Delete single trip' })
-  @Delete('delete/:tripID')
-  async remove(@Param('tripID') tripID: string) {
-    return await asyncHandler(this.tripService.remove(tripID));
-  }
-
-  @ApiOperation({ summary: 'send new location if the driver is offline' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     schema: {
@@ -164,24 +154,36 @@ export class TripController {
         data: null,
       },
     },
-    description: 'The new location has been successfully sent',
+    description: 'The new location has been successfully recorded',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     schema: {
       example: {
         status: false,
-        message: 'validation error',
+        message: 'Validation error',
       },
     },
+    description: 'Invalid location data',
   })
   @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    status: HttpStatus.NOT_FOUND,
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message:
+          'Driver with ID 3c559f4a-ef14-4e62-8874-384a89c8689e not exist',
+      },
+    },
+    description: 'Driver not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
       },
     },
   })
@@ -194,7 +196,12 @@ export class TripController {
     );
   }
 
-  @ApiOperation({ summary: 'Get a single trip by tripID' })
+  @ApiOperation({
+    summary: 'Get trip details',
+    description: `
+Retrieves detailed information about a specific trip using its ID.
+    `,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Trip found successfully',
@@ -202,32 +209,147 @@ export class TripController {
   })
   @ApiParam({
     name: 'tripID',
-    description: 'The ID of the trip',
+    description: 'The unique identifier of the trip',
     type: String,
     example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Wrong ID',
+    description: 'Trip not found',
     schema: {
       example: {
         status: false,
-        message: 'not found',
+        message: 'trip with ID 3c559f4a-ef14-4e62-8874-384a89c8689e not found',
       },
     },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'invalid or missing token',
+    description: 'Invalid or missing authentication token',
     schema: {
       example: {
         status: false,
-        message: 'invalid token',
+        message: 'Invalid token',
       },
     },
   })
   @Get('/get/:tripID')
   async findOne(@Param('tripID') tripID: string) {
     return await asyncHandler(this.tripService.findOne(tripID));
+  }
+
+  @ApiOperation({
+    summary: 'Get all trips',
+    description: `
+Retrieves a list of all trips in the system
+    `,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Trips retrieved successfully',
+    type: GetAllTripsDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @Get('/')
+  async getAllTrips() {
+    return await asyncHandler(this.tripService.findAll());
+  }
+
+  @ApiOperation({
+    summary: 'Search customer by phone number',
+    description: `
+Searches for customers in the system using their phone number.
+    `,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Customer found successfully',
+    type: CustomerSearchDtoResponse,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'No customer found with the provided phone number',
+    schema: {
+      example: {
+        status: false,
+        message: 'Customer with phone number +96399887766 not found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @ApiParam({
+    name: 'phoneNumber',
+    description: 'The phone number to search for',
+    type: String,
+    example: '+96399887766',
+  })
+  @Get('/customerSearch/:phoneNumber')
+  async searchCustomers(@Param('phoneNumber') phoneNumber: string) {
+    return await asyncHandler(this.tripService.customerSearch(phoneNumber));
+  }
+
+  @ApiOperation({
+    summary: 'Delete a trip',
+    description: `
+Deletes a specific trip from the system using its ID.
+    `,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    schema: {
+      example: {
+        status: true,
+        data: null,
+      },
+    },
+    description: 'Trip deleted successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Trip not found',
+    schema: {
+      example: {
+        status: false,
+        message: 'Trip with ID 3c559f4a-ef14-4e62-8874-384a89c8689e not found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @ApiParam({
+    name: 'tripID',
+    description: 'The unique identifier of the trip to delete',
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
+  @Delete('/:tripID')
+  async remove(@Param('tripID') tripID: string) {
+    return await asyncHandler(this.tripService.remove(tripID));
   }
 }
