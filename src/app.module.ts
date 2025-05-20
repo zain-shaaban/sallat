@@ -13,6 +13,7 @@ import { NotificationModule } from './notification/notification.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountModule } from './account/account.module';
 import { SocketsModule } from './sockets/sockets.module';
+import { SessionsModule } from './sessions/sessions.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { SocketsModule } from './sockets/sockets.module';
     FirebaseModule,
     NotificationModule,
     AccountModule,
+    SessionsModule,
   ],
 })
 export class AppModule {}
