@@ -44,14 +44,14 @@ export class SessionsService {
   async findByDriverID(driverID: string) {
     return this.sessionRepository.find({ 
       where: { driverID },
-      order: { startDate: 'DESC' } 
+      order: { startDate: 'ASC' } 
     });
   }
 
   async findByVehicleNumber(vehicleNumber: string) {
     return this.sessionRepository.find({ 
       where: { vehicleNumber },
-      order: { startDate: 'DESC' }
+      order: { startDate: 'ASC' }
     });
   }
 
@@ -61,7 +61,7 @@ export class SessionsService {
         driverID,
         vehicleNumber 
       },
-      order: { startDate: 'DESC' }
+      order: { startDate: 'ASC' }
     });
   }
 
