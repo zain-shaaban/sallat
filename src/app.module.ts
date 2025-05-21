@@ -14,9 +14,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountModule } from './account/account.module';
 import { SocketsModule } from './sockets/sockets.module';
 import { SessionsModule } from './sessions/sessions.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true, load: [dbConfig] }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
