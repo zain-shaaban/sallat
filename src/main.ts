@@ -5,9 +5,10 @@ import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseFormatInterceptor } from './common/interceptors/response-format.interceptor';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.use(helmet());
   app.enableCors({ origin: '*' });
@@ -24,6 +25,7 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix('api');
+  app.set('trust proxy', 'loopback');
 
   const config = new DocumentBuilder()
     .setTitle('Sallat Backend API Documentation')
