@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AllExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseFormatInterceptor } from './common/interceptors/response-format.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -14,7 +14,7 @@ async function bootstrap() {
   app.enableCors({ origin: '*' });
 
   app.useGlobalInterceptors(new ResponseFormatInterceptor());
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AllExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

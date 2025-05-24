@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import {
@@ -15,7 +14,6 @@ import {
   CreateAccountDtoResponse,
 } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import { asyncHandler } from 'src/common/utils/async-handler';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -25,7 +23,6 @@ import {
 } from '@nestjs/swagger';
 import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
 import { GetSingleAccountDto } from './dto/get-single-account.dto';
-import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Accounts')
@@ -102,7 +99,7 @@ Creates a new user account in the system.
   })
   @Post('create')
   async create(@Body() createAccountDto: CreateAccountDtoRequest) {
-    return await asyncHandler(this.accountService.create(createAccountDto));
+    return await this.accountService.create(createAccountDto);
   }
 
   @ApiOperation({
@@ -127,7 +124,7 @@ Retrieves a list of all accounts in the system`,
   })
   @Get('find')
   async findAll() {
-    return await asyncHandler(this.accountService.findAll());
+    return await this.accountService.findAll();
   }
 
   @ApiOperation({
@@ -170,7 +167,7 @@ Retrieves detailed information about a specific account.
   })
   @Get('find/:id')
   async findOne(@Param('id') id: string) {
-    return await asyncHandler(this.accountService.findOne(id));
+    return await this.accountService.findOne(id);
   }
 
   @ApiOperation({
@@ -219,7 +216,7 @@ Retrieves all accounts with a specific role.
   })
   @Get('findbyrole/:role')
   async findByRole(@Param('role') role: string) {
-    return await asyncHandler(this.accountService.findByRole(role));
+    return await this.accountService.findByRole(role);
   }
 
   @ApiOperation({
@@ -279,7 +276,7 @@ Updates an existing account's information.`,
     @Param('id') id: string,
     @Body() updateAccountDto: UpdateAccountDto,
   ) {
-    return await asyncHandler(this.accountService.update(id, updateAccountDto));
+    return await this.accountService.update(id, updateAccountDto);
   }
 
   @ApiOperation({
@@ -326,6 +323,6 @@ Permanently deletes an account from the system.`,
   })
   @Delete('delete/:id')
   async remove(@Param('id') id: string) {
-    return await asyncHandler(this.accountService.remove(id));
+    return await this.accountService.remove(id);
   }
 }

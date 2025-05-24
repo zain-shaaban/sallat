@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
-import { asyncHandler } from 'src/common/utils/async-handler';
 import { CreateMultipleSessionsDto } from './dto/create-multiple-session.dto';
 
 @Controller('sessions')
@@ -10,17 +9,17 @@ export class SessionsController {
 
   @Post()
   async create(@Body() createSessionDto: CreateSessionDto) {
-    return await asyncHandler(this.sessionsService.create(createSessionDto));
+    return await this.sessionsService.create(createSessionDto);
   }
 
   @Post('multiple')
   async createMultiple(@Body() createMultipleSessionsDto: CreateMultipleSessionsDto) {
-    return await asyncHandler(this.sessionsService.createMultiple(createMultipleSessionsDto.sessions));
+    return await this.sessionsService.createMultiple(createMultipleSessionsDto.sessions)
   }
 
   @Get()
   async findAll() {
-    return await asyncHandler(this.sessionsService.findAll());
+    return await this.sessionsService.findAll();
   }
   
   @Get('driverID/:driverID')

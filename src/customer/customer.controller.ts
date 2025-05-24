@@ -13,7 +13,6 @@ import {
   CreateCustomerDtoRequest,
   CreateCustomerDtoResponse,
 } from './dto/create-customer.dto';
-import { asyncHandler } from 'src/common/utils/async-handler';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -65,7 +64,7 @@ export class CustomerController {
   })
   @Post('add')
   async create(@Body() createCustomerDto: CreateCustomerDtoRequest) {
-    return await asyncHandler(this.customerService.create(createCustomerDto));
+    return await this.customerService.create(createCustomerDto);
   }
 
   @ApiOperation({
@@ -91,7 +90,7 @@ export class CustomerController {
   })
   @Get('')
   async findAll() {
-    return await asyncHandler(this.customerService.findAll());
+    return await this.customerService.findAll();
   }
 
   @ApiOperation({
@@ -153,9 +152,7 @@ export class CustomerController {
     @Param('customerID') customerID: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ) {
-    return await asyncHandler(
-      this.customerService.update(customerID, updateCustomerDto),
-    );
+    return await this.customerService.update(customerID, updateCustomerDto);
   }
 
   @ApiOperation({
@@ -181,7 +178,7 @@ export class CustomerController {
   })
   @Get('onMap')
   async findAllOnMap() {
-    return await asyncHandler(this.customerService.findOnMap());
+    return await this.customerService.findOnMap();
   }
 
   @ApiOperation({
@@ -229,7 +226,7 @@ export class CustomerController {
   })
   @Delete('delete/:customerID')
   async remove(@Param('customerID') customerID: string) {
-    return await asyncHandler(this.customerService.remove(customerID));
+    return await this.customerService.remove(customerID);
   }
 
   @ApiOperation({
@@ -273,6 +270,6 @@ export class CustomerController {
   })
   @Get(':customerID')
   async findOne(@Param('customerID') customerID: string) {
-    return await asyncHandler(this.customerService.findOne(customerID));
+    return await this.customerService.findOne(customerID);
   }
 }

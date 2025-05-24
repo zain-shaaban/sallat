@@ -1,6 +1,5 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { ErrorLoggerService } from './error_logger.service';
-import { asyncHandler } from '../utils/async-handler';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ErrorLogDto } from './dto/error-log.dto';
 import { ErrorLogListDto } from './dto/error-log-list.dto';
@@ -22,7 +21,7 @@ export class ErrorLoggerController {
     description: 'Internal server error',
   })
   async findAll() {
-    return await asyncHandler(this.errorLoggerService.findAll());
+    return await this.errorLoggerService.findAll();
   }
 
   @Get(':errorID')
@@ -45,10 +44,10 @@ export class ErrorLoggerController {
       example: {
         status: false,
         message: 'Error not found',
-      }
-    }
+      },
+    },
   })
   async findOne(@Param('errorID', ParseIntPipe) errorID: number) {
-    return await asyncHandler(this.errorLoggerService.findOne(errorID));
+    return await this.errorLoggerService.findOne(errorID);
   }
 }

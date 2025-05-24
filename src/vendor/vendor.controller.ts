@@ -13,7 +13,6 @@ import {
   CreateVendorDtoRequest,
   CreateVendorDtoResponse,
 } from './dto/create-vendor.dto';
-import { asyncHandler } from 'src/common/utils/async-handler';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -72,7 +71,7 @@ The response includes the newly created vendor's ID.
   })
   @Post('add')
   async create(@Body() createVendorDto: CreateVendorDtoRequest) {
-    return await asyncHandler(this.vendorService.create(createVendorDto));
+    return await this.vendorService.create(createVendorDto);
   }
 
   @ApiOperation({
@@ -98,7 +97,7 @@ Retrieves a list of all vendors in the system. This endpoint returns comprehensi
   })
   @Get('')
   async findAll() {
-    return await asyncHandler(this.vendorService.findAll());
+    return await this.vendorService.findAll();
   }
 
   @ApiOperation({
@@ -130,7 +129,8 @@ Updates an existing vendor's information.
     schema: {
       example: {
         status: false,
-        message: 'Vendor with this ID not 3c559f4a-ef14-4e62-8874-384a89c8689e found',
+        message:
+          'Vendor with this ID not 3c559f4a-ef14-4e62-8874-384a89c8689e found',
       },
     },
   })
@@ -159,9 +159,7 @@ Updates an existing vendor's information.
     @Param('vendorID') vendorID: string,
     @Body() updateVendorDto: UpdateVendorDto,
   ) {
-    return await asyncHandler(
-      this.vendorService.update(vendorID, updateVendorDto),
-    );
+    return await this.vendorService.update(vendorID, updateVendorDto);
   }
 
   @ApiOperation({
@@ -186,13 +184,13 @@ Retrieves all vendors with their location data optimized for map display.`,
   })
   @Get('onMap')
   async findAllOnMap() {
-    return await asyncHandler(this.vendorService.findOnMap());
+    return await this.vendorService.findOnMap();
   }
 
   @ApiOperation({
     summary: 'Delete vendor',
     description: `
-Permanently deletes a vendor from the system.`
+Permanently deletes a vendor from the system.`,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -217,7 +215,8 @@ Permanently deletes a vendor from the system.`
     schema: {
       example: {
         status: false,
-        message: 'Vendor with this ID 3c559f4a-ef14-4e62-8874-384a89c8689e not found',
+        message:
+          'Vendor with this ID 3c559f4a-ef14-4e62-8874-384a89c8689e not found',
       },
     },
   })
@@ -233,7 +232,7 @@ Permanently deletes a vendor from the system.`
   })
   @Delete('delete/:vendorID')
   async remove(@Param('vendorID') vendorID: string) {
-    return await asyncHandler(this.vendorService.remove(vendorID));
+    return await this.vendorService.remove(vendorID);
   }
 
   @ApiOperation({
@@ -258,7 +257,8 @@ Retrieves detailed information about a specific vendor. `,
     schema: {
       example: {
         status: false,
-        message: 'Vendor with this ID 3c559f4a-ef14-4e62-8874-384a89c8689e not found',
+        message:
+          'Vendor with this ID 3c559f4a-ef14-4e62-8874-384a89c8689e not found',
       },
     },
   })
@@ -274,6 +274,6 @@ Retrieves detailed information about a specific vendor. `,
   })
   @Get(':vendorID')
   async findOne(@Param('vendorID') vendorID: string) {
-    return await asyncHandler(this.vendorService.findOne(vendorID));
+    return await this.vendorService.findOne(vendorID);
   }
 }

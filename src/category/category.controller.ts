@@ -15,7 +15,6 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { asyncHandler } from 'src/common/utils/async-handler';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
 import { GetAllCategoriesDto } from './dto/get-all-categories.dto';
@@ -48,7 +47,7 @@ export class CategoryController {
   })
   @Get('')
   async getAllCategories() {
-    return await asyncHandler(this.categoryService.getAll());
+    return await this.categoryService.getAll();
   }
 
   @ApiOperation({
@@ -88,7 +87,7 @@ export class CategoryController {
   })
   @Post('add')
   async add(@Body() createCategoryDto: CreateCategoryDto) {
-    return await asyncHandler(this.categoryService.add(createCategoryDto));
+    return await this.categoryService.add(createCategoryDto);
   }
 
   @ApiOperation({
@@ -128,7 +127,7 @@ export class CategoryController {
   })
   @Patch('update')
   async update(@Body() updateCategoryDto: UpdateCategoryDto) {
-    return await asyncHandler(this.categoryService.update(updateCategoryDto));
+    return await this.categoryService.update(updateCategoryDto);
   }
 
   @ApiOperation({
@@ -168,6 +167,6 @@ export class CategoryController {
   })
   @Delete('delete')
   async delete(@Body() deleteCategoryDto: DeleteCategoryDto) {
-    return await asyncHandler(this.categoryService.delete(deleteCategoryDto));
+    return await this.categoryService.delete(deleteCategoryDto);
   }
 }

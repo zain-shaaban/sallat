@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
-import { asyncHandler } from 'src/common/utils/async-handler';
 import {
   ApiOperation,
   ApiParam,
@@ -122,7 +121,7 @@ Creates a new trip with the provided details. The trip can be either a regular d
   })
   @Post('submit')
   async createTrip(@Body() createTripDto: CreateTripDto) {
-    return await asyncHandler(this.tripService.createNewTrip(createTripDto));
+    return await this.tripService.createNewTrip(createTripDto);
   }
 
   @ApiOperation({
@@ -191,9 +190,7 @@ Updates the location of a driver when they are offline. This endpoint is used to
   async sendNewLocationIfDriverOffline(
     @Body() sendLocationDto: sendLocationDto,
   ) {
-    return await asyncHandler(
-      this.tripService.sendNewLocation(sendLocationDto),
-    );
+    return await this.tripService.sendNewLocation(sendLocationDto);
   }
 
   @ApiOperation({
@@ -235,7 +232,7 @@ Retrieves detailed information about a specific trip using its ID.
   })
   @Get('/get/:tripID')
   async findOne(@Param('tripID') tripID: string) {
-    return await asyncHandler(this.tripService.findOne(tripID));
+    return await this.tripService.findOne(tripID);
   }
 
   @ApiOperation({
@@ -261,7 +258,7 @@ Retrieves a list of all trips in the system
   })
   @Get('/')
   async getAllTrips() {
-    return await asyncHandler(this.tripService.findAll());
+    return await this.tripService.findAll();
   }
 
   @ApiOperation({
@@ -303,7 +300,7 @@ Searches for customers in the system using their phone number.
   })
   @Get('/customerSearch/:phoneNumber')
   async searchCustomers(@Param('phoneNumber') phoneNumber: string) {
-    return await asyncHandler(this.tripService.customerSearch(phoneNumber));
+    return await this.tripService.customerSearch(phoneNumber);
   }
 
   @ApiOperation({
@@ -350,6 +347,6 @@ Deletes a specific trip from the system using its ID.
   })
   @Delete('/:tripID')
   async remove(@Param('tripID') tripID: string) {
-    return await asyncHandler(this.tripService.remove(tripID));
+    return await this.tripService.remove(tripID);
   }
 }
