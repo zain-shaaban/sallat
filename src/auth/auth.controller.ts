@@ -1,8 +1,16 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { asyncHandler } from 'src/common/utils/async-handler';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -30,6 +38,7 @@ Authenticates a user and returns a JWT token for subsequent API requests.`,
     },
   })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerGuard)
   @Post('login')
   async login(@Body() loginDto: LoginRequestDto) {
     return await asyncHandler(this.authService.login(loginDto));

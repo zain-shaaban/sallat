@@ -25,7 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
 import { GetSingleAccountDto } from './dto/get-single-account.dto';
-import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Accounts')
@@ -126,6 +126,7 @@ Retrieves a list of all accounts in the system`,
     },
   })
   @Get('find')
+  @UseGuards(ThrottlerGuard)
   async findAll() {
     return await asyncHandler(this.accountService.findAll());
   }

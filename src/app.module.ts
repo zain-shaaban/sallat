@@ -15,9 +15,13 @@ import { AccountModule } from './account/account.module';
 import { SocketsModule } from './sockets/sockets.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60000, limit: 3 }],
+    }),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true, load: [dbConfig] }),
     TypeOrmModule.forRootAsync({
