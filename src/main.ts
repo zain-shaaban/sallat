@@ -25,7 +25,7 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix('api');
-  app.set('trust proxy', 'loopback');
+  app.set('trust proxy', true);
 
   const config = new DocumentBuilder()
     .setTitle('Sallat Backend API Documentation')

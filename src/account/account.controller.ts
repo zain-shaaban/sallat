@@ -126,7 +126,6 @@ Retrieves a list of all accounts in the system`,
     },
   })
   @Get('find')
-  @UseGuards(ThrottlerGuard)
   async findAll() {
     return await asyncHandler(this.accountService.findAll());
   }
