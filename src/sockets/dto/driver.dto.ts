@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsBoolean,
   IsDefined,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
@@ -112,8 +113,8 @@ export class EndTripDto {
   location: LocationDto;
 
   @IsString()
-  @IsNotEmpty()
-  type: string;
+  @IsOptional()
+  type?: string;
 
   @IsNumber()
   time: number;
