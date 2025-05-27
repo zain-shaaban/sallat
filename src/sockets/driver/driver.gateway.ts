@@ -240,7 +240,7 @@ export class DriverSocketGateway
     @MessageBody() endStateData: EndTripDto,
   ) {
     try {
-      await this.driverService.handleEndTrip(
+      return await this.driverService.handleEndTrip(
         client.data.driverID,
         endStateData.tripID,
         endStateData.receipt,
@@ -249,7 +249,6 @@ export class DriverSocketGateway
         endStateData.type,
         endStateData.time,
       );
-      return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
         logger.error(error.message, error.stack);
