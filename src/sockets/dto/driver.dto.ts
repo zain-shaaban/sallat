@@ -5,6 +5,7 @@ import {
   ValidateNested,
   IsNotEmpty,
   IsBoolean,
+  IsDefined,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
@@ -16,6 +17,7 @@ export class TripIdDto {
 }
 
 export class LocationUpdateDto {
+  @IsDefined({ message: 'Location should be defined' })
   @ValidateNested()
   @Type(() => CoordinatesDto)
   coords: CoordinatesDto;
@@ -117,8 +119,8 @@ export class EndTripDto {
   time: number;
 }
 
-export class AvailabilityDto{
+export class AvailabilityDto {
   @IsBoolean()
   @IsNotEmpty()
-  available:boolean
+  available: boolean;
 }
