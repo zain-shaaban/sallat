@@ -429,7 +429,7 @@ export class DriverService {
       );
 
     return (
-      driver.lastLocation > 1000 * 60 * 45 &&
+      Date.now() - driver.lastLocation > 1000 * 60 * 45 &&
       !driver?.socketID &&
       !driverHasATrip
     );
