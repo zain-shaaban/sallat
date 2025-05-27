@@ -420,13 +420,18 @@ export class DriverService {
   }
 
   private canDisconnectDriver(driver) {
-    const hasOngoingTrip = this.tripService.ongoingTrips.some(
-      (trip) => trip.driverID === driver.driverID,
-    );
+    const driverHasATrip =
+      this.tripService.ongoingTrips.some(
+        (trip) => trip.driverID === driver.driverID,
+      ) ||
+      this.tripService.readyTrips.some(
+        (trip) => trip.driverID === driver.driverID,
+      );
+
     return (
       driver.lastLocation > 1000 * 60 * 45 &&
       !driver?.socketID &&
-      !hasOngoingTrip
+      !driverHasATrip
     );
   }
 
