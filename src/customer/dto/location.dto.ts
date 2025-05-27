@@ -49,7 +49,8 @@ export class LocationDto {
   })
   @IsBoolean()
   @IsNotEmpty()
-  approximate: boolean;
+  @IsOptional()
+  approximate?: boolean;
 
   @ApiProperty({ 
     type: 'string',
