@@ -18,7 +18,8 @@ export class AdminService {
   private io: Namespace;
 
   constructor(
-    @Inject(forwardRef(()=>TripService)) private readonly tripService: TripService,
+    @Inject(forwardRef(() => TripService))
+    private readonly tripService: TripService,
     @Inject() private readonly driverService: DriverService,
     @Inject() private readonly notificationService: NotificationService,
     @InjectRepository(NotificationSocket)
@@ -50,7 +51,7 @@ export class AdminService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    this.moveTripFromPendingToReady(trip,driverID);
+    this.moveTripFromPendingToReady(trip, driverID);
 
     this.submitNewTrip(trip);
 
@@ -126,7 +127,7 @@ export class AdminService {
         );
 
         if (driver) {
-          this.sendTripCancelledForDriver(driver.socketID, driver.driverID);
+          this.sendTripCancelledForDriver(driver.socketID, arr[index].tripID);
 
           this.notificationService.send({
             title: 'تم إلغاء الرحلة',
@@ -142,7 +143,6 @@ export class AdminService {
         this.sendDriversArrayToAdmins();
 
         this.sendTripsToAdmins();
-
 
         return;
       }
@@ -180,12 +180,12 @@ export class AdminService {
     this.sendTripsToAdmins();
   }
 
-  moveTripFromPendingToReady(trip: ITripInSocketsArray,driverID:string) {
+  moveTripFromPendingToReady(trip: ITripInSocketsArray, driverID: string) {
     this.tripService.pendingTrips = this.tripService.pendingTrips.filter(
       (t) => t.tripID !== trip.tripID,
     );
 
-    trip.driverID=driverID
+    trip.driverID = driverID;
 
     this.tripService.readyTrips.push(trip);
   }
@@ -228,7 +228,9 @@ export class AdminService {
   }
 
   sendTripReceivedNotification(tripID: string, driverID: string) {
-    this.io.server.of('/notifications').emit('tripReceived', { tripID, driverID });
+    this.io.server
+      .of('/notifications')
+      .emit('tripReceived', { tripID, driverID });
 
     this.notificationSocketRepository.save({
       type: 'tripReceived',
@@ -237,7 +239,9 @@ export class AdminService {
   }
 
   sendTripPulledNotification(tripID: string, driverID: string) {
-    this.io.server.of('/notifications').emit('tripPulled', { tripID, driverID });
+    this.io.server
+      .of('/notifications')
+      .emit('tripPulled', { tripID, driverID });
 
     this.notificationSocketRepository.save({
       type: 'tripPulled',
