@@ -135,13 +135,14 @@ export class AdminService {
           });
         }
 
+        arr.splice(index, 1);
+
         this.sendTripCancelledNotificationForAdmin(tripID);
 
         this.sendDriversArrayToAdmins();
 
         this.sendTripsToAdmins();
 
-        arr.splice(index, 1);
 
         return;
       }
