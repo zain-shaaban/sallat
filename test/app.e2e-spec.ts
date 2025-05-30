@@ -34,7 +34,6 @@ describe('AppController (e2e)', () => {
 
   afterAll(async () => {
     try {
-      // Delete accounts sequentially to avoid overwhelming the server
       for (const id of createdAccountIds) {
         await request(app.getHttpServer())
           .delete(`/api/account/delete/${id}`)
@@ -43,7 +42,7 @@ describe('AppController (e2e)', () => {
     } finally {
       await app.close();
     }
-  }, 30000); // 30 second timeout for cleanup
+  }, 30000);
 
   const createTestAccount = (role: AccountRole = AccountRole.CC) => ({
     name: faker.person.fullName(),
@@ -102,10 +101,12 @@ describe('AppController (e2e)', () => {
 
       it('should fail when email already exists', async () => {
         const dto = createTestAccount();
-        await request(app.getHttpServer())
+        const respo = await request(app.getHttpServer())
           .post('/api/account/create')
           .send(dto)
           .expect(HttpStatus.CREATED);
+
+        createdAccountIds.push(respo.body.data.id);
 
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
@@ -290,6 +291,53 @@ describe('AppController (e2e)', () => {
           .expect(HttpStatus.NOT_FOUND);
 
         expect(response.body.status).toBe(false);
+      });
+    });
+  });
+
+  describe('Auth Managment', () => {
+    describe('POST /api/auth/login', () => {
+      const dto = createTestAccount();
+
+      beforeAll(async () => {
+        const response = await request(app.getHttpServer())
+          .post('/api/account/create')
+          .send(dto)
+          .expect(201);
+
+        createdAccountIds.push(response.body.data.id);
+      });
+
+      it('login with valid credentials', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/api/auth/login')
+          .send({ email: dto.email, password: dto.password })
+          .expect(200);
+
+        expect(response.body.status).toBe(true);
+        expect(response.body.data).toHaveProperty('accessToken');
+      });
+
+      it('login with wrong credentials', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/api/auth/login')
+          .send({ email: dto.email, password: faker.internet.password() })
+          .expect(HttpStatus.UNAUTHORIZED);
+
+        expect(response.body).toEqual({
+          status: false,
+          message: 'Wrong credentials',
+        });
+      });
+
+      it('login without email', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/api/auth/login')
+          .send({ password: dto.password })
+          .expect(HttpStatus.BAD_REQUEST);
+
+        expect(response.body.status).toBe(false);
+        expect(typeof response.body.message).toBe('string');
       });
     });
   });

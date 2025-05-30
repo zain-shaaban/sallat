@@ -35,7 +35,7 @@ export class AccountService {
     assignedVehicleNumber,
     notificationToken,
   }: ICreateAccountRequest): Promise<{ id: string }> {
-    const { id } = await this.accountRepository.save({
+    const account = this.accountRepository.create({
       name,
       email,
       password,
@@ -43,6 +43,8 @@ export class AccountService {
       salary,
       role,
     });
+
+    const {id}=await this.accountRepository.save(account)
     if (role === AccountRole.DRIVER) {
       await this.driverRepository.insert({
         id,

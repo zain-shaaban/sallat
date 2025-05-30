@@ -14,6 +14,7 @@ import {
   IAccountResponse,
   ICreateAccountRequest,
 } from '../interfaces/account.interface';
+import { Transform } from 'class-transformer';
 
 export class CreateAccountDtoRequest implements ICreateAccountRequest {
   @ApiProperty({
@@ -37,6 +38,7 @@ export class CreateAccountDtoRequest implements ICreateAccountRequest {
   @IsNotEmpty()
   @MaxLength(200)
   @IsEmail()
+  @Transform(({ value }) => value?.toLowerCase().trim())
   email: string;
 
   @ApiProperty({

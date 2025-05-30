@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginRequestDto } from './dto/login.dto';
-import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,12 +14,13 @@ export class AuthService {
 
   async login(loginDto: LoginRequestDto) {
     const { email, password } = loginDto;
+
     const account = await this.accountRepository.findOne({
       where: { email },
       select: ['id', 'email', 'password', 'role'],
     });
 
-    if (!account || !bcrypt.compareSync(password, account.password))
+    if (!account || !account.comparePassword(password))
       throw new UnauthorizedException('Wrong credentials');
 
     const accessToken = this.jwtService.sign({

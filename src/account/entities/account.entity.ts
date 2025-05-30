@@ -68,4 +68,9 @@ export class Account {
     if (this.password)
       this.password = bcrypt.hashSync(this.password, bcrypt.genSaltSync());
   }
+
+  @Exclude()
+  comparePassword(inputPassword: string) {
+    return bcrypt.compareSync(inputPassword, this.password);
+  }
 }
