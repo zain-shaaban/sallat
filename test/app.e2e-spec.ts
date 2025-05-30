@@ -6,6 +6,8 @@ import { AccountRole } from 'src/account/enums/account-role.enum';
 import { ResponseFormatInterceptor } from 'src/common/interceptors/response-format.interceptor';
 import { AllExceptionFilter } from 'src/common/filters/http-exception.filter';
 import { faker } from '@faker-js/faker';
+import { Category } from '../src/category/entities/category.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -338,6 +340,165 @@ describe('AppController (e2e)', () => {
 
         expect(response.body.status).toBe(false);
         expect(typeof response.body.message).toBe('string');
+      });
+    });
+  });
+
+  describe('Category/Item Managment', () => {
+    const categories: string[] = [];
+    const category = faker.food.ethnicCategory();
+    const type = faker.food.dish();
+
+    describe('GET /api/category', () => {
+      it('should return all categories', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/category')
+          .expect(200);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+      });
+
+      describe('POST /api/category/add', () => {
+        it('should create a new category', () => {
+          return request(app.getHttpServer())
+            .post('/api/category/add')
+            .send({ type: category })
+            .expect(201)
+            .expect((res) => {
+              expect(res.body.status).toBe(true);
+            });
+        });
+
+        it('should create a new type under existing category', () => {
+          return request(app.getHttpServer())
+            .post('/api/category/add')
+            .send({ type: type, category: category })
+            .expect(201)
+            .expect((res) => {
+              expect(res.body.status).toBe(true);
+            });
+        });
+
+        it('should not create duplicate category', () => {
+          return request(app.getHttpServer())
+            .post('/api/category/add')
+            .send({ type: category })
+            .expect(409)
+            .expect((res) => {
+              expect(res.body.status).toBe(false);
+            });
+        });
+
+        it('should not create duplicate type in same category', () => {
+          return request(app.getHttpServer())
+            .post('/api/category/add')
+            .send({ type: type, category: category })
+            .expect(409)
+            .expect((res) => {
+              expect(res.body.status).toBe(false);
+            });
+        });
+      });
+
+      describe('PATCH /api/category/update', () => {
+        it('should update a category name', () => {
+          return request(app.getHttpServer())
+            .patch('/api/category/update')
+            .send({
+              isCategory: true,
+              oldType: category,
+              newType: 'UpdatedCategory',
+            })
+            .expect(200)
+            .expect((res) => {
+              expect(res.body.status).toBe(true);
+            });
+        });
+
+        it('should update a type name', () => {
+          return request(app.getHttpServer())
+            .patch('/api/category/update')
+            .send({
+              isCategory: false,
+              oldType: type,
+              newType: 'UpdatedItem',
+            })
+            .expect(200)
+            .expect((res) => {
+              expect(res.body.status).toBe(true);
+            });
+        });
+
+        it('should return 404 when updating non-existent category', () => {
+          return request(app.getHttpServer())
+            .patch('/api/category/update')
+            .send({
+              isCategory: true,
+              oldType: 'NonExistentCategory',
+              newType: 'NewName',
+            })
+            .expect(404);
+        });
+
+        it('should return 404 when updating non-existent type', () => {
+          return request(app.getHttpServer())
+            .patch('/api/category/update')
+            .send({
+              isCategory: false,
+              oldType: 'NonExistentType',
+              newType: 'NewName',
+            })
+            .expect(404);
+        });
+      });
+
+      describe('DELETE /category/delete', () => {
+        it('should delete a Item', () => {
+          return request(app.getHttpServer())
+            .delete('/api/category/delete')
+            .send({
+              isCategory: false,
+              type: 'UpdatedItem',
+            })
+            .expect(200)
+            .expect((res) => {
+              expect(res.body.status).toBe(true);
+            });
+        });
+
+        it('should delete a Category', () => {
+          return request(app.getHttpServer())
+            .delete('/api/category/delete')
+            .send({
+              isCategory: true,
+              type: 'UpdatedCategory',
+            })
+            .expect(200)
+            .expect((res) => {
+              expect(res.body.status).toBe(true);
+            });
+        });
+
+        it('should return 404 when deleting non-existent category', () => {
+          return request(app.getHttpServer())
+            .delete('/category/delete')
+            .send({
+              isCategory: true,
+              type: 'NonExistentCategory',
+            })
+            .expect(404);
+        });
+
+        it('should return 404 when deleting non-existent type', () => {
+          return request(app.getHttpServer())
+            .delete('/category/delete')
+            .send({
+              isCategory: false,
+              type: 'NonExistentType',
+            })
+            .expect(404);
+        });
       });
     });
   });

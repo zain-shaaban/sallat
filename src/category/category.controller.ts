@@ -77,11 +77,11 @@ export class CategoryController {
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'Category/Type already exists in the specified category',
+    description: 'Category/Item already exists in the specified category',
     schema: {
       example: {
         status: false,
-        message: 'Category/Type already exists',
+        message: 'Category/Item already exists',
       },
     },
   })
