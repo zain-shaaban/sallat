@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Account } from './entities/account.entity';
-import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -36,7 +35,6 @@ export class AccountService {
     assignedVehicleNumber,
     notificationToken,
   }: ICreateAccountRequest): Promise<{ id: string }> {
-    password = bcrypt.hashSync(password, bcrypt.genSaltSync());
     const { id } = await this.accountRepository.save({
       name,
       email,
@@ -100,7 +98,7 @@ export class AccountService {
 
   async findByRole(role: string): Promise<(IAccount | IDriverAccount)[]> {
     if (!Object.values(AccountRole).includes(role as AccountRole)) {
-      throw new BadRequestException(`Invalid role: ${role}`);
+      throw new BadRequestException(`Invalid role : ${role}`);
     }
 
     let accounts = await this.accountRepository.find({
@@ -129,37 +127,29 @@ export class AccountService {
   async update(
     id: string,
     {
-      name,
-      email,
-      password,
-      phoneNumber,
-      salary,
-      role,
-      assignedVehicleNumber,
       notificationToken,
+      assignedVehicleNumber,
+      ...updateData
     }: IUpdateAccountRequest,
   ): Promise<null> {
-    const { affected: accountAffected } = await this.accountRepository.update(
-      id,
-      {
-        name,
-        email,
-        password: password
-          ? bcrypt.hashSync(password, bcrypt.genSaltSync())
-          : undefined,
-        phoneNumber,
-        salary,
-        role,
-      },
+    const cleanUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([_, value]) => value !== undefined),
     );
-    const { affected: driverAffected } = await this.driverRepository.update(
-      id,
-      {
-        notificationToken,
-        assignedVehicleNumber,
-      },
-    );
-    if (accountAffected === 0 && driverAffected === 0)
+
+    if (Object.keys(cleanUpdateData).length > 0)
+      var { affected: accountAffected } = await this.accountRepository.update(
+        id,
+        cleanUpdateData,
+      );
+    if (notificationToken || assignedVehicleNumber)
+      var { affected: driverAffected } = await this.driverRepository.update(
+        id,
+        {
+          notificationToken,
+          assignedVehicleNumber,
+        },
+      );
+    if (!accountAffected && !driverAffected)
       throw new NotFoundException(`Account with ID ${id} not found`);
     return null;
   }

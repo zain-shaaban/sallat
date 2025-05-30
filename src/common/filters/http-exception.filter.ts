@@ -42,10 +42,17 @@ export class AllExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const response = exception.getResponse();
 
-    const message =
-      status === HttpStatus.BAD_REQUEST && typeof response === 'object'
-        ? ((response as any).message?.join(' ,') ?? 'Bad Request')
-        : exception.message;
+    let message: string;
+    if (status === HttpStatus.BAD_REQUEST && typeof response === 'object') {
+      const responseObj = response as { message: string | string[] };
+      if (Array.isArray(responseObj.message)) {
+        message = responseObj.message.join(' ,');
+      } else {
+        message = responseObj.message || 'Bad Request';
+      }
+    } else {
+      message = exception.message;
+    }
 
     return { status, message };
   }

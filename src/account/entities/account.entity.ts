@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -9,7 +11,7 @@ import {
 } from 'typeorm';
 import { DriverMetadata } from './driverMetadata.entity';
 import { AccountRole } from '../enums/account-role.enum';
-
+import * as bcrypt from 'bcryptjs';
 
 @Entity('sallat_accounts', { orderBy: { createdAt: 'ASC' } })
 export class Account {
@@ -58,4 +60,12 @@ export class Account {
   @CreateDateColumn()
   @Exclude()
   createdAt: Date;
+
+  @Exclude()
+  @BeforeInsert()
+  @BeforeUpdate()
+  hashPassword() {
+    if (this.password)
+      this.password = bcrypt.hashSync(this.password, bcrypt.genSaltSync());
+  }
 }
