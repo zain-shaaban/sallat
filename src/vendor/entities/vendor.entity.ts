@@ -1,8 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LocationDto } from 'src/customer/dto/location.dto';
 import { Trip } from 'src/trip/entities/trip.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
-import { IsNotEmpty, IsString, MaxLength, IsPhoneNumber } from 'class-validator';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  IsPhoneNumber,
+} from 'class-validator';
 
 @Entity('sallat_vendors')
 export class Vendor {
@@ -14,11 +19,11 @@ export class Vendor {
   @PrimaryGeneratedColumn('uuid')
   vendorID: string;
 
-  @ApiProperty({ 
-    type: 'string', 
+  @ApiProperty({
+    type: 'string',
     example: '+962798765432',
-    description: 'Vendor\'s contact phone number',
-    maxLength: 20
+    description: "Vendor's contact phone number",
+    maxLength: 20,
   })
   @Column({ type: 'varchar', length: 20, nullable: false })
   @IsNotEmpty()
@@ -27,11 +32,11 @@ export class Vendor {
   @MaxLength(20)
   phoneNumber: string;
 
-  @ApiProperty({ 
-    type: 'string', 
+  @ApiProperty({
+    type: 'string',
     example: 'Restaurant Name',
     description: 'Name of the vendor business',
-    maxLength: 200
+    maxLength: 200,
   })
   @Column({ type: 'varchar', length: 200, nullable: false })
   @IsNotEmpty()

@@ -5,6 +5,7 @@ import {
   MaxLength,
   IsPhoneNumber,
   ValidateNested,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { LocationDto } from 'src/customer/dto/location.dto';
@@ -29,7 +30,9 @@ export class CreateVendorDtoRequest {
   })
   @IsString()
   @IsNotEmpty()
-  @IsPhoneNumber("SY")
+  @Matches(/^[^a-zA-Z]+$/, {
+    message: 'Phone number is not valid',
+  })
   @MaxLength(20)
   phoneNumber: string;
 

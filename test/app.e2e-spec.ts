@@ -17,7 +17,7 @@ describe('AppController (e2e)', () => {
     name: faker.person.fullName(),
     email: faker.internet.email(),
     password: faker.internet.password(),
-    phoneNumber: faker.phone.number(),
+    phoneNumber: faker.phone.number({ style: 'international' }),
     role,
     salary: faker.number.float({ min: 1000, max: 5000 }),
   });
@@ -506,7 +506,10 @@ describe('AppController (e2e)', () => {
     let createdCustomerId: string;
     const testCustomer: CreateCustomerDtoRequest = {
       name: faker.person.fullName(),
-      phoneNumbers: [faker.phone.number(), faker.phone.number()],
+      phoneNumbers: [
+        faker.phone.number({ style: 'international' }),
+        faker.phone.number({ style: 'international' }),
+      ],
       location: {
         coords: {
           lat: faker.location.latitude(),
@@ -612,7 +615,7 @@ describe('AppController (e2e)', () => {
     describe('PATCH /api/customer/update/:customerID', () => {
       const updateData: UpdateCustomerDto = {
         name: faker.person.fullName(),
-        phoneNumbers: [faker.phone.number()],
+        phoneNumbers: [faker.phone.number({ style: 'international' })],
         location: {
           coords: {
             lat: faker.location.latitude(),
@@ -685,6 +688,169 @@ describe('AppController (e2e)', () => {
             expect(res.body).toEqual({
               status: false,
               message: `Customer with ID 683aa0bd-5014-8010-920d-2e287f509338 not found`,
+            });
+          });
+      });
+    });
+  });
+
+  describe('Vendor Management', () => {
+    let createdVendorId: string;
+    const testVendor = {
+      name: faker.company.name(),
+      phoneNumber: faker.phone.number({ style: 'international' }),
+      location: {
+        coords: {
+          lat: faker.location.latitude(),
+          lng: faker.location.longitude(),
+        },
+        approximate: true,
+        description: 'Test Location',
+      },
+    };
+
+    describe('POST /api/vendor/add', () => {
+      it('should create a new vendor', () => {
+        return request(app.getHttpServer())
+          .post('/api/vendor/add')
+          .send(testVendor)
+          .expect(201)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+            expect(res.body.data).toHaveProperty('vendorID');
+            createdVendorId = res.body.data.vendorID;
+          });
+      });
+
+      it('should fail to create vendor with invalid data', () => {
+        const invalidVendor = {
+          name: faker.company.name(),
+          phoneNumber: 'invalid-phone',
+        };
+
+        return request(app.getHttpServer())
+          .post('/api/vendor/add')
+          .send(invalidVendor)
+          .expect(400)
+          .expect((res) => {
+            expect(res.body.status).toBe(false);
+          });
+      });
+    });
+
+    describe('GET /api/vendor', () => {
+      it('should return all vendors', () => {
+        return request(app.getHttpServer())
+          .get('/api/vendor')
+          .expect(200)
+          .expect((res) => {
+            expect(Array.isArray(res.body.data)).toBe(true);
+            expect(res.body.data.length).toBeGreaterThan(0);
+            const vendor = res.body.data.find(
+              (v) => v.vendorID === createdVendorId,
+            );
+            expect(vendor).toBeDefined();
+            expect(vendor.name).toBe(testVendor.name);
+          });
+      });
+    });
+
+    describe('GET /api/vendor/onMap', () => {
+      it('should return vendors with location data', () => {
+        return request(app.getHttpServer())
+          .get('/api/vendor/onMap')
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            const vendor = res.body.data.find(
+              (v) => v.vendorID === createdVendorId,
+            );
+            expect(vendor).toBeDefined();
+            expect(vendor).toHaveProperty('location');
+            expect(vendor.location.coords).toEqual(testVendor.location.coords);
+          });
+      });
+    });
+
+    describe('PATCH /api/vendor/update/:vendorID', () => {
+      const updateData = {
+        name: faker.company.name(),
+        phoneNumber: faker.phone.number({ style: 'international' }),
+        location: {
+          coords: {
+            lat: faker.location.latitude(),
+            lng: faker.location.longitude(),
+          },
+          approximate: false,
+          description: 'Updated Location',
+        },
+      };
+
+      it('should update vendor successfully', () => {
+        return request(app.getHttpServer())
+          .patch(`/api/vendor/update/${createdVendorId}`)
+          .send(updateData)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+            expect(res.body.data).toBeNull();
+          });
+      });
+
+      it('should verify vendor was updated', () => {
+        return request(app.getHttpServer())
+          .get(`/api/vendor/${createdVendorId}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.data.name).toBe(updateData.name);
+            expect(res.body.data.phoneNumber).toBe(updateData.phoneNumber);
+            expect(res.body.data.location.coords).toEqual(
+              updateData.location.coords,
+            );
+          });
+      });
+
+      it('should return 404 when updating non-existent vendor', () => {
+        return request(app.getHttpServer())
+          .patch('/api/vendor/update/683aa0bd-5014-8010-920d-2e287f509338')
+          .send(updateData)
+          .expect(404)
+          .expect((res) => {
+            expect(res.body).toEqual({
+              status: false,
+              message:
+                'Vendor with ID 683aa0bd-5014-8010-920d-2e287f509338 not found',
+            });
+          });
+      });
+    });
+
+    describe('DELETE /api/vendor/delete/:vendorID', () => {
+      it('should delete vendor successfully', () => {
+        return request(app.getHttpServer())
+          .delete(`/api/vendor/delete/${createdVendorId}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+          });
+      });
+
+      it('should verify vendor was deleted', () => {
+        return request(app.getHttpServer())
+          .get(`/api/vendor/${createdVendorId}`)
+          .expect(404);
+      });
+
+      it('should return 404 when deleting non-existent vendor', () => {
+        return request(app.getHttpServer())
+          .delete('/api/vendor/delete/683aa0bd-5014-8010-920d-2e287f509338')
+          .expect(404)
+          .expect((res) => {
+            expect(res.body).toEqual({
+              status: false,
+              message:
+                'Vendor with ID 683aa0bd-5014-8010-920d-2e287f509338 not found',
             });
           });
       });

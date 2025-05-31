@@ -53,7 +53,7 @@ export class VendorService {
     if (!updatedVendor)
       throw new NotFoundException(`Vendor with ID ${vendorID} not found`);
 
-    this.vendorRepository.save(updatedVendor);
+    await this.vendorRepository.save(updatedVendor);
 
     this.adminService.updateVendor(updatedVendor);
 

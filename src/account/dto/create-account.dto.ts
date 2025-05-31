@@ -8,6 +8,7 @@ import {
   MinLength,
   IsEmail,
   IsEnum,
+  Matches,
 } from 'class-validator';
 import { AccountRole } from '../enums/account-role.enum';
 import {
@@ -61,6 +62,9 @@ export class CreateAccountDtoRequest implements ICreateAccountRequest {
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
+  @Matches(/^[^a-zA-Z]+$/, {
+    message: 'Phone number is not valid',
+  })
   phoneNumber: string;
 
   @ApiProperty({

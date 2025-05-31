@@ -8,6 +8,7 @@ import {
   MinLength,
   ValidateNested,
   ArrayMinSize,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { LocationDto } from './location.dto';
@@ -22,6 +23,10 @@ export class CreateCustomerDtoRequest {
   @IsArray()
   @ArrayMinSize(1)
   @IsNotEmpty()
+  // @Matches(/^[^a-zA-Z]+$/, {
+  //   message: 'Each phone number must be valid',
+  //   each: true,
+  // })
   phoneNumbers: string[];
 
   @ApiProperty({
@@ -42,10 +47,10 @@ export class CreateCustomerDtoRequest {
     example: {
       coords: {
         lat: 58.16543232,
-        lng: 36.18875421
+        lng: 36.18875421,
       },
       approximate: true,
-      description: 'بجانب المحكمة'
+      description: 'بجانب المحكمة',
     },
     required: false,
   })
