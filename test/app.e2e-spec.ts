@@ -6,12 +6,33 @@ import { AccountRole } from 'src/account/enums/account-role.enum';
 import { ResponseFormatInterceptor } from 'src/common/interceptors/response-format.interceptor';
 import { AllExceptionFilter } from 'src/common/filters/http-exception.filter';
 import { faker } from '@faker-js/faker';
-import { Category } from '../src/category/entities/category.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { CreateCustomerDtoRequest } from '../src/customer/dto/create-customer.dto';
+import { UpdateCustomerDto } from '../src/customer/dto/update-customer.dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
   let createdAccountIds: string[] = [];
+
+  const createTestAccount = (role: AccountRole = AccountRole.CC) => ({
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+    phoneNumber: faker.phone.number(),
+    role,
+    salary: faker.number.float({ min: 1000, max: 5000 }),
+  });
+
+  afterAll(async () => {
+    try {
+      for (const id of createdAccountIds) {
+        await request(app.getHttpServer())
+          .delete(`/api/account/delete/${id}`)
+          .expect(HttpStatus.OK);
+      }
+    } finally {
+      await app.close();
+    }
+  }, 30000);
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -32,27 +53,6 @@ describe('AppController (e2e)', () => {
     );
     app.setGlobalPrefix('api');
     await app.init();
-  });
-
-  afterAll(async () => {
-    try {
-      for (const id of createdAccountIds) {
-        await request(app.getHttpServer())
-          .delete(`/api/account/delete/${id}`)
-          .expect(HttpStatus.OK);
-      }
-    } finally {
-      await app.close();
-    }
-  }, 30000);
-
-  const createTestAccount = (role: AccountRole = AccountRole.CC) => ({
-    name: faker.person.fullName(),
-    email: faker.internet.email(),
-    password: faker.internet.password(),
-    phoneNumber: faker.phone.number(),
-    role,
-    salary: faker.number.float({ min: 1000, max: 5000 }),
   });
 
   describe('Account Management', () => {
@@ -345,7 +345,6 @@ describe('AppController (e2e)', () => {
   });
 
   describe('Category/Item Managment', () => {
-    const categories: string[] = [];
     const category = faker.food.ethnicCategory();
     const type = faker.food.dish();
 
@@ -453,7 +452,7 @@ describe('AppController (e2e)', () => {
         });
       });
 
-      describe('DELETE /category/delete', () => {
+      describe('DELETE /api/category/delete', () => {
         it('should delete a Item', () => {
           return request(app.getHttpServer())
             .delete('/api/category/delete')
@@ -482,7 +481,7 @@ describe('AppController (e2e)', () => {
 
         it('should return 404 when deleting non-existent category', () => {
           return request(app.getHttpServer())
-            .delete('/category/delete')
+            .delete('/api/category/delete')
             .send({
               isCategory: true,
               type: 'NonExistentCategory',
@@ -492,13 +491,202 @@ describe('AppController (e2e)', () => {
 
         it('should return 404 when deleting non-existent type', () => {
           return request(app.getHttpServer())
-            .delete('/category/delete')
+            .delete('/api/category/delete')
             .send({
               isCategory: false,
               type: 'NonExistentType',
             })
             .expect(404);
         });
+      });
+    });
+  });
+
+  describe('Customer Managment', () => {
+    let createdCustomerId: string;
+    const testCustomer: CreateCustomerDtoRequest = {
+      name: faker.person.fullName(),
+      phoneNumbers: [faker.phone.number(), faker.phone.number()],
+      location: {
+        coords: {
+          lat: faker.location.latitude(),
+          lng: faker.location.longitude(),
+        },
+        approximate: true,
+        description: 'Test Location',
+      },
+    };
+    describe('POST /api/customer/add', () => {
+      it('should create a new customer', () => {
+        return request(app.getHttpServer())
+          .post('/api/customer/add')
+          .send(testCustomer)
+          .expect(201)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+            expect(res.body.data).toHaveProperty('customerID');
+            createdCustomerId = res.body.data.customerID;
+          });
+      });
+
+      it('should fail to create customer with invalid data', () => {
+        const invalidCustomer = {
+          name: faker.person.fullName(),
+          phoneNumbers: [],
+        };
+
+        return request(app.getHttpServer())
+          .post('/api/customer/add')
+          .send(invalidCustomer)
+          .expect(400)
+          .expect((res) => {
+            expect(res.body.status).toBe(false);
+          });
+      });
+    });
+
+    describe('GET /api/customer', () => {
+      it('should return all customers', () => {
+        return request(app.getHttpServer())
+          .get('/api/customer')
+          .expect(200)
+          .expect((res) => {
+            expect(Array.isArray(res.body.data)).toBe(true);
+            expect(res.body.data.length).toBeGreaterThan(0);
+            const customer = res.body.data.find(
+              (c) => c.customerID === createdCustomerId,
+            );
+            expect(customer).toBeDefined();
+            expect(customer.name).toBe(testCustomer.name);
+          });
+      });
+    });
+
+    describe('GET /api/customer/onMap', () => {
+      it('should return customers with location data', () => {
+        return request(app.getHttpServer())
+          .get('/api/customer/onMap')
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            const customer = res.body.data.find(
+              (c) => c.customerID === createdCustomerId,
+            );
+            expect(customer).toBeDefined();
+            expect(customer).toHaveProperty('location');
+            expect(customer.location.coords).toEqual(
+              testCustomer.location.coords,
+            );
+          });
+      });
+    });
+
+    describe('GET /api/customer/:customerID', () => {
+      it('should return a specific customer', () => {
+        return request(app.getHttpServer())
+          .get(`/api/customer/${createdCustomerId}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.data.customerID).toBe(createdCustomerId);
+            expect(res.body.data.name).toBe(testCustomer.name);
+            expect(res.body.data.phoneNumber).toBe(
+              testCustomer.phoneNumbers[0],
+            );
+          });
+      });
+
+      it('should return 404 for non-existent customer', () => {
+        return request(app.getHttpServer())
+          .get('/api/customer/683aa0bd-5014-8010-920d-2e287f509338')
+          .expect(404)
+          .expect((res) => {
+            expect(res.body).toEqual({
+              status: false,
+              message: `Customer with ID 683aa0bd-5014-8010-920d-2e287f509338 not found`,
+            });
+          });
+      });
+    });
+
+    describe('PATCH /api/customer/update/:customerID', () => {
+      const updateData: UpdateCustomerDto = {
+        name: faker.person.fullName(),
+        phoneNumbers: [faker.phone.number()],
+        location: {
+          coords: {
+            lat: faker.location.latitude(),
+            lng: faker.location.longitude(),
+          },
+          approximate: false,
+          description: 'Updated Location',
+        },
+      };
+
+      it('should update customer successfully', () => {
+        return request(app.getHttpServer())
+          .patch(`/api/customer/update/${createdCustomerId}`)
+          .send(updateData)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+            expect(res.body.data).toBeNull();
+          });
+      });
+
+      it('should verify customer was updated', () => {
+        return request(app.getHttpServer())
+          .get(`/api/customer/${createdCustomerId}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.data.name).toBe(updateData.name);
+            expect(res.body.data.phoneNumber).toBe(updateData.phoneNumbers[0]);
+            expect(res.body.data.location.coords).toEqual(
+              updateData.location.coords,
+            );
+          });
+      });
+
+      it('should return 404 when updating non-existent customer', () => {
+        return request(app.getHttpServer())
+          .patch('/api/customer/update/683aa0bd-5014-8010-920d-2e287f509338')
+          .send(updateData)
+          .expect(404)
+          .expect((res) => {
+            expect(res.body).toEqual({
+              status: false,
+              message: `Customer with ID 683aa0bd-5014-8010-920d-2e287f509338 not found`,
+            });
+          });
+      });
+    });
+
+    describe('DELETE /api/customer/delete/:customerID', () => {
+      it('should delete customer successfully', () => {
+        return request(app.getHttpServer())
+          .delete(`/api/customer/delete/${createdCustomerId}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.status).toBe(true);
+          });
+      });
+
+      it('should verify customer was deleted', () => {
+        return request(app.getHttpServer())
+          .get(`/api/customer/${createdCustomerId}`)
+          .expect(404);
+      });
+
+      it('should return 404 when deleting non-existent customer', () => {
+        return request(app.getHttpServer())
+          .delete('/api/customer/delete/683aa0bd-5014-8010-920d-2e287f509338')
+          .expect(404)
+          .expect((res) => {
+            expect(res.body).toEqual({
+              status: false,
+              message: `Customer with ID 683aa0bd-5014-8010-920d-2e287f509338 not found`,
+            });
+          });
       });
     });
   });
