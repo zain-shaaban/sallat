@@ -22,9 +22,6 @@ export class LocationUpdateDto {
   @ValidateNested()
   @Type(() => CoordinatesDto)
   coords: CoordinatesDto;
-
-  @IsNumber()
-  clientDate: number;
 }
 
 export class AcceptTripDto {

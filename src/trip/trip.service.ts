@@ -6,7 +6,6 @@ import { sendLocationDto } from './dto/new-location.dto';
 import { NotificationService } from 'src/notification/notification.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, DeepPartial, Repository } from 'typeorm';
-import { LocationEntity } from './entities/location.entity';
 import { CustomerService } from 'src/customer/customer.service';
 import { ITripInSocketsArray } from './interfaces/trip-socket';
 import { AdminService } from 'src/sockets/admin/admin.service';
@@ -22,8 +21,6 @@ export class TripService {
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-    @InjectRepository(LocationEntity)
-    private readonly locationRepository: Repository<LocationEntity>,
     @Inject() private readonly adminService: AdminService,
     @Inject() private readonly driverService: DriverService,
     @Inject() private readonly notificationService: NotificationService,
@@ -126,15 +123,7 @@ export class TripService {
     return null;
   }
 
-  async sendNewLocation({ driverID, location, clientDate }: sendLocationDto) {
-    await this.locationRepository.insert({
-      driverID,
-      location,
-      locationSource: 'http',
-      clientDate,
-      serverDate: Date.now(),
-    });
-
+  async sendNewLocation({ driverID, location }: sendLocationDto) {
     this.adminService.sendHttpLocation(driverID, location);
 
     let driver = this.driverService.onlineDrivers.find(

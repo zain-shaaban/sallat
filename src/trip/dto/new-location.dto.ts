@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
-  IsNumber,
   IsString,
   IsUUID,
   ValidateNested,
@@ -31,8 +30,4 @@ export class sendLocationDto {
   @Type(() => CoordinatesDto)
   @IsNotEmpty()
   location: CoordinatesDto;
-
-  @ApiProperty({ type: 'number', example: 6565656 })
-  @IsNumber()
-  clientDate: number;
 }

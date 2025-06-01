@@ -23,10 +23,10 @@ export class CreateCustomerDtoRequest {
   @IsArray()
   @ArrayMinSize(1)
   @IsNotEmpty()
-  // @Matches(/^[^a-zA-Z]+$/, {
-  //   message: 'Each phone number must be valid',
-  //   each: true,
-  // })
+  @Matches(/^[^a-zA-Z]+$/, {
+    message: 'Each phone number must be valid',
+    each: true,
+  })
   phoneNumbers: string[];
 
   @ApiProperty({

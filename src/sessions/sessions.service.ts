@@ -3,75 +3,60 @@ import { CreateSessionDto } from './dto/create-session.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Session } from './entities/session.entity';
-import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class SessionsService {
   constructor(
-    @InjectRepository(Session) private sessionRepository: Repository<Session>
+    @InjectRepository(Session) private sessionRepository: Repository<Session>,
   ) {}
 
   async create(createSessionDto: CreateSessionDto) {
     const session = this.sessionRepository.create(createSessionDto);
-    const sessionID = (await this.sessionRepository.save(session)).sessionID
+    const { sessionID } = await this.sessionRepository.save(session);
     return { sessionID };
   }
 
   async createMultiple(sessions: CreateSessionDto[]) {
-    const sessionEntities = this.sessionRepository.create(
-      sessions.map(session => ({
-        startDate: session.startDate,
-        color: session.color,
-        driverID: session.driverID,
-        vehicleNumber: session.vehicleNumber,
-        locations: session.locations,
-        number: session.number
-      }))
-    );
+    const sessionEntities = this.sessionRepository.create(sessions);
 
     const savedSessions = await this.sessionRepository.save(sessionEntities);
 
-    const sessionIDs = savedSessions.map(session => ({ sessionID: session.sessionID }));
-    
+    const sessionIDs = savedSessions.map(({ sessionID }) => sessionID);
+
     return { sessionIDs };
   }
 
   async findAll() {
     const sessions = await this.sessionRepository.find();
-    return plainToInstance(Session, sessions);
+    return sessions;
   }
 
   async findByDriverID(driverID: string) {
-    return this.sessionRepository.find({ 
+    return this.sessionRepository.find({
       where: { driverID },
-      order: { startDate: 'ASC' } 
+      order: { startDate: 'ASC' },
     });
   }
 
   async findByVehicleNumber(vehicleNumber: string) {
-    return this.sessionRepository.find({ 
+    return this.sessionRepository.find({
       where: { vehicleNumber },
-      order: { startDate: 'ASC' }
+      order: { startDate: 'ASC' },
     });
   }
 
   async findByDriverAndVehicle(driverID: string, vehicleNumber: string) {
     return this.sessionRepository.find({
-      where: { 
+      where: {
         driverID,
-        vehicleNumber 
+        vehicleNumber,
       },
-      order: { startDate: 'ASC' }
+      order: { startDate: 'ASC' },
     });
   }
 
   async removeAll() {
-    await this.sessionRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Session)
-      .execute();
-
-    return;
+    await this.sessionRepository.clear();
+    return null;
   }
 }

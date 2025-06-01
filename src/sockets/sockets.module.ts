@@ -7,7 +7,6 @@ import { NotificationSocket } from './notifications/entites/notification-socket.
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
-import { LocationEntity } from 'src/trip/entities/location.entity';
 import { AdminService } from './admin/admin.service';
 import { DriverService } from './driver/driver.service';
 import { TripModule } from 'src/trip/trip.module';
@@ -20,7 +19,6 @@ import { TripModule } from 'src/trip/trip.module';
       Trip,
       Vendor,
       Customer,
-      LocationEntity,
     ]),
   ],
   providers: [

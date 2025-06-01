@@ -67,7 +67,6 @@ export class DriverSocketGateway
       this.driverService.handleNewLocation(
         client.data.driverID,
         location.coords,
-        location.clientDate,
       );
       return { status: true };
     } catch (error) {

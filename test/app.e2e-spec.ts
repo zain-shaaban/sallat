@@ -856,4 +856,237 @@ describe('AppController (e2e)', () => {
       });
     });
   });
+
+  describe('Trip Management', () => {
+    let createdTripId: string;
+    let createdAlternativeTripId: string;
+    let createdCustomerId: string;
+    let createdVendorId: string;
+
+    const testCustomer = {
+      name: faker.person.fullName(),
+      phoneNumbers: [
+        faker.phone.number({ style: 'international' }),
+        faker.phone.number({ style: 'international' }),
+      ],
+      location: {
+        coords: {
+          lat: faker.location.latitude(),
+          lng: faker.location.longitude(),
+        },
+        approximate: true,
+        description: 'Test Location',
+      },
+    };
+
+    const testVendor = {
+      name: faker.company.name(),
+      phoneNumber: faker.phone.number({ style: 'international' }),
+      location: {
+        coords: {
+          lat: faker.location.latitude(),
+          lng: faker.location.longitude(),
+        },
+        approximate: true,
+        description: 'Test Location',
+      },
+    };
+
+    beforeAll(async () => {
+      const customerResponse = await request(app.getHttpServer())
+        .post('/api/customer/add')
+        .send(testCustomer)
+        .expect(201);
+      createdCustomerId = customerResponse.body.data.customerID;
+
+      const vendorResponse = await request(app.getHttpServer())
+        .post('/api/vendor/add')
+        .send(testVendor)
+        .expect(201);
+      createdVendorId = vendorResponse.body.data.vendorID;
+    });
+
+    afterAll(async() => {
+      await request(app.getHttpServer())
+        .delete(`/api/customer/delete/${createdCustomerId}`)
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .delete(`/api/vendor/delete/${createdVendorId}`)
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .delete(`/api/trip/${createdAlternativeTripId}`)
+        .expect(200);
+    });
+
+    describe('POST /api/trip/submit', () => {
+      it('should create a regular trip successfully', async () => {
+        const tripData = {
+          vendorID: createdVendorId,
+          customerID: createdCustomerId,
+          customerPhoneNumber: testCustomer.phoneNumbers[0],
+          customerAlternativePhoneNumbers: [testCustomer.phoneNumbers[1]],
+          itemTypes: [faker.food.dish(), faker.food.dish()],
+          description: faker.food.description(),
+          approxDistance: faker.number.int(),
+          approxPrice: faker.number.int(),
+          approxTime: faker.number.int(),
+          routedPath: [
+            { lng: faker.location.longitude(), lat: faker.location.latitude() },
+            { lng: faker.location.longitude(), lat: faker.location.latitude() },
+            { lng: faker.location.longitude(), lat: faker.location.latitude() },
+          ],
+          alternative: false,
+        };
+        const response = await request(app.getHttpServer())
+          .post('/api/trip/submit')
+          .send(tripData)
+          .expect(201);
+
+        expect(response.body.status).toBe(true);
+        expect(response.body.data).toHaveProperty('tripID');
+        createdTripId = response.body.data.tripID;
+      });
+
+      it('should create an alternative trip successfully', async () => {
+        const tripData = {
+          customerID: createdCustomerId,
+          customerPhoneNumber: testCustomer.phoneNumbers[0],
+          customerAlternativePhoneNumbers: [testCustomer.phoneNumbers[1]],
+          itemTypes: [faker.food.dish(), faker.food.dish()],
+          description: faker.food.description(),
+          alternative: true,
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/api/trip/submit')
+          .send(tripData)
+          .expect(201);
+
+        expect(response.body.status).toBe(true);
+        expect(response.body.data).toHaveProperty('tripID');
+
+        createdAlternativeTripId = response.body.data.tripID;
+      });
+
+      it('should fail with validation error for missing required fields', async () => {
+        const invalidTripData = {
+          driverID: '683aa0bd-5014-8010-920d-2e287f509338',
+          customerPhoneNumber: testCustomer.phoneNumbers[0],
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/api/trip/submit')
+          .send(invalidTripData)
+          .expect(400);
+
+        expect(response.body.status).toBe(false);
+        expect(typeof response.body.message).toBe('string');
+      });
+    });
+
+    describe('GET /api/trip/get/:tripID', () => {
+      it('should return trip details successfully', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/trip/get/${createdTripId}`)
+          .expect(200);
+
+        expect(response.body.status).toBe(true);
+        expect(response.body.data).toHaveProperty('tripID', createdTripId);
+        expect(response.body.data).toHaveProperty('customer');
+        expect(response.body.data).toHaveProperty('vendor');
+      });
+
+      it('should return 404 for non-existent trip', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/trip/get/683aa0bd-5014-8010-920d-2e287f509338')
+          .expect(404);
+
+        expect(response.body.status).toBe(false);
+        expect(response.body.message).toBe(
+          'trip with ID 683aa0bd-5014-8010-920d-2e287f509338 not found',
+        );
+      });
+    });
+
+    describe('GET /api/trip', () => {
+      it('should return all trips', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/trip')
+          .expect(200);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        expect(response.body.data.length).toBeGreaterThan(0);
+      });
+    });
+
+    describe('GET /api/trip/customer/:phoneNumber', () => {
+      it('should return customer details by phone number', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/trip/customerSearch/${testCustomer.phoneNumbers[0]}`)
+          .expect(200);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        expect(response.body.data.length).toBeGreaterThan(0);
+        expect(response.body.data[0]).toHaveProperty('customerID');
+      });
+
+      it('should return 404 for non-existent phone number', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/trip/customerSearch/+1234567890')
+          .expect(404);
+
+        expect(response.body.status).toBe(false);
+        expect(response.body.message).toBe(
+          'Customer with phone number +1234567890 not found',
+        );
+      });
+    });
+
+    describe('POST /api/trip/sendLocation', () => {
+      it('should return 404 for non-existent driver', async () => {
+        const locationData = {
+          driverID: '683aa0bd-5014-8010-920d-2e287f509338',
+          location: {
+            lat: faker.location.latitude(),
+            lng: faker.location.longitude(),
+          },
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/api/trip/sendLocation')
+          .send(locationData)
+          .expect(404);
+
+        expect(response.body.status).toBe(false);
+        expect(response.body.message).toBe(
+          'Driver with ID 683aa0bd-5014-8010-920d-2e287f509338 not exist',
+        );
+      });
+    });
+
+    describe('DELETE /api/trip/:tripID', () => {
+      it('should delete trip successfully', async () => {
+        const response = await request(app.getHttpServer())
+          .delete(`/api/trip/${createdTripId}`)
+          .expect(200);
+
+        expect(response.body.status).toBe(true);
+      });
+
+      it('should return 404 for non-existent trip', async () => {
+        const response = await request(app.getHttpServer())
+          .delete('/api/trip/683aa0bd-5014-8010-920d-2e287f509338')
+          .expect(404);
+
+        expect(response.body.status).toBe(false);
+        expect(response.body.message).toBe(
+          'Trip with ID 683aa0bd-5014-8010-920d-2e287f509338 not found',
+        );
+      });
+    });
+  });
 });

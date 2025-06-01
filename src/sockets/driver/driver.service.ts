@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Repository } from 'typeorm';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
-import { LocationEntity } from 'src/trip/entities/location.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationSocket } from '../notifications/entites/notification-socket.entity';
@@ -31,8 +30,6 @@ export class DriverService {
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Vendor)
     private readonly vendorRepository: Repository<Vendor>,
-    @InjectRepository(LocationEntity)
-    private locationRepository: Repository<LocationEntity>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     @Inject() private readonly notificationService: NotificationService,
@@ -94,19 +91,10 @@ export class DriverService {
   handleNewLocation(
     driverID: string,
     coords: CoordinatesDto,
-    clientDate: number,
   ) {
     const driver = this.onlineDrivers.find((d) => d.driverID === driverID);
 
     if (!driver) throw new WsException(`Driver with ID ${driverID} not found`);
-
-    this.locationRepository.insert({
-      driverID,
-      location: coords,
-      locationSource: 'socket',
-      clientDate,
-      serverDate: Date.now(),
-    });
 
     driver.location = coords;
 
