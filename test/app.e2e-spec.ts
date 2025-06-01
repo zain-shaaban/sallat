@@ -906,7 +906,7 @@ describe('AppController (e2e)', () => {
       createdVendorId = vendorResponse.body.data.vendorID;
     });
 
-    afterAll(async() => {
+    afterAll(async () => {
       await request(app.getHttpServer())
         .delete(`/api/customer/delete/${createdCustomerId}`)
         .expect(200);
@@ -1086,6 +1086,244 @@ describe('AppController (e2e)', () => {
         expect(response.body.message).toBe(
           'Trip with ID 683aa0bd-5014-8010-920d-2e287f509338 not found',
         );
+      });
+    });
+  });
+
+  describe('Session Management', () => {
+    const createTestSession = () => ({
+      startDate: Date.now(),
+      color: faker.internet.color(),
+      driverID: faker.string.uuid(),
+      vehicleNumber: faker.vehicle.vrm(),
+      locations: [
+        {
+          time: Date.now(),
+          coords: {
+            lat: faker.location.latitude(),
+            lng: faker.location.longitude(),
+          },
+          accuracy: faker.number.float({ min: 1, max: 10 }),
+        },
+        {
+          time: Date.now() + 1000,
+          coords: {
+            lat: faker.location.latitude(),
+            lng: faker.location.longitude(),
+          },
+          accuracy: faker.number.float({ min: 1, max: 10 }),
+        },
+      ],
+      number: faker.number.int({ min: 1, max: 100 }),
+    });
+
+    afterAll(async () => {
+      await request(app.getHttpServer())
+        .delete('/api/sessions')
+        .expect(HttpStatus.OK);
+    });
+
+    describe('POST /api/sessions', () => {
+      it('should create a new session successfully', async () => {
+        const sessionData = createTestSession();
+        const response = await request(app.getHttpServer())
+          .post('/api/sessions')
+          .send(sessionData)
+          .expect(HttpStatus.CREATED);
+
+        expect(response.body.status).toBe(true);
+        expect(response.body.data).toHaveProperty('sessionID');
+      });
+
+      it('should fail with validation error for missing required fields', async () => {
+        const invalidSessionData = {
+          color: faker.internet.color(),
+          driverID: faker.string.uuid(),
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/api/sessions')
+          .send(invalidSessionData)
+          .expect(HttpStatus.BAD_REQUEST);
+
+        expect(response.body.status).toBe(false);
+        expect(typeof response.body.message).toBe('string');
+      });
+    });
+
+    describe('POST /api/sessions/multiple', () => {
+      it('should create multiple sessions successfully', async () => {
+        const sessionsData = {
+          sessions: [createTestSession(), createTestSession()],
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/api/sessions/multiple')
+          .send(sessionsData)
+          .expect(HttpStatus.CREATED);
+
+        expect(response.body.status).toBe(true);
+        expect(response.body.data).toHaveProperty('sessionIDs');
+        expect(Array.isArray(response.body.data.sessionIDs)).toBe(true);
+        expect(response.body.data.sessionIDs.length).toBe(2);
+      });
+
+      it('should fail with validation error for invalid session data', async () => {
+        const invalidSessionsData = {
+          sessions: [
+            {
+              color: faker.internet.color(),
+              driverID: faker.string.uuid(),
+            },
+          ],
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/api/sessions/multiple')
+          .send(invalidSessionsData)
+          .expect(HttpStatus.BAD_REQUEST);
+
+        expect(response.body.status).toBe(false);
+        expect(typeof response.body.message).toBe('string');
+      });
+    });
+
+    describe('GET /api/sessions', () => {
+      it('should return all sessions', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/sessions')
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        expect(response.body.data.length).toBeGreaterThan(0);
+      });
+    });
+
+    describe('GET /api/sessions/driverID/:driverID', () => {
+      let testDriverId: string;
+
+      beforeAll(async () => {
+        const sessionData = createTestSession();
+        testDriverId = sessionData.driverID;
+        await request(app.getHttpServer())
+          .post('/api/sessions')
+          .send(sessionData)
+          .expect(HttpStatus.CREATED);
+      });
+
+      it('should return sessions by driver ID', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/sessions/driverID/${testDriverId}`)
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        response.body.data.forEach((session: any) => {
+          expect(session.driverID).toBe(testDriverId);
+        });
+      });
+
+      it('should return empty array for non-existent driver ID', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/sessions/driverID/non-existent-id')
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        expect(response.body.data.length).toBe(0);
+      });
+    });
+
+    describe('GET /api/sessions/vehicleNumber/:vehicleNumber', () => {
+      let testVehicleNumber: string;
+
+      beforeAll(async () => {
+        const sessionData = createTestSession();
+        testVehicleNumber = sessionData.vehicleNumber;
+        await request(app.getHttpServer())
+          .post('/api/sessions')
+          .send(sessionData)
+          .expect(HttpStatus.CREATED);
+      });
+
+      it('should return sessions by vehicle number', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/sessions/vehicleNumber/${testVehicleNumber}`)
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        response.body.data.forEach((session: any) => {
+          expect(session.vehicleNumber).toBe(testVehicleNumber);
+        });
+      });
+
+      it('should return empty array for non-existent vehicle number', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/sessions/vehicleNumber/NON-EXISTENT')
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        expect(response.body.data.length).toBe(0);
+      });
+    });
+
+    describe('GET /api/sessions/driver/:driverID/vehicle/:vehicleNumber', () => {
+      let testDriverId: string;
+      let testVehicleNumber: string;
+
+      beforeAll(async () => {
+        const sessionData = createTestSession();
+        testDriverId = sessionData.driverID;
+        testVehicleNumber = sessionData.vehicleNumber;
+        await request(app.getHttpServer())
+          .post('/api/sessions')
+          .send(sessionData)
+          .expect(HttpStatus.CREATED);
+      });
+
+      it('should return sessions by driver ID and vehicle number', async () => {
+        const response = await request(app.getHttpServer())
+          .get(
+            `/api/sessions/driver/${testDriverId}/vehicle/${testVehicleNumber}`,
+          )
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        response.body.data.forEach((session: any) => {
+          expect(session.driverID).toBe(testDriverId);
+          expect(session.vehicleNumber).toBe(testVehicleNumber);
+        });
+      });
+
+      it('should return empty array for non-existent combination', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/api/sessions/driver/non-existent-id/vehicle/NON-EXISTENT')
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        expect(response.body.data.length).toBe(0);
+      });
+    });
+
+    describe('DELETE /api/sessions', () => {
+      it('should delete all sessions', async () => {
+        const response = await request(app.getHttpServer())
+          .delete('/api/sessions')
+          .expect(HttpStatus.OK);
+
+        expect(response.body.status).toBe(true);
+        expect(response.body.data).toBeNull();
+
+        const getResponse = await request(app.getHttpServer())
+          .get('/api/sessions')
+          .expect(HttpStatus.OK);
+
+        expect(getResponse.body.data.length).toBe(0);
       });
     });
   });
