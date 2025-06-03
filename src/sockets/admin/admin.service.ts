@@ -221,9 +221,6 @@ export class AdminService {
       (d) => d.driverID === trip.driverID,
     );
 
-    if (!driver?.socketID)
-      throw new WsException(`Driver with ID ${trip.driverID} not online`);
-
     this.io.server.of('/driver').to(driver.socketID).emit('newTrip', { trip });
   }
 
