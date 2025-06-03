@@ -141,7 +141,6 @@ Updates the location of a driver when they are offline. This endpoint is used to
           lat: 58.16543232,
           lng: 36.18875421,
         },
-        clientDate: 1640995200000,
       },
     },
   })

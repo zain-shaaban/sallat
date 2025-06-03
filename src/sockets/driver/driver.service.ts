@@ -41,7 +41,7 @@ export class DriverService {
   ) {}
 
   handleDriverConnection(client: Socket) {
-    const { driverID, lng, lat, clientDate } = client.handshake.query;
+    const { driverID, lng, lat } = client.handshake.query;
     client.data.driverID = <string>driverID;
     let driver = this.onlineDrivers.find((d) => d.driverID === driverID);
 
@@ -64,10 +64,8 @@ export class DriverService {
       driver.socketID = client.id;
       driver.notificationSent = false;
 
-      if (Date.now() - Number(clientDate) <= 1000 * 30) {
-        driver.location = { lng: Number(lng), lat: Number(lat) };
-        driver.lastLocation = Date.now();
-      }
+      driver.location = { lng: Number(lng), lat: Number(lat) };
+      driver.lastLocation = Date.now();
 
       let alreadyAssignedTrips = [
         ...this.tripService.readyTrips.filter((t) => t.driverID == driverID),
@@ -88,10 +86,7 @@ export class DriverService {
     }
   }
 
-  handleNewLocation(
-    driverID: string,
-    coords: CoordinatesDto,
-  ) {
+  handleNewLocation(driverID: string, coords: CoordinatesDto) {
     const driver = this.onlineDrivers.find((d) => d.driverID === driverID);
 
     if (!driver) throw new WsException(`Driver with ID ${driverID} not found`);

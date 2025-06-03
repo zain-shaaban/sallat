@@ -16,6 +16,7 @@ import { SocketsModule } from './sockets/sockets.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
       throttlers: [{ ttl: 60000, limit: 3 }],
     }),
     ScheduleModule.forRoot(),
+    PassportModule,
     ConfigModule.forRoot({ isGlobal: true, load: [dbConfig] }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
