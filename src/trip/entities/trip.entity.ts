@@ -6,6 +6,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Generated,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -24,7 +25,7 @@ export class Trip {
   @ApiProperty({
     type: 'string',
     example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-    description: 'Cann center ID associated with the trip',
+    description: 'Call center ID associated with the trip',
     required: false,
   })
   @Column({ type: 'varchar', nullable: true })
@@ -248,8 +249,8 @@ export class Trip {
     description: 'Indicates if the trip was completed successfully',
     default: false,
   })
-  @Column({ type: 'boolean', default: false })
-  success: boolean;
+  @Column({ default: 'success' })
+  status: string;
 
   @ApiProperty({
     type: 'string',
@@ -257,7 +258,8 @@ export class Trip {
     description: 'Timestamp when the trip was created',
   })
   @CreateDateColumn()
-  createAt: Date;
+  createdAt: Date;
+
   @ApiProperty({
     type: 'array',
     description: 'Receipt details for the trip',
@@ -270,4 +272,20 @@ export class Trip {
   })
   @Column({ type: 'jsonb', default: [] })
   receipt: { name: string; price: number }[];
+
+  @ApiProperty({
+    type: 'string',
+    description: "Explain the reasons for the trip's failure.",
+    example: 'The customer no longer wants the order.',
+  })
+  @Column({ nullable: true })
+  reason: string;
+
+  @ApiProperty({
+    type: 'number',
+    description: 'Trip number',
+  })
+  @Column()
+  @Generated('increment')
+  tripNumber: number;
 }

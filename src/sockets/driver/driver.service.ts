@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { Namespace, Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Repository } from 'typeorm';
@@ -277,7 +277,7 @@ export class DriverService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    Object.assign(trip, { itemPrice, receipt, success: true });
+    Object.assign(trip, { itemPrice, receipt, status: 'success' });
 
     if (!trip.alternative || type === 'customer')
       this.updateCustomerLocation(trip, location);
@@ -302,7 +302,7 @@ export class DriverService {
 
     this.tripRepository.update(trip.tripID, {
       driverID: trip.driverID,
-      success: true,
+      status: 'success',
       rawPath: trip.rawPath,
       matchedPath: trip.matchedPath,
       distance: trip.distance,
@@ -316,7 +316,7 @@ export class DriverService {
     this.io.server.of('/notifications').emit('tripCompleted', {
       tripID: trip.tripID,
       driverID,
-      success: true,
+      status: 'success',
       price: trip.price,
       itemPrice,
       time: trip.time,
@@ -328,7 +328,7 @@ export class DriverService {
       data: {
         tripID: trip.tripID,
         driverID,
-        success: true,
+        status: 'success',
         price: trip.price,
         itemPrice,
         time: trip.time,
@@ -343,7 +343,7 @@ export class DriverService {
       status: true,
       data: {
         tripID: trip.tripID,
-        success: true,
+        status: 'success',
         itemPrice,
         time: trip.time,
         distance: trip.distance,

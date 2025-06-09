@@ -12,7 +12,12 @@ import { UpdateCustomerDto } from '../src/customer/dto/update-customer.dto';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
   let createdAccountIds: string[] = [];
-
+  let accessToken: {
+    superadmin: string;
+    manager: string;
+    cc: string;
+    driver: string;
+  };
   const createTestAccount = (role: AccountRole = AccountRole.CC) => ({
     name: faker.person.fullName(),
     email: faker.internet.email(),
@@ -53,6 +58,34 @@ describe('AppController (e2e)', () => {
     );
     app.setGlobalPrefix('api');
     await app.init();
+
+    accessToken.superadmin = (
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: 'superadmin@gmail.com', password: '123456' })
+        .expect(200)
+    ).body.data.accessToken;
+
+    accessToken.manager = (
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: 'manager@gmail.com', password: '123456' })
+        .expect(200)
+    ).body.data.accessToken;
+
+    accessToken.cc = (
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: 'cc@gmail.com', password: '123456' })
+        .expect(200)
+    ).body.data.accessToken;
+
+    accessToken.driver = (
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: 'driver@gmail.com', password: '123456' })
+        .expect(200)
+    ).body.data.accessToken;
   });
 
   describe('Account Management', () => {
@@ -61,6 +94,7 @@ describe('AppController (e2e)', () => {
         const dto = createTestAccount();
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .send(dto)
           .expect(HttpStatus.CREATED);
 
@@ -78,6 +112,7 @@ describe('AppController (e2e)', () => {
 
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .send(dto)
           .expect(HttpStatus.CREATED);
 
@@ -94,6 +129,7 @@ describe('AppController (e2e)', () => {
 
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .send(dto)
           .expect(HttpStatus.BAD_REQUEST);
 
@@ -106,6 +142,7 @@ describe('AppController (e2e)', () => {
         const respo = await request(app.getHttpServer())
           .post('/api/account/create')
           .send(dto)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.CREATED);
 
         createdAccountIds.push(respo.body.data.id);
@@ -113,6 +150,7 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
           .send(dto)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.CONFLICT);
 
         expect(response.body.message).toBe('Email already exists');
@@ -123,6 +161,7 @@ describe('AppController (e2e)', () => {
       it('should return all accounts', async () => {
         const response = await request(app.getHttpServer())
           .get('/api/account/find')
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.OK);
 
         expect(response.body.status).toBe(true);
@@ -135,6 +174,7 @@ describe('AppController (e2e)', () => {
       it('should return accounts by role', async () => {
         const response = await request(app.getHttpServer())
           .get(`/api/account/findbyrole/${AccountRole.CC}`)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.OK);
 
         expect(response.body.status).toBe(true);
@@ -147,6 +187,7 @@ describe('AppController (e2e)', () => {
       it('should return 400 for invalid role', async () => {
         const response = await request(app.getHttpServer())
           .get('/api/account/findbyrole/invalid_role')
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(400);
 
         expect(response.body).toEqual({
@@ -164,6 +205,7 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
           .send(dto)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.CREATED);
         testAccountId = response.body.data.id;
         createdAccountIds.push(testAccountId);
@@ -172,6 +214,7 @@ describe('AppController (e2e)', () => {
       it('should return account by id', async () => {
         const response = await request(app.getHttpServer())
           .get(`/api/account/find/${testAccountId}`)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.OK);
 
         expect(response.body.status).toBe(true);
@@ -181,6 +224,7 @@ describe('AppController (e2e)', () => {
       it('should return 404 for non-existent id', async () => {
         const response = await request(app.getHttpServer())
           .get('/api/account/find/1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed')
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.NOT_FOUND);
 
         expect(response.body.status).toBe(false);
@@ -198,6 +242,7 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
           .send(dto)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.CREATED);
         testAccountId = response.body.data.id;
         createdAccountIds.push(testAccountId);
@@ -212,6 +257,7 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
           .patch(`/api/account/update/${testAccountId}`)
           .send(updateData)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.OK);
 
         expect(response.body.status).toBe(true);
@@ -219,6 +265,7 @@ describe('AppController (e2e)', () => {
 
         const getResponse = await request(app.getHttpServer())
           .get(`/api/account/find/${testAccountId}`)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.OK);
 
         expect(getResponse.body.data.name).toBe(updateData.name);
@@ -234,6 +281,7 @@ describe('AppController (e2e)', () => {
         const createResponse = await request(app.getHttpServer())
           .post('/api/account/create')
           .send(driverDto)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.CREATED);
 
         const driverId = createResponse.body.data.id;
@@ -247,6 +295,7 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
           .patch(`/api/account/update/${driverId}`)
           .send(updateData)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.OK);
 
         expect(response.body.status).toBe(true);
@@ -256,6 +305,7 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
           .patch('/api/account/update/1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed')
           .send({ name: 'Updated Name' })
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.NOT_FOUND);
 
         expect(response.body.status).toBe(false);
@@ -270,6 +320,7 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
           .post('/api/account/create')
           .send(dto)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.CREATED);
         testAccountId = response.body.data.id;
       });
@@ -277,6 +328,7 @@ describe('AppController (e2e)', () => {
       it('should delete account successfully', async () => {
         const response = await request(app.getHttpServer())
           .delete(`/api/account/delete/${testAccountId}`)
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.OK);
 
         expect(response.body.status).toBe(true);
@@ -290,6 +342,7 @@ describe('AppController (e2e)', () => {
       it('should return 404 for non-existent id', async () => {
         const response = await request(app.getHttpServer())
           .delete('/api/account/delete/1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed')
+          .set('Authorization', `Bearer ${accessToken.superadmin}`)
           .expect(HttpStatus.NOT_FOUND);
 
         expect(response.body.status).toBe(false);

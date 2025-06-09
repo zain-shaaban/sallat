@@ -17,7 +17,7 @@ export class AuthService {
 
     const account = await this.accountRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'password', 'role'],
+      select: ['id', 'email', 'password', 'role', 'name'],
     });
 
     if (!account || !account.comparePassword(password))
@@ -26,6 +26,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign({
       id: account.id,
       role: account.role,
+      name: account.name,
     });
     return { accessToken };
   }

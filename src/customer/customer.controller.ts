@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import {
@@ -24,9 +25,14 @@ import { GetAllCustomersDto } from './dto/get-all-customers.dto';
 import { GetSingleCustomerDto } from './dto/get-single-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { GetAllCustomersOnMapDto } from './dto/get-all-customers-on-map.dto';
+import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { AccountRole } from 'src/account/enums/account-role.enum';
 
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @ApiTags('Customers')
+@UseGuards(AccountAuthGuard, RolesGuard)
 @Controller('customer')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
@@ -62,6 +68,7 @@ export class CustomerController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Post('add')
   async create(@Body() createCustomerDto: CreateCustomerDtoRequest) {
     return await this.customerService.create(createCustomerDto);
@@ -88,6 +95,7 @@ export class CustomerController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get('')
   async findAll() {
     return await this.customerService.findAll();
@@ -147,6 +155,7 @@ export class CustomerController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Patch('update/:customerID')
   async update(
     @Param('customerID') customerID: string,
@@ -176,6 +185,7 @@ export class CustomerController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get('onMap')
   async findAllOnMap() {
     return await this.customerService.findOnMap();
@@ -224,6 +234,7 @@ export class CustomerController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Delete('delete/:customerID')
   async remove(@Param('customerID') customerID: string) {
     return await this.customerService.remove(customerID);
@@ -268,6 +279,7 @@ export class CustomerController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get(':customerID')
   async findOne(@Param('customerID') customerID: string) {
     return await this.customerService.findOne(customerID);

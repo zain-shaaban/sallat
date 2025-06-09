@@ -69,5 +69,9 @@ export interface ITripInSocketsArray {
 
   receipt: { name: string; price: number }[];
 
-  success: boolean;
+  status: string;
+
+  reason: string;
+
+  tripNumber: number;
 }

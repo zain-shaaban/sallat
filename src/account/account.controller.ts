@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import {
@@ -23,9 +24,15 @@ import {
 } from '@nestjs/swagger';
 import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
 import { GetSingleAccountDto } from './dto/get-single-account.dto';
+import { GetAllDriversDto } from './dto/get-all-drivers.dto';
+import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { AccountRole } from './enums/account-role.enum';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Accounts')
+@UseGuards(AccountAuthGuard, RolesGuard)
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
@@ -97,6 +104,7 @@ Creates a new user account in the system.
       },
     },
   })
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Post('create')
   async create(@Body() createAccountDto: CreateAccountDtoRequest) {
     return await this.accountService.create(createAccountDto);
@@ -122,6 +130,7 @@ Retrieves a list of all accounts in the system`,
       },
     },
   })
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('find')
   async findAll() {
     return await this.accountService.findAll();
@@ -165,6 +174,7 @@ Retrieves detailed information about a specific account.
       },
     },
   })
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('find/:id')
   async findOne(@Param('id') id: string) {
     return await this.accountService.findOne(id);
@@ -214,6 +224,7 @@ Retrieves all accounts with a specific role.
     example: 'driver',
     enum: ['superadmin', 'manager', 'cc', 'driver'],
   })
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('findbyrole/:role')
   async findByRole(@Param('role') role: string) {
     return await this.accountService.findByRole(role);
@@ -271,6 +282,7 @@ Updates an existing account's information.`,
       },
     },
   })
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Patch('update/:id')
   async update(
     @Param('id') id: string,
@@ -321,8 +333,35 @@ Permanently deletes an account from the system.`,
       },
     },
   })
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Delete('delete/:id')
   async remove(@Param('id') id: string) {
     return await this.accountService.remove(id);
+  }
+
+  @ApiOperation({
+    summary: 'Get all drivers',
+    description: `
+Retrieves a list of all drivers in the system`,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: GetAllDriversDto,
+    description: 'List of drivers retrieved successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @Roles(AccountRole.CC)
+  @Get('driverData')
+  async findDriversData() {
+    return await this.accountService.findDrivers();
   }
 }

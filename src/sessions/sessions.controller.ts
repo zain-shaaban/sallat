@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
@@ -18,9 +19,14 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Session } from './entities/session.entity';
+import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { AccountRole } from 'src/account/enums/account-role.enum';
 
 @ApiBearerAuth()
 @ApiTags('Sessions')
+@UseGuards(AccountAuthGuard, RolesGuard)
 @Controller('sessions')
 export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
@@ -60,6 +66,7 @@ export class SessionsController {
       },
     },
   })
+  @Roles(AccountRole.DRIVER)
   @Post()
   async create(@Body() createSessionDto: CreateSessionDto) {
     return await this.sessionsService.create(createSessionDto);
@@ -102,6 +109,7 @@ export class SessionsController {
       },
     },
   })
+  @Roles(AccountRole.DRIVER)
   @Post('multiple')
   async createMultiple(
     @Body() createMultipleSessionsDto: CreateMultipleSessionsDto,
@@ -131,6 +139,7 @@ export class SessionsController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get()
   async findAll() {
     return await this.sessionsService.findAll();
@@ -161,6 +170,7 @@ export class SessionsController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get('driverID/:driverID')
   async findByDriverID(@Param('driverID') driverID: string) {
     return this.sessionsService.findByDriverID(driverID);
@@ -192,6 +202,7 @@ export class SessionsController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get('vehicleNumber/:vehicleNumber')
   async findByVehicleNumber(@Param('vehicleNumber') vehicleNumber: string) {
     return this.sessionsService.findByVehicleNumber(vehicleNumber);
@@ -229,6 +240,7 @@ export class SessionsController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get('driver/:driverID/vehicle/:vehicleNumber')
   async findByDriverAndVehicle(
     @Param('driverID') driverID: string,
@@ -258,6 +270,7 @@ export class SessionsController {
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Delete()
   async removeAll() {
     return this.sessionsService.removeAll();

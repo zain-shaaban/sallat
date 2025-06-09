@@ -12,7 +12,13 @@ import {
 import { Namespace, Socket } from 'socket.io';
 import { logger } from 'src/common/error_logger/logger.util';
 import { DriverService } from './driver.service';
-import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Inject,
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   LocationUpdateDto,
   AcceptTripDto,
@@ -23,6 +29,7 @@ import {
   AvailabilityDto,
 } from '../dto/driver.dto';
 import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
+import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @UseFilters(ValidationSocketExceptionFilter)
@@ -30,6 +37,7 @@ import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-e
   namespace: 'driver',
   cors: {
     origin: '*',
+    credentials: true,
   },
 })
 export class DriverSocketGateway
@@ -38,7 +46,10 @@ export class DriverSocketGateway
   @WebSocketServer()
   server: Namespace;
 
-  constructor(@Inject() private driverService: DriverService) {}
+  constructor(
+    @Inject() private driverService: DriverService,
+    @Inject() private authMiddleware: WsAuthMiddleware,
+  ) {}
 
   handleConnection(client: Socket) {
     try {
@@ -212,7 +223,6 @@ export class DriverSocketGateway
     @MessageBody() setAvailableData: AvailabilityDto,
   ) {
     try {
-      console.log(setAvailableData);
       this.driverService.handleUpdateDriverAvailability(
         client.data.driverID,
         setAvailableData.available,
@@ -261,7 +271,8 @@ export class DriverSocketGateway
     }
   }
 
-  afterInit() {
+  afterInit(client: Socket) {
     this.driverService.initIO(this.server);
+    client.use(this.authMiddleware.driverAuth());
   }
 }

@@ -44,7 +44,7 @@ export class AccountService {
       role,
     });
 
-    const {id}=await this.accountRepository.save(account)
+    const { id } = await this.accountRepository.save(account);
     if (role === AccountRole.DRIVER) {
       await this.driverRepository.insert({
         id,
@@ -161,5 +161,27 @@ export class AccountService {
     if (affected === 0)
       throw new NotFoundException(`Account with ID ${id} not found`);
     return null;
+  }
+
+  async findDrivers(): Promise<(IAccount | IDriverAccount)[]> {
+    const drivers = await this.accountRepository.find({
+      relations: ['driverMetadata'],
+      select: {
+        id: true,
+        name: true,
+        phoneNumber: true,
+        driverMetadata: {
+          assignedVehicleNumber: true,
+        },
+      },
+      where: { role: AccountRole.DRIVER },
+    });
+
+    const driversAfterFormatting = drivers.map((driver) => {
+      const assignedVehicleNumber = driver.driverMetadata.assignedVehicleNumber;
+      delete driver.driverMetadata;
+      return { ...driver, assignedVehicleNumber };
+    });
+    return driversAfterFormatting;
   }
 }

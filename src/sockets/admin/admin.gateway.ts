@@ -8,7 +8,7 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
-import { Namespace, Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { logger } from 'src/common/error_logger/logger.util';
 import { AdminService } from './admin.service';
@@ -19,6 +19,7 @@ import {
   TripIdDto,
 } from '../dto/admin.dto';
 import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
+import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 
 @UseFilters(ValidationSocketExceptionFilter)
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -32,7 +33,10 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   @WebSocketServer()
   server: Namespace;
 
-  constructor(@Inject() private readonly adminService: AdminService) {}
+  constructor(
+    @Inject() private readonly adminService: AdminService,
+    @Inject() private authMiddleware: WsAuthMiddleware,
+  ) {}
 
   handleConnection(client: Socket) {
     try {
@@ -180,7 +184,8 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
     }
   }
 
-  afterInit(server: Server) {
+  afterInit(client: Socket) {
     this.adminService.initIO(this.server);
+    client.use(this.authMiddleware.adminAuth());
   }
 }

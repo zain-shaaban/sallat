@@ -10,18 +10,15 @@ import { Customer } from 'src/customer/entities/customer.entity';
 import { AdminService } from './admin/admin.service';
 import { DriverService } from './driver/driver.service';
 import { TripModule } from 'src/trip/trip.module';
+import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 
 @Module({
   imports: [
-    forwardRef(()=>TripModule),
-    TypeOrmModule.forFeature([
-      NotificationSocket,
-      Trip,
-      Vendor,
-      Customer,
-    ]),
+    forwardRef(() => TripModule),
+    TypeOrmModule.forFeature([NotificationSocket, Trip, Vendor, Customer]),
   ],
   providers: [
+    WsAuthMiddleware,
     AdminSocketGateway,
     DriverSocketGateway,
     NotificationSocketGateway,

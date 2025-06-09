@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -18,9 +19,14 @@ import {
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
 import { GetAllCategoriesDto } from './dto/get-all-categories.dto';
+import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { AccountRole } from 'src/account/enums/account-role.enum';
 
 @ApiTags('Categories')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
+@UseGuards(AccountAuthGuard, RolesGuard)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -45,6 +51,7 @@ export class CategoryController {
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('')
   async getAllCategories() {
     return await this.categoryService.getAll();
@@ -85,6 +92,7 @@ export class CategoryController {
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Post('add')
   async add(@Body() createCategoryDto: CreateCategoryDto) {
     return await this.categoryService.add(createCategoryDto);
@@ -125,6 +133,7 @@ export class CategoryController {
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Patch('update')
   async update(@Body() updateCategoryDto: UpdateCategoryDto) {
     return await this.categoryService.update(updateCategoryDto);
@@ -165,6 +174,7 @@ export class CategoryController {
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Delete('delete')
   async delete(@Body() deleteCategoryDto: DeleteCategoryDto) {
     return await this.categoryService.delete(deleteCategoryDto);

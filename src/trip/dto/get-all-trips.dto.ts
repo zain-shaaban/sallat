@@ -83,7 +83,9 @@ export class GetAllTripsDto {
           [34.892714, 35.88931],
           [34.888192, 35.881591],
         ],
-        success: true,
+        status: 'success',
+        reason: null,
+        tripNumber: 1,
         createAt: '2025-05-09T11:28:41.131Z',
         receipt: [
           {

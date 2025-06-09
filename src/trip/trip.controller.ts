@@ -6,6 +6,8 @@ import {
   Get,
   Param,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
@@ -21,9 +23,14 @@ import { CustomerSearchDtoResponse } from './dto/customer-search.dto';
 import { GetAllTripsDto } from './dto/get-all-trips.dto';
 import { GetSingleTripDto } from './dto/get-single-trip.dto';
 import { sendLocationDto } from './dto/new-location.dto';
+import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { AccountRole } from 'src/account/enums/account-role.enum';
 
 @ApiTags('Trips')
 @ApiBearerAuth('JWT-auth')
+@UseGuards(AccountAuthGuard, RolesGuard)
 @Controller('trip')
 export class TripController {
   constructor(private readonly tripService: TripService) {}
@@ -119,17 +126,16 @@ Creates a new trip with the provided details. The trip can be either a regular d
       },
     },
   })
+  @Roles(AccountRole.CC)
   @Post('submit')
-  async createTrip(@Body() createTripDto: CreateTripDto) {
-    return await this.tripService.createNewTrip(createTripDto);
+  async createTrip(@Body() createTripDto: CreateTripDto, @Req() req) {
+    return await this.tripService.createNewTrip(createTripDto, req.user.id);
   }
 
   @ApiOperation({
     summary: 'Send new location for offline driver',
     description: `
-Updates the location of a driver when they are offline. This endpoint is used to track driver locations even when they are not actively connected to the system.
-
-    `,
+Updates the location of a driver when they are offline. This endpoint is used to track driver locations even when they are not actively connected to the system.`,
   })
   @ApiBody({
     type: sendLocationDto,
@@ -185,6 +191,7 @@ Updates the location of a driver when they are offline. This endpoint is used to
       },
     },
   })
+  @Roles(AccountRole.DRIVER)
   @Post('sendLocation')
   async sendNewLocationIfDriverOffline(
     @Body() sendLocationDto: sendLocationDto,
@@ -229,6 +236,7 @@ Retrieves detailed information about a specific trip using its ID.
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('/get/:tripID')
   async findOne(@Param('tripID') tripID: string) {
     return await this.tripService.findOne(tripID);
@@ -255,6 +263,7 @@ Retrieves a list of all trips in the system
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('/')
   async getAllTrips() {
     return await this.tripService.findAll();
@@ -297,6 +306,7 @@ Searches for customers in the system using their phone number.
     type: String,
     example: '+96399887766',
   })
+  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('/customerSearch/:phoneNumber')
   async searchCustomers(@Param('phoneNumber') phoneNumber: string) {
     return await this.tripService.customerSearch(phoneNumber);
@@ -344,6 +354,7 @@ Deletes a specific trip from the system using its ID.
     type: String,
     example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Delete('/:tripID')
   async remove(@Param('tripID') tripID: string) {
     return await this.tripService.remove(tripID);

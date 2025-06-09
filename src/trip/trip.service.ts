@@ -27,26 +27,30 @@ export class TripService {
     @Inject() private readonly customerService: CustomerService,
   ) {}
 
-  async createNewTrip({
-    driverID,
-    vendorID,
-    vendorName,
-    vendorPhoneNumber,
-    vendorLocation,
-    customerID,
-    customerName,
-    customerPhoneNumber,
-    customerAlternativePhoneNumbers,
-    customerLocation,
-    itemTypes,
-    description,
-    approxDistance,
-    approxPrice,
-    approxTime,
-    routedPath,
-    alternative,
-  }: CreateTripDto) {
+  async createNewTrip(
+    {
+      driverID,
+      vendorID,
+      vendorName,
+      vendorPhoneNumber,
+      vendorLocation,
+      customerID,
+      customerName,
+      customerPhoneNumber,
+      customerAlternativePhoneNumbers,
+      customerLocation,
+      itemTypes,
+      description,
+      approxDistance,
+      approxPrice,
+      approxTime,
+      routedPath,
+      alternative,
+    }: CreateTripDto,
+    ccID: string,
+  ) {
     let trip: any = await this.tripRepository.save({
+      ccID,
       driverID,
       vendor: !alternative
         ? {

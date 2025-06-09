@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import {
@@ -24,9 +25,14 @@ import { GetAllVendorsDto } from './dto/get-all-vendors.dto';
 import { GetSingleVendorDto } from './dto/get-single-vendor.dto';
 import { GetAllVendorsOnMapDto } from './dto/get-all-vendors-on-map.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { AccountRole } from 'src/account/enums/account-role.enum';
 
 @ApiBearerAuth()
 @ApiTags('Vendors')
+@UseGuards(AccountAuthGuard, RolesGuard)
 @Controller('vendor')
 export class VendorController {
   constructor(private readonly vendorService: VendorService) {}
@@ -69,6 +75,7 @@ The response includes the newly created vendor's ID.
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Post('add')
   async create(@Body() createVendorDto: CreateVendorDtoRequest) {
     return await this.vendorService.create(createVendorDto);
@@ -95,6 +102,7 @@ Retrieves a list of all vendors in the system. This endpoint returns comprehensi
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get('')
   async findAll() {
     return await this.vendorService.findAll();
@@ -154,6 +162,7 @@ Updates an existing vendor's information.
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Patch('update/:vendorID')
   async update(
     @Param('vendorID') vendorID: string,
@@ -182,6 +191,7 @@ Retrieves all vendors with their location data optimized for map display.`,
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get('onMap')
   async findAllOnMap() {
     return await this.vendorService.findOnMap();
@@ -230,6 +240,7 @@ Permanently deletes a vendor from the system.`,
       },
     },
   })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Delete('delete/:vendorID')
   async remove(@Param('vendorID') vendorID: string) {
     return await this.vendorService.remove(vendorID);
@@ -272,6 +283,7 @@ Retrieves detailed information about a specific vendor. `,
       },
     },
   })
+  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Get(':vendorID')
   async findOne(@Param('vendorID') vendorID: string) {
     return await this.vendorService.findOne(vendorID);
