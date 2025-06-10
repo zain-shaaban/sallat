@@ -30,7 +30,7 @@ import { TelegramModule } from './telegram-bot/telegram.module';
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot({
-      throttlers: [{ ttl: 60000, limit: 3 }],
+      throttlers: [{ ttl: 60000, limit: 5 }],
     }),
     ScheduleModule.forRoot(),
     PassportModule,
