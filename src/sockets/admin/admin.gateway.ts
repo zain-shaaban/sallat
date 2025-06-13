@@ -99,6 +99,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
       this.adminService.handleAssignNewDriverToTheTrip(
         idPairs.tripID,
         idPairs.driverID,
+        client.data.name
       );
       return { status: true };
     } catch (error) {
@@ -146,7 +147,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
     @MessageBody() pullTripData: TripIdDto,
   ) {
     try {
-      this.adminService.handlePullTrip(pullTripData.tripID);
+      this.adminService.handlePullTrip(pullTripData.tripID, client.data.name);
       return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
@@ -167,7 +168,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
     @MessageBody() cancelTripData: TripIdDto,
   ) {
     try {
-      this.adminService.handleCancelTrip(cancelTripData.tripID);
+      this.adminService.handleCancelTrip(cancelTripData.tripID,client.data.name);
       return {
         status: true,
       };

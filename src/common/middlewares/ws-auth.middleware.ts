@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { WsException } from '@nestjs/websockets';
 import { AccountRole } from 'src/account/enums/account-role.enum';
 
 @Injectable()
@@ -11,12 +12,12 @@ export class WsAuthMiddleware {
       try {
         const token = client.handshake.headers?.authorization;
 
-        if (!token) throw new Error('Invalid token');
+        if (!token) throw new WsException('Invalid token');
 
         const payload = this.jwtService.verify(token as string);
 
         if (payload.role !== AccountRole.DRIVER)
-          throw new Error('Invalid token');
+          throw new WsException('Invalid token');
         client.data = {
           id: payload.id,
           name: payload.name,
@@ -34,12 +35,12 @@ export class WsAuthMiddleware {
       try {
         const token = client.handshake.headers?.authorization;
 
-        if (!token) throw new Error('Invalid token');
+        if (!token) throw new WsException('Invalid token');
 
         const payload = this.jwtService.verify(token as string);
 
         if (payload.role == AccountRole.DRIVER)
-          throw new Error('Invalid token');
+          throw new WsException('Invalid token');
 
         client.data = {
           id: payload.id,
@@ -53,19 +54,23 @@ export class WsAuthMiddleware {
     };
   }
 
-  notificationAuth() {
+  logAuth() {
     return (client, next) => {
       try {
         const token = client.handshake.headers?.authorization;
 
-        if (!token) throw new Error('Invalid token');
+        if (!token) throw new WsException('Invalid token');
 
         const payload = this.jwtService.verify(token as string);
 
-        if (payload.role != AccountRole.CC) throw new Error('Invalid token');
-
+        if (
+          payload.role != AccountRole.CC &&
+          payload.role != AccountRole.DRIVER
+        )
+          throw new WsException('Invalid token');
         client.data = {
           id: payload.id,
+          role: payload.role,
           name: payload.name,
         };
 

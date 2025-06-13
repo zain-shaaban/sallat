@@ -12,13 +12,7 @@ import {
 import { Namespace, Socket } from 'socket.io';
 import { logger } from 'src/common/error_logger/logger.util';
 import { DriverService } from './driver.service';
-import {
-  Inject,
-  UseFilters,
-  UseGuards,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Inject, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
   LocationUpdateDto,
   AcceptTripDto,
@@ -27,6 +21,7 @@ import {
   EndTripDto,
   TripIdDto,
   AvailabilityDto,
+  CancelTripDto,
 } from '../dto/driver.dto';
 import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
@@ -75,10 +70,7 @@ export class DriverSocketGateway
     @MessageBody() location: LocationUpdateDto,
   ) {
     try {
-      this.driverService.handleNewLocation(
-        client.data.driverID,
-        location.coords,
-      );
+      this.driverService.handleNewLocation(client.data.id, location.coords);
       return { status: true };
     } catch (error) {
       if (!(error instanceof WsException))
@@ -100,7 +92,8 @@ export class DriverSocketGateway
   ) {
     try {
       this.driverService.handleAcceptTrip(
-        client.data.driverID,
+        client.data.id,
+        client.data.name,
         tripStartData.tripID,
         tripStartData.location,
         tripStartData.time,
@@ -126,7 +119,8 @@ export class DriverSocketGateway
   ) {
     try {
       this.driverService.handleRejectTrip(
-        client.data.driverID,
+        client.data.id,
+        client.data.name,
         rejectTripData.tripID,
       );
       return { status: true };
@@ -150,6 +144,8 @@ export class DriverSocketGateway
   ) {
     try {
       this.driverService.handleNewPoint(
+        client.data.id,
+        client.data.name,
         wayPointData.wayPoint,
         wayPointData.tripID,
       );
@@ -174,7 +170,8 @@ export class DriverSocketGateway
   ) {
     try {
       this.driverService.handleChangeStateOfTheNormalTrip(
-        client.data.driverID,
+        client.data.id,
+        client.data.name,
         changeStateData.tripID,
         changeStateData.stateName,
         changeStateData.stateData,
@@ -193,15 +190,17 @@ export class DriverSocketGateway
     }
   }
 
-  @SubscribeMessage('cancelTrip')
-  canselTripByDriver(
+  @SubscribeMessage('failedTrip')
+  failedTrip(
     @ConnectedSocket() client: Socket,
-    @MessageBody() cancelTripData: TripIdDto,
+    @MessageBody() cancelTripData: CancelTripDto,
   ) {
     try {
-      this.driverService.handleCancelTrip(
-        client.data.driverID,
+      this.driverService.handleFailedTrip(
+        client.data.id,
+        client.data.name,
         cancelTripData.tripID,
+        cancelTripData.reason
       );
       return { status: true };
     } catch (error) {
@@ -224,7 +223,7 @@ export class DriverSocketGateway
   ) {
     try {
       this.driverService.handleUpdateDriverAvailability(
-        client.data.driverID,
+        client.data.id,
         setAvailableData.available,
       );
       return {
@@ -250,7 +249,8 @@ export class DriverSocketGateway
   ) {
     try {
       return await this.driverService.handleEndTrip(
-        client.data.driverID,
+        client.data.id,
+        client.data.name,
         endStateData.tripID,
         endStateData.receipt,
         endStateData.itemPrice,

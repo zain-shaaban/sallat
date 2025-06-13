@@ -244,12 +244,12 @@ export class Trip {
   matchedPath: [number, number][];
 
   @ApiProperty({
-    type: 'boolean',
-    example: true,
+    type: 'string',
+    example: 'success',
     description: 'Indicates if the trip was completed successfully',
-    default: false,
+    default: 'failed',
   })
-  @Column({ default: 'success' })
+  @Column({ default: 'failed' })
   status: string;
 
   @ApiProperty({

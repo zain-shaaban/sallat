@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { NotificationService } from 'src/notification/notification.service';
-import { NotificationSocket } from '../notifications/entites/notification-socket.entity';
 import { TripService } from 'src/trip/trip.service';
 import { IDriver } from './driver.interface';
 import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
@@ -17,6 +16,7 @@ import { getPathLength } from 'geolib';
 import { ConfigService } from '@nestjs/config';
 import { ITripInSocketsArray } from 'src/trip/interfaces/trip-socket';
 import { AdminService } from '../admin/admin.service';
+import { LogService } from '../logs/logs.service';
 
 @Injectable()
 export class DriverService {
@@ -33,32 +33,26 @@ export class DriverService {
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     @Inject() private readonly notificationService: NotificationService,
-    @InjectRepository(NotificationSocket)
-    private readonly notificationSocketRepository: Repository<NotificationSocket>,
     @Inject(forwardRef(() => TripService))
     private readonly tripService: TripService,
     private configService: ConfigService,
+    @Inject()
+    private readonly logService: LogService,
   ) {}
 
   handleDriverConnection(client: Socket) {
-    const { driverID, lng, lat } = client.handshake.query;
-    client.data.driverID = <string>driverID;
+    const { lng, lat } = client.handshake.query;
+
+    const driverID = client.data.id;
+
     let driver = this.onlineDrivers.find((d) => d.driverID === driverID);
 
     if (!driver) {
       this.addDriverToOnlineDriversArray({
         socketID: client.id,
         driverID: <string>driverID,
+        driverName: client.data.name,
         location: { lat: Number(lat), lng: Number(lng) },
-      });
-
-      this.io.server
-        .of('/notifications')
-        .emit('driverConnection', { driverID, connection: true });
-
-      this.notificationSocketRepository.save({
-        type: 'driverConnection',
-        data: { driverID, connection: true },
       });
     } else {
       driver.socketID = client.id;
@@ -112,6 +106,7 @@ export class DriverService {
 
   handleAcceptTrip(
     driverID: string,
+    driverName: string,
     tripID: string,
     location: LocationDto,
     time: number,
@@ -137,17 +132,10 @@ export class DriverService {
 
     this.adminService.moveTripFromReadyToOnGoing(trip);
 
-    this.io.server
-      .of('/notifications')
-      .emit('tripAccepted', { tripID, driverID });
-
-    this.notificationSocketRepository.save({
-      type: 'tripAccepted',
-      data: { tripID, driverID },
-    });
+    this.logService.acceptTripLog(driverID, driverName, trip.tripNumber);
   }
 
-  handleRejectTrip(driverID: string, tripID: string) {
+  handleRejectTrip(driverID: string, driverName: string, tripID: string) {
     const trip = this.tripService.readyTrips.find((t) => t.tripID === tripID);
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
@@ -156,17 +144,12 @@ export class DriverService {
 
     this.adminService.moveTripFromReadyToPending(trip);
 
-    this.io.server
-      .of('/notifications')
-      .emit('tripRejected', { tripID, driverID });
-
-    this.notificationSocketRepository.save({
-      type: 'tripRejected',
-      data: { tripID, driverID },
-    });
+    this.logService.rejectTripLog(driverID, driverName, trip.tripNumber);
   }
 
   handleNewPoint(
+    driverID: string,
+    driverName: string,
     wayPoint: { location: LocationDto; time: number; type: string },
     tripID: string,
   ) {
@@ -181,10 +164,13 @@ export class DriverService {
       trip.customer.location.coords = wayPoint.location.coords;
       trip.customer.location.approximate = wayPoint.location.approximate;
     }
+
+    this.logService.addWayPointLog(driverID, driverName, trip.tripNumber);
   }
 
   handleChangeStateOfTheNormalTrip(
     driverID: string,
+    driverName: string,
     tripID: string,
     stateName: string,
     stateData: { location?: LocationDto; time?: number },
@@ -192,21 +178,12 @@ export class DriverService {
     const trip = this.tripService.ongoingTrips.find((t) => t.tripID === tripID);
 
     if (stateName === 'onVendor') {
-      this.io.server.of('/notifications').emit('stateOnVendor', {
-        tripID,
+      this.logService.onVendorLog(
         driverID,
-        vendorID: trip.vendor.vendorID,
-      });
-
-      this.notificationSocketRepository.save({
-        type: 'stateOnVendor',
-        data: {
-          tripID: trip.tripID,
-          driverID,
-          vendorID: trip.vendor.vendorID,
-        },
-      });
-
+        driverName,
+        trip.vendor.name,
+        trip.tripNumber,
+      );
       if (
         trip.vendor.location.approximate == true &&
         stateData.location.approximate == false
@@ -226,30 +203,39 @@ export class DriverService {
     }
     trip.tripState.leftVendor = stateData;
 
-    this.io.server.of('/notifications').emit('stateLeftVendor', {
-      tripID: trip.tripID,
+    this.logService.leftVendorLog(
       driverID,
-      vendorID: trip.vendor.vendorID,
-    });
-
-    this.notificationSocketRepository.save({
-      type: 'stateLeftVendor',
-      data: {
-        tripID,
-        driverID,
-        vendorID: trip.vendor.vendorID,
-      },
-    });
+      driverName,
+      trip.vendor.name,
+      trip.tripNumber,
+    );
   }
 
-  handleCancelTrip(driverID: string, tripID: string) {
+  async handleFailedTrip(
+    driverID: string,
+    driverName: string,
+    tripID: string,
+    reason: string,
+  ) {
     const trip = this.tripService.ongoingTrips.find(
       (t) => t.tripID === tripID && t.driverID === driverID,
     );
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    this.adminService.moveTripFromOngoingToPending(trip);
+    this.tripRepository.update(trip.tripID, {
+      driverID,
+      reason,
+    });
+
+    this.logService.failedTripLog(
+      driverID,
+      driverName,
+      trip.tripNumber,
+      reason,
+    );
+
+    this.adminService.moveTripFromOngoingToPending(trip, reason);
   }
 
   handleUpdateDriverAvailability(driverID: string, availability: boolean) {
@@ -264,6 +250,7 @@ export class DriverService {
 
   async handleEndTrip(
     driverID: string,
+    driverName: string,
     tripID: string,
     receipt: { name: string; price: number }[],
     itemPrice: number,
@@ -313,28 +300,12 @@ export class DriverService {
       receipt,
     });
 
-    this.io.server.of('/notifications').emit('tripCompleted', {
-      tripID: trip.tripID,
+    this.logService.endTripLog(
       driverID,
-      status: 'success',
-      price: trip.price,
-      itemPrice,
-      time: trip.time,
-      distance: trip.distance,
-    });
-
-    this.notificationSocketRepository.save({
-      type: 'tripCompleted',
-      data: {
-        tripID: trip.tripID,
-        driverID,
-        status: 'success',
-        price: trip.price,
-        itemPrice,
-        time: trip.time,
-        distance: trip.distance,
-      },
-    });
+      driverName,
+      trip.customer.name,
+      trip.tripNumber,
+    );
 
     this.adminService.removeTripFromOnGoing(trip);
     this.adminService.sendDriversArrayToAdmins();
@@ -371,6 +342,7 @@ export class DriverService {
     this.onlineDrivers.push({
       socketID: driverData.socketID,
       driverID: driverData.driverID,
+      driverName: driverData.driverName,
       location: {
         lat: Number(driverData.location.lat),
         lng: Number(driverData.location.lng),
@@ -386,7 +358,6 @@ export class DriverService {
     let beforeDelete = this.onlineDrivers.length;
     this.onlineDrivers = this.onlineDrivers.filter((driver) => {
       if (this.canDisconnectDriver(driver)) {
-        this.adminService.sendDriverDisconnectNotification(driver.driverID);
         return false;
       } else if (this.canSendNotification(driver)) {
         this.notificationService.send({

@@ -122,3 +122,13 @@ export class AvailabilityDto {
   @IsNotEmpty()
   available: boolean;
 }
+
+export class CancelTripDto {
+  @IsString()
+  @IsNotEmpty()
+  tripID: string;
+
+  @IsString()
+  @IsOptional()
+  reason: string;
+}

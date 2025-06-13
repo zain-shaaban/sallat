@@ -1,17 +1,15 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { Namespace, Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { TripService } from 'src/trip/trip.service';
 import { DriverService } from '../driver/driver.service';
 import { WsException } from '@nestjs/websockets';
 import { ITripInSocketsArray } from 'src/trip/interfaces/trip-socket';
-import { InjectRepository } from '@nestjs/typeorm';
-import { NotificationSocket } from '../notifications/entites/notification-socket.entity';
-import { Repository } from 'typeorm';
 import { NotificationService } from 'src/notification/notification.service';
 import { CoordinatesDto } from 'src/customer/dto/location.dto';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Account } from 'src/account/entities/account.entity';
+import { LogService } from '../logs/logs.service';
 
 @Injectable()
 export class AdminService {
@@ -22,8 +20,7 @@ export class AdminService {
     private readonly tripService: TripService,
     @Inject() private readonly driverService: DriverService,
     @Inject() private readonly notificationService: NotificationService,
-    @InjectRepository(NotificationSocket)
-    private readonly notificationSocketRepository: Repository<NotificationSocket>,
+    @Inject() private readonly logService: LogService,
   ) {}
 
   handleAdminConnection(client: Socket) {
@@ -46,8 +43,16 @@ export class AdminService {
     }
   }
 
-  handleAssignNewDriverToTheTrip(tripID: string, driverID: string) {
+  handleAssignNewDriverToTheTrip(
+    tripID: string,
+    driverID: string,
+    ccName: string,
+  ) {
     const trip = this.tripService.pendingTrips.find((t) => t.tripID === tripID);
+
+    const driver = this.driverService.onlineDrivers.find(
+      (d) => d.driverID === driverID,
+    );
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
@@ -56,6 +61,13 @@ export class AdminService {
     this.submitNewTrip(trip);
 
     this.sendDriversArrayToAdmins();
+
+    this.logService.assignNewDriverLog(
+      driverID,
+      driver?.driverName,
+      ccName,
+      trip.tripNumber,
+    );
 
     this.notificationService.send({
       title: 'رحلة جديدة',
@@ -92,7 +104,7 @@ export class AdminService {
     this.sendTripsToAdmins();
   }
 
-  handlePullTrip(tripID: string) {
+  handlePullTrip(tripID: string, ccName: string) {
     const trip = this.tripService.readyTrips.find((t) => t.tripID === tripID);
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
@@ -104,14 +116,19 @@ export class AdminService {
     if (!driver)
       throw new WsException(`Driver with ID ${trip.driverID} not found`);
 
-    this.sendTripPulledNotification(trip.tripID, trip.driverID);
-
     this.moveTripFromReadyToPending(trip);
 
     this.sendTripPulledForDriver(driver.socketID, trip.tripID);
+
+    this.logService.pullTripLog(
+      driver.driverID,
+      driver.driverName,
+      ccName,
+      trip.tripNumber,
+    );
   }
 
-  handleCancelTrip(tripID: string) {
+  handleCancelTrip(tripID: string, ccName: string) {
     const tripsArrays = [
       this.tripService.readyTrips,
       this.tripService.ongoingTrips,
@@ -136,9 +153,13 @@ export class AdminService {
           });
         }
 
-        arr.splice(index, 1);
+        this.logService.cancelledTripLog(
+          ccName,
+          arr[index].tripNumber,
+          driver?.driverID,
+        );
 
-        this.sendTripCancelledNotificationForAdmin(tripID);
+        arr.splice(index, 1);
 
         this.sendDriversArrayToAdmins();
 
@@ -190,7 +211,7 @@ export class AdminService {
     this.tripService.readyTrips.push(trip);
   }
 
-  moveTripFromOngoingToPending(trip: ITripInSocketsArray) {
+  moveTripFromOngoingToPending(trip: ITripInSocketsArray, reason: string) {
     this.tripService.ongoingTrips = this.tripService.ongoingTrips.filter(
       (t) => t.tripID !== trip.tripID,
     );
@@ -205,7 +226,6 @@ export class AdminService {
   submitNewTrip(trip: ITripInSocketsArray) {
     this.sendTripsToAdmins();
     this.sendTripToDriver(trip);
-    this.sendTripReceivedNotification(trip.tripID, trip.driverID);
   }
 
   sendTripsToAdmins() {
@@ -224,28 +244,6 @@ export class AdminService {
     this.io.server.of('/driver').to(driver.socketID).emit('newTrip', { trip });
   }
 
-  sendTripReceivedNotification(tripID: string, driverID: string) {
-    this.io.server
-      .of('/notifications')
-      .emit('tripReceived', { tripID, driverID });
-
-    this.notificationSocketRepository.save({
-      type: 'tripReceived',
-      data: { tripID, driverID },
-    });
-  }
-
-  sendTripPulledNotification(tripID: string, driverID: string) {
-    this.io.server
-      .of('/notifications')
-      .emit('tripPulled', { tripID, driverID });
-
-    this.notificationSocketRepository.save({
-      type: 'tripPulled',
-      data: { tripID, driverID },
-    });
-  }
-
   sendDriversArrayToAdmins() {
     this.io.server.of('/admin').emit('driverConnection', {
       onlineDrivers: this.driverService.onlineDrivers,
@@ -258,15 +256,6 @@ export class AdminService {
 
   sendTripCancelledForDriver(socketID: string, tripID: string) {
     this.io.server.of('/driver').to(socketID).emit('tripCancelled', { tripID });
-  }
-
-  sendTripCancelledNotificationForAdmin(tripID: string) {
-    this.io.server.of('/notifications').emit('tripCancelled', { tripID });
-
-    this.notificationSocketRepository.save({
-      type: 'tripCancelled',
-      data: { tripID },
-    });
   }
 
   newVendor(vendor: Vendor) {
@@ -311,21 +300,6 @@ export class AdminService {
 
   sendHttpLocation(driverID: string, location: CoordinatesDto) {
     this.io.server.of('/admin').emit('httpLocation', { driverID, location });
-  }
-
-  sendDriverDisconnectNotification(driverID: string) {
-    this.io.server.of('/notifications').emit('driverConnection', {
-      driverID,
-      connection: false,
-    });
-
-    this.notificationSocketRepository.save({
-      type: 'driverConnection',
-      data: {
-        driverID,
-        connection: false,
-      },
-    });
   }
 
   initIO(server: Namespace) {

@@ -10,6 +10,7 @@ import { CustomerService } from 'src/customer/customer.service';
 import { ITripInSocketsArray } from './interfaces/trip-socket';
 import { AdminService } from 'src/sockets/admin/admin.service';
 import { DriverService } from 'src/sockets/driver/driver.service';
+import { LogService } from 'src/sockets/logs/logs.service';
 
 @Injectable()
 export class TripService {
@@ -25,11 +26,13 @@ export class TripService {
     @Inject() private readonly driverService: DriverService,
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly customerService: CustomerService,
+    @Inject() private readonly logService: LogService,
   ) {}
 
   async createNewTrip(
     {
       driverID,
+      vehicleNumber,
       vendorID,
       vendorName,
       vendorPhoneNumber,
@@ -48,10 +51,12 @@ export class TripService {
       alternative,
     }: CreateTripDto,
     ccID: string,
+    ccName: string,
   ) {
     let trip: any = await this.tripRepository.save({
       ccID,
       driverID,
+      vehicleNumber,
       vendor: !alternative
         ? {
             vendorID,
@@ -78,8 +83,8 @@ export class TripService {
     trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
 
     driverID
-      ? await this.handleSocketsIfTripIsNewAndDriverIdExist(trip)
-      : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip);
+      ? this.handleSocketsIfTripIsNewAndDriverIdExist(trip, ccName)
+      : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip, ccName);
 
     return {
       tripID: trip.tripID,
@@ -155,18 +160,61 @@ export class TripService {
     return null;
   }
 
-  async handleSocketsIfTripIsNewAndDriverIdExist(trip: ITripInSocketsArray) {
+  handleSocketsIfTripIsNewAndDriverIdExist(
+    trip: ITripInSocketsArray,
+    ccName: string,
+  ) {
     this.readyTrips.push(trip);
     this.adminService.submitNewTrip(trip);
     this.adminService.sendDriversArrayToAdmins();
-    await this.notificationService.send({
+
+    const driverName = this.driverService.onlineDrivers.find(
+      (d) => d.driverID === trip.driverID,
+    )?.driverName;
+
+    if (!trip.alternative) {
+      this.logService.createNewNormalTripWithDriverLog(
+        ccName,
+        trip.customer.name,
+        trip.tripNumber,
+        trip.vendor.name,
+        trip.driverID,
+        driverName,
+      );
+    } else {
+      this.logService.createNewAlternativeTripWithDriverLog(
+        ccName,
+        trip.customer.name,
+        trip.tripNumber,
+        trip.driverID,
+        driverName,
+      );
+    }
+    this.notificationService.send({
       title: 'رحلة جديدة',
       content: 'اضغط لعرض تفاصيل الرحلة',
       driverID: trip.driverID,
     });
   }
 
-  handleSocketsIfTripIsNewAndDriverIdNotExist(trip: ITripInSocketsArray) {
+  handleSocketsIfTripIsNewAndDriverIdNotExist(
+    trip: ITripInSocketsArray,
+    ccName: string,
+  ) {
+    if (!trip.alternative) {
+      this.logService.createNewNormalTripWithoutDriverLog(
+        ccName,
+        trip.customer.name,
+        trip.tripNumber,
+        trip.vendor.name,
+      );
+    } else {
+      this.logService.createNewAlternativeTripWithoutDriverLog(
+        ccName,
+        trip.customer.name,
+        trip.tripNumber,
+      );
+    }
     this.pendingTrips.push(trip);
     this.adminService.sendTripsToAdmins();
     this.adminService.sendDriversArrayToAdmins();

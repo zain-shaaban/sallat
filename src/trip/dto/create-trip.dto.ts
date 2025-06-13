@@ -206,6 +206,15 @@ export class CreateTripDto {
   routedPath?: CoordinatesDto[];
 
   @ApiProperty({
+    example: 'ABC123',
+    description: 'Vehicle number assigned to driver',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  vehicleNumber?: string;
+
+  @ApiProperty({
     type: 'number',
     example: 133266423,
     description: 'Approximate time for the trip in milliseconds',
