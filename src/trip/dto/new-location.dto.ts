@@ -10,15 +10,6 @@ import { CoordinatesDto } from 'src/customer/dto/location.dto';
 
 export class sendLocationDto {
   @ApiProperty({
-    type: 'string',
-    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-  })
-  @IsString()
-  @IsUUID()
-  @IsNotEmpty()
-  driverID: string;
-
-  @ApiProperty({
     type: CoordinatesDto,
     description: 'Geographic coordinates of the location',
     example: {

@@ -132,7 +132,7 @@ export class TripService {
     return null;
   }
 
-  async sendNewLocation({ driverID, location }: sendLocationDto) {
+  async sendNewLocation({ location }: sendLocationDto, driverID: string) {
     this.adminService.sendHttpLocation(driverID, location);
 
     let driver = this.driverService.onlineDrivers.find(

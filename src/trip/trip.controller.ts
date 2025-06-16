@@ -201,8 +201,9 @@ Updates the location of a driver when they are offline. This endpoint is used to
   @Post('sendLocation')
   async sendNewLocationIfDriverOffline(
     @Body() sendLocationDto: sendLocationDto,
+    @Req() req
   ) {
-    return await this.tripService.sendNewLocation(sendLocationDto);
+    return await this.tripService.sendNewLocation(sendLocationDto,req.user.id);
   }
 
   @ApiOperation({
