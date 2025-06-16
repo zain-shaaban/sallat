@@ -190,7 +190,7 @@ export class DriverSocketGateway
     }
   }
 
-  @SubscribeMessage('failedTrip')
+  @SubscribeMessage('failTrip')
   failedTrip(
     @ConnectedSocket() client: Socket,
     @MessageBody() cancelTripData: CancelTripDto,
