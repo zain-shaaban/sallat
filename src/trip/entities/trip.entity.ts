@@ -28,7 +28,7 @@ export class Trip {
     description: 'Call center ID associated with the trip',
     required: false,
   })
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar'})
   ccID: string;
 
   @ApiProperty({
