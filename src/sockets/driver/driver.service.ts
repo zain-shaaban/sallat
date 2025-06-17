@@ -292,9 +292,9 @@ export class DriverService {
       trip.matchedPath = this.matchedPath;
     } catch (error) {
       logger.error(error.message, error.stack);
-      trip.price = 0;
       trip.matchedPath = [];
-      trip.distance = 0;
+      trip.distance = getPathLength(trip.rawPath);
+      trip.price = this.pricing(trip.distance);
     }
 
     this.tripRepository.update(trip.tripID, {
