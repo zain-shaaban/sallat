@@ -20,7 +20,7 @@ export class LogService {
     if (client.data.role == AccountRole.DRIVER) {
       const logs = await this.logRepository.find({
         where: { driverID: client.data.id },
-        select: ['message'],
+        select: ['message','createdAt'],
         take: 500,
       });
 
@@ -29,7 +29,7 @@ export class LogService {
       client.join('cc');
       const logs = await this.logRepository.find({
         where: { type: Not(In(['login', 'logout'])) },
-        select: ['message'],
+        select: ['message','createdAt'],
       });
 
       client.emit('onConnection', logs);
