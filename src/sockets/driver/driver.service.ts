@@ -23,6 +23,10 @@ import { match } from 'assert';
 export class DriverService {
   private io: Namespace;
 
+  private matchedPath: [number, number][];
+  private matchedDistance: number;
+  private price: number;
+
   constructor(
     @Inject(forwardRef(() => AdminService))
     private readonly adminService: AdminService,
@@ -282,11 +286,10 @@ export class DriverService {
     trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
 
     try {
-      trip.price = await this.mapMatching(
-        trip.rawPath,
-        trip.matchedPath,
-        trip.distance,
-      );
+      await this.mapMatching(trip.rawPath);
+      trip.price = this.price;
+      trip.distance = this.matchedDistance;
+      trip.matchedPath = this.matchedPath;
     } catch (error) {
       logger.error(error.message, error.stack);
       trip.price = 0;
@@ -371,13 +374,8 @@ export class DriverService {
     return 5000 + 2 * distance;
   }
 
-  private async mapMatching(
-    rawPath: CoordinatesDto[],
-    matchedPath: [number, number][],
-    matchedDistance: number,
-  ) {
+  private async mapMatching(rawPath: CoordinatesDto[]) {
     const polylineFromCoords = polyline.encode(this.toCoordsArray(rawPath));
-    logger.error(polylineFromCoords, '380');
     function filterBackslashes(URL: string) {
       return URL.replace(/\\/g, '%5C');
     }
@@ -385,20 +383,16 @@ export class DriverService {
     const matchURL = filterBackslashes(
       `${this.configService.get<string>('OSRM_LINK')}/polyline(${polylineFromCoords})?overview=false`,
     );
-    logger.error(matchURL, '388');
     const res = await fetch(matchURL);
     const json = await res.json();
-    logger.error(json, '391');
-    matchedPath = await json.tracepoints
+    this.matchedPath = await json.tracepoints
       .filter(Boolean)
       .map((p) => p.location.reverse());
-    logger.error(`${matchedPath}`, '395');
-    matchedDistance = getPathLength(
-      matchedPath.map((point) => {
+    this.matchedDistance = getPathLength(
+      this.matchedPath.map((point) => {
         return { latitude: point[0], longitude: point[1] };
       }),
     );
-    logger.error(`${matchedPath}`, '401');
-    return this.pricing(matchedDistance);
+    this.price = this.pricing(this.matchedDistance);
   }
 }
