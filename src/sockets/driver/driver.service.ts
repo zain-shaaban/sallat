@@ -17,12 +17,11 @@ import { ConfigService } from '@nestjs/config';
 import { ITripInSocketsArray } from 'src/trip/interfaces/trip-socket';
 import { AdminService } from '../admin/admin.service';
 import { LogService } from '../logs/logs.service';
+import { OnlineDrivers } from './online-drivers';
 
 @Injectable()
 export class DriverService {
   private io: Namespace;
-
-  onlineDrivers: IDriver[] = [];
 
   constructor(
     @Inject(forwardRef(() => AdminService))
@@ -38,6 +37,7 @@ export class DriverService {
     private configService: ConfigService,
     @Inject()
     private readonly logService: LogService,
+    @Inject() private readonly onlineDrivers: OnlineDrivers,
   ) {}
 
   handleDriverConnection(client: Socket) {
@@ -45,7 +45,9 @@ export class DriverService {
 
     const driverID = client.data.id;
 
-    let driver = this.onlineDrivers.find((d) => d.driverID === driverID);
+    let driver = this.onlineDrivers.drivers.find(
+      (d) => d.driverID === driverID,
+    );
 
     if (!driver) {
       this.addDriverToOnlineDriversArray({
@@ -73,7 +75,9 @@ export class DriverService {
   }
 
   handleDriverDisconnect(client: Socket) {
-    const driver = this.onlineDrivers.find((d) => d.socketID == client.id);
+    const driver = this.onlineDrivers.drivers.find(
+      (d) => d.socketID == client.id,
+    );
     if (driver) {
       driver.lastLocation = Date.now();
       driver.socketID = null;
@@ -81,7 +85,9 @@ export class DriverService {
   }
 
   handleNewLocation(driverID: string, coords: CoordinatesDto) {
-    const driver = this.onlineDrivers.find((d) => d.driverID === driverID);
+    const driver = this.onlineDrivers.drivers.find(
+      (d) => d.driverID === driverID,
+    );
 
     if (!driver) throw new WsException(`Driver with ID ${driverID} not found`);
 
@@ -239,7 +245,9 @@ export class DriverService {
   }
 
   handleUpdateDriverAvailability(driverID: string, availability: boolean) {
-    const driver = this.onlineDrivers.find((d) => d.driverID === driverID);
+    const driver = this.onlineDrivers.drivers.find(
+      (d) => d.driverID === driverID,
+    );
 
     if (!driver) throw new WsException(`Driver with ID ${driverID} not found`);
 
@@ -339,7 +347,7 @@ export class DriverService {
   }
 
   private addDriverToOnlineDriversArray(driverData: Partial<IDriver>) {
-    this.onlineDrivers.push({
+    this.onlineDrivers.drivers.push({
       socketID: driverData.socketID,
       driverID: driverData.driverID,
       driverName: driverData.driverName,
@@ -355,8 +363,8 @@ export class DriverService {
 
   @Interval(1000 * 60 * 6)
   private async filterDrivers() {
-    let beforeDelete = this.onlineDrivers.length;
-    this.onlineDrivers = this.onlineDrivers.filter((driver) => {
+    let beforeDelete = this.onlineDrivers.drivers.length;
+    this.onlineDrivers.drivers = this.onlineDrivers.drivers.filter((driver) => {
       if (this.canDisconnectDriver(driver)) {
         return false;
       } else if (this.canSendNotification(driver)) {
@@ -369,7 +377,7 @@ export class DriverService {
       }
       return true;
     });
-    if (beforeDelete !== this.onlineDrivers.length)
+    if (beforeDelete !== this.onlineDrivers.drivers.length)
       this.adminService.sendDriversArrayToAdmins();
   }
 

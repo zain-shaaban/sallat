@@ -10,6 +10,7 @@ import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Account } from 'src/account/entities/account.entity';
 import { LogService } from '../logs/logs.service';
+import { OnlineDrivers } from '../driver/online-drivers';
 
 @Injectable()
 export class AdminService {
@@ -18,14 +19,14 @@ export class AdminService {
   constructor(
     @Inject(forwardRef(() => TripService))
     private readonly tripService: TripService,
-    @Inject() private readonly driverService: DriverService,
+    @Inject() private readonly onlineDrivers: OnlineDrivers,
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly logService: LogService,
   ) {}
 
   handleAdminConnection(client: Socket) {
     client.emit('onConnection', {
-      onlineDrivers: this.driverService.onlineDrivers,
+      onlineDrivers: this.onlineDrivers.drivers,
       readyTrips: this.tripService.readyTrips,
       ongoingTrips: this.tripService.ongoingTrips,
       pendingTrips: this.tripService.pendingTrips,
@@ -33,7 +34,7 @@ export class AdminService {
   }
 
   resetServerEnvironment() {
-    this.driverService.onlineDrivers.length = 0;
+    this.onlineDrivers.drivers.length = 0;
     this.tripService.readyTrips.length = 0;
     this.tripService.pendingTrips.length = 0;
     this.tripService.ongoingTrips.length = 0;
@@ -50,7 +51,7 @@ export class AdminService {
   ) {
     const trip = this.tripService.pendingTrips.find((t) => t.tripID === tripID);
 
-    const driver = this.driverService.onlineDrivers.find(
+    const driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === driverID,
     );
 
@@ -77,7 +78,7 @@ export class AdminService {
   }
 
   handleChangeDriverAvailability(driverID: string, available: boolean) {
-    const driver = this.driverService.onlineDrivers.find(
+    const driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === driverID,
     );
 
@@ -109,7 +110,7 @@ export class AdminService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    const driver = this.driverService.onlineDrivers.find(
+    const driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === trip.driverID,
     );
 
@@ -139,7 +140,7 @@ export class AdminService {
       const index = arr.findIndex((t) => t.tripID === tripID);
 
       if (index !== -1) {
-        const driver = this.driverService.onlineDrivers.find(
+        const driver = this.onlineDrivers.drivers.find(
           (d) => d.driverID === arr[index].driverID,
         );
 
@@ -237,7 +238,7 @@ export class AdminService {
   }
 
   sendTripToDriver(trip: ITripInSocketsArray) {
-    const driver = this.driverService.onlineDrivers.find(
+    const driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === trip.driverID,
     );
 
@@ -246,7 +247,7 @@ export class AdminService {
 
   sendDriversArrayToAdmins() {
     this.io.server.of('/admin').emit('driverConnection', {
-      onlineDrivers: this.driverService.onlineDrivers,
+      onlineDrivers: this.onlineDrivers.drivers,
     });
   }
 

@@ -9,8 +9,8 @@ import { ArrayContains, DeepPartial, Repository } from 'typeorm';
 import { CustomerService } from 'src/customer/customer.service';
 import { ITripInSocketsArray } from './interfaces/trip-socket';
 import { AdminService } from 'src/sockets/admin/admin.service';
-import { DriverService } from 'src/sockets/driver/driver.service';
 import { LogService } from 'src/sockets/logs/logs.service';
+import { OnlineDrivers } from 'src/sockets/driver/online-drivers';
 
 @Injectable()
 export class TripService {
@@ -23,7 +23,7 @@ export class TripService {
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     @Inject() private readonly adminService: AdminService,
-    @Inject() private readonly driverService: DriverService,
+    @Inject() private readonly onlineDrivers: OnlineDrivers,
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly customerService: CustomerService,
     @Inject() private readonly logService: LogService,
@@ -135,7 +135,7 @@ export class TripService {
   async sendNewLocation({ location }: sendLocationDto, driverID: string) {
     this.adminService.sendHttpLocation(driverID, location);
 
-    let driver = this.driverService.onlineDrivers.find(
+    let driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === driverID,
     );
 
@@ -168,7 +168,7 @@ export class TripService {
     this.adminService.submitNewTrip(trip);
     this.adminService.sendDriversArrayToAdmins();
 
-    const driverName = this.driverService.onlineDrivers.find(
+    const driverName = this.onlineDrivers.drivers.find(
       (d) => d.driverID === trip.driverID,
     )?.driverName;
 

@@ -13,6 +13,7 @@ import { TripModule } from 'src/trip/trip.module';
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 import { TelegramModule } from 'src/telegram-bot/telegram.module';
 import { LogService } from './logs/logs.service';
+import { OnlineDrivers } from './driver/online-drivers';
 
 @Module({
   imports: [
@@ -27,8 +28,9 @@ import { LogService } from './logs/logs.service';
     LogGateway,
     AdminService,
     DriverService,
-    LogService
+    LogService,
+    OnlineDrivers
   ],
-  exports: [AdminService, DriverService,LogService],
+  exports: [AdminService,LogService],
 })
 export class SocketsModule {}

@@ -42,6 +42,12 @@ export class LogService {
     this.logRepository.save({ message, type: 'login' });
   }
 
+  logOut(username: string) {
+    const message = `يرجى العلم أن الموظف ${username} قام بتسجيل الخروج.`;
+    this.telegramService.sendNotificationToTelegramGroup(message);
+    this.logRepository.save({ message, type: 'logout' });
+  }
+
   async createNewNormalTripWithDriverLog(
     ccName: string,
     customerName: string,
