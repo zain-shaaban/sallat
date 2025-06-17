@@ -1,12 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
 import { Namespace, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Trip } from 'src/trip/entities/trip.entity';
 import { Repository } from 'typeorm';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
-import { NotificationService } from 'src/notification/notification.service';
 import { TripService } from 'src/trip/trip.service';
 import { IDriver } from './driver.interface';
 import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
@@ -19,6 +17,7 @@ import { AdminService } from '../admin/admin.service';
 import { LogService } from '../logs/logs.service';
 import { OnlineDrivers } from './online-drivers';
 import { logger } from 'src/common/error_logger/logger.util';
+import { match } from 'assert';
 
 @Injectable()
 export class DriverService {
@@ -32,7 +31,6 @@ export class DriverService {
     private readonly vendorRepository: Repository<Vendor>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-    @Inject() private readonly notificationService: NotificationService,
     @Inject(forwardRef(() => TripService))
     private readonly tripService: TripService,
     private configService: ConfigService,
@@ -59,7 +57,6 @@ export class DriverService {
       });
     } else {
       driver.socketID = client.id;
-      driver.notificationSent = false;
 
       driver.location = { lng: Number(lng), lat: Number(lat) };
       driver.lastLocation = Date.now();
@@ -359,52 +356,7 @@ export class DriverService {
       },
       available: true,
       lastLocation: Date.now(),
-      notificationSent: false,
     });
-  }
-
-  @Interval(1000 * 60 * 6)
-  private async filterDrivers() {
-    let beforeDelete = this.onlineDrivers.drivers.length;
-    this.onlineDrivers.drivers = this.onlineDrivers.drivers.filter((driver) => {
-      if (this.canDisconnectDriver(driver)) {
-        return false;
-      } else if (this.canSendNotification(driver)) {
-        this.notificationService.send({
-          title: 'هل مازلت مستمر بالدوام؟',
-          driverID: driver.driverID,
-          content: 'اضغط لتحديث الحالة',
-        });
-        driver.notificationSent = true;
-      }
-      return true;
-    });
-    if (beforeDelete !== this.onlineDrivers.drivers.length)
-      this.adminService.sendDriversArrayToAdmins();
-  }
-
-  private canDisconnectDriver(driver) {
-    const driverHasATrip =
-      this.tripService.ongoingTrips.some(
-        (trip) => trip.driverID === driver.driverID,
-      ) ||
-      this.tripService.readyTrips.some(
-        (trip) => trip.driverID === driver.driverID,
-      );
-
-    return (
-      Date.now() - driver.lastLocation > 1000 * 60 * 45 &&
-      !driver?.socketID &&
-      !driverHasATrip
-    );
-  }
-
-  private canSendNotification(driver) {
-    return (
-      Date.now() - driver.lastLocation > 1000 * 60 * 15 &&
-      !driver?.socketID &&
-      !driver.notificationSent
-    );
   }
 
   public initIO(server: Namespace) {
@@ -425,7 +377,7 @@ export class DriverService {
     matchedDistance: number,
   ) {
     const polylineFromCoords = polyline.encode(this.toCoordsArray(rawPath));
-
+    logger.error(polylineFromCoords, '380');
     function filterBackslashes(URL: string) {
       return URL.replace(/\\/g, '%5C');
     }
@@ -433,17 +385,20 @@ export class DriverService {
     const matchURL = filterBackslashes(
       `${this.configService.get<string>('OSRM_LINK')}/polyline(${polylineFromCoords})?overview=false`,
     );
-
+    logger.error(matchURL, '388');
     const res = await fetch(matchURL);
     const json = await res.json();
-    matchedPath = json.tracepoints
+    logger.error(json, '391');
+    matchedPath = await json.tracepoints
       .filter(Boolean)
       .map((p) => p.location.reverse());
+    logger.error(`${matchedPath}`, '395');
     matchedDistance = getPathLength(
       matchedPath.map((point) => {
         return { latitude: point[0], longitude: point[1] };
       }),
     );
+    logger.error(`${matchedPath}`, '401');
     return this.pricing(matchedDistance);
   }
 }

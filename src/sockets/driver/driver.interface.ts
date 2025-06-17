@@ -7,5 +7,4 @@ export interface IDriver {
   location: CoordinatesDto;
   available: boolean;
   lastLocation: number;
-  notificationSent: boolean;
 }
