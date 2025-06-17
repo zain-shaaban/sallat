@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import {
@@ -29,6 +30,7 @@ import { AccountAuthGuard } from 'src/common/guards/account.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountRole } from './enums/account-role.enum';
+import { UpdateNotificationTokenDto } from './dto/update-notification-token.dto';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Accounts')
@@ -363,5 +365,63 @@ Retrieves a list of all drivers in the system`,
   @Get('driverData')
   async findDriversData() {
     return await this.accountService.findDrivers();
+  }
+
+  @ApiOperation({
+    summary: 'Update driver notification token',
+    description: `
+Updates an existing driver's notification token.`,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Notification Token updated successfully',
+    schema: {
+      example: {
+        status: true,
+        data: null,
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Account not found',
+    schema: {
+      example: {
+        status: false,
+        message:
+          'Driver with ID 440cbc27-e325-499a-9468-295aad93c378 not found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid update data',
+    schema: {
+      example: {
+        status: false,
+        message: 'Validation error',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @Roles(AccountRole.DRIVER)
+  @Patch('notificationToken')
+  async updateNotificationToken(
+    @Req() req,
+    @Body() updateNotificationToken: UpdateNotificationTokenDto,
+  ) {
+    return await this.accountService.updateNotificationToken(
+      req.user.id,
+      updateNotificationToken.notificationToken,
+    );
   }
 }

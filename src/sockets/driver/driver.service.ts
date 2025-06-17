@@ -18,6 +18,7 @@ import { ITripInSocketsArray } from 'src/trip/interfaces/trip-socket';
 import { AdminService } from '../admin/admin.service';
 import { LogService } from '../logs/logs.service';
 import { OnlineDrivers } from './online-drivers';
+import { logger } from 'src/common/error_logger/logger.util';
 
 @Injectable()
 export class DriverService {
@@ -289,7 +290,8 @@ export class DriverService {
         trip.matchedPath,
         trip.distance,
       );
-    } catch {
+    } catch (error) {
+      logger.error(error.message, error.stack);
       trip.price = 0;
       trip.matchedPath = [];
       trip.distance = 0;

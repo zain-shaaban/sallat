@@ -184,4 +184,15 @@ export class AccountService {
     });
     return driversAfterFormatting;
   }
+
+  async updateNotificationToken(id: string, notificationToken: string) {
+    const { affected } = await this.driverRepository.update(id, {
+      notificationToken,
+    });
+
+    if (affected === 0)
+      throw new NotFoundException(`Driver with ${id} not found`);
+
+    return null;
+  }
 }
