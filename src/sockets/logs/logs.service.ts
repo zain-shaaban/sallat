@@ -21,7 +21,7 @@ export class LogService {
       const logs = await this.logRepository.find({
         where: { driverID: client.data.id },
         select: ['message','createdAt'],
-        take: 500,
+        take: 100,
       });
 
       client.emit('onConnection', logs);
@@ -30,6 +30,7 @@ export class LogService {
       const logs = await this.logRepository.find({
         where: { type: Not(In(['login', 'logout'])) },
         select: ['message','createdAt'],
+        take:500
       });
 
       client.emit('onConnection', logs);
