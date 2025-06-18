@@ -10,7 +10,7 @@ import { CustomerService } from 'src/customer/customer.service';
 import { ITripInSocketsArray } from './interfaces/trip-socket';
 import { AdminService } from 'src/sockets/admin/admin.service';
 import { LogService } from 'src/sockets/logs/logs.service';
-import { OnlineDrivers } from 'src/sockets/driver/online-drivers';
+import { OnlineDrivers } from 'src/sockets/shared-online-drivers/online-drivers';
 
 @Injectable()
 export class TripService {

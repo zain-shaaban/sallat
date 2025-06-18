@@ -15,9 +15,8 @@ import { ConfigService } from '@nestjs/config';
 import { ITripInSocketsArray } from 'src/trip/interfaces/trip-socket';
 import { AdminService } from '../admin/admin.service';
 import { LogService } from '../logs/logs.service';
-import { OnlineDrivers } from './online-drivers';
 import { logger } from 'src/common/error_logger/logger.util';
-import { match } from 'assert';
+import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 
 @Injectable()
 export class DriverService {

@@ -10,7 +10,7 @@ import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Account } from 'src/account/entities/account.entity';
 import { LogService } from '../logs/logs.service';
-import { OnlineDrivers } from '../driver/online-drivers';
+import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 
 @Injectable()
 export class AdminService {

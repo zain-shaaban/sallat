@@ -13,13 +13,14 @@ import { TripModule } from 'src/trip/trip.module';
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 import { TelegramModule } from 'src/telegram-bot/telegram.module';
 import { LogService } from './logs/logs.service';
-import { OnlineDrivers } from './driver/online-drivers';
+import { OnlineDriversModule } from './shared-online-drivers/online-drivers.module';
 
 @Module({
   imports: [
     forwardRef(() => TripModule),
     TypeOrmModule.forFeature([Log, Trip, Vendor, Customer]),
     TelegramModule,
+    OnlineDriversModule
   ],
   providers: [
     WsAuthMiddleware,
@@ -29,7 +30,6 @@ import { OnlineDrivers } from './driver/online-drivers';
     AdminService,
     DriverService,
     LogService,
-    OnlineDrivers
   ],
   exports: [AdminService,LogService],
 })

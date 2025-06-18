@@ -7,12 +7,16 @@ import { JwtStrategy } from './auth.strategy';
 import { LogService } from 'src/sockets/logs/logs.service';
 import { Log } from 'src/sockets/logs/entites/logs.entity';
 import { TelegramModule } from 'src/telegram-bot/telegram.module';
-import { OnlineDrivers } from 'src/sockets/driver/online-drivers';
+import { OnlineDriversModule } from 'src/sockets/shared-online-drivers/online-drivers.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Account,Log]),TelegramModule],
+  imports: [
+    TypeOrmModule.forFeature([Account, Log]),
+    TelegramModule,
+    OnlineDriversModule,
+  ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy,LogService,OnlineDrivers],
+  providers: [AuthService, JwtStrategy, LogService],
   exports: [JwtStrategy],
 })
 export class AuthModule {}

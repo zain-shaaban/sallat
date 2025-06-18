@@ -6,16 +6,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { CustomerModule } from 'src/customer/customer.module';
 import { SocketsModule } from 'src/sockets/sockets.module';
-import { OnlineDrivers } from 'src/sockets/driver/online-drivers';
+import { OnlineDriversModule } from 'src/sockets/shared-online-drivers/online-drivers.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Trip, Customer]),
     forwardRef(() => SocketsModule),
     forwardRef(() => CustomerModule),
+    OnlineDriversModule,
   ],
   controllers: [TripController],
-  providers: [TripService,OnlineDrivers],
+  providers: [TripService],
   exports: [TripService],
 })
 export class TripModule {}
