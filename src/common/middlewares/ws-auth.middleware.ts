@@ -10,7 +10,7 @@ export class WsAuthMiddleware {
   driverAuth() {
     return (client, next) => {
       try {
-        const token = client.handshake?.headers?.authorization;
+        const token = client.handshake?.auth?.token;
 
         if (!token) throw new WsException('Invalid token');
 
@@ -33,7 +33,7 @@ export class WsAuthMiddleware {
   adminAuth() {
     return (client, next) => {
       try {
-        const token = client.handshake?.headers?.authorization;
+        const token = client.handshake?.auth?.token;
 
         if (!token) throw new WsException('Invalid token');
 
@@ -57,7 +57,7 @@ export class WsAuthMiddleware {
   logAuth() {
     return (client, next) => {
       try {
-        const token = client.handshake?.headers?.authorization;
+        const token = client.handshake?.auth?.token;
 
         if (!token) throw new WsException('Invalid token');
 

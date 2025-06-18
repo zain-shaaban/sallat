@@ -20,7 +20,7 @@ export class LogService {
     if (client.data.role == AccountRole.DRIVER) {
       const logs = await this.logRepository.find({
         where: { driverID: client.data.id },
-        select: ['message','createdAt'],
+        select: ['message', 'createdAt'],
         take: 100,
       });
 
@@ -29,8 +29,8 @@ export class LogService {
       client.join('cc');
       const logs = await this.logRepository.find({
         where: { type: Not(In(['login', 'logout'])) },
-        select: ['message','createdAt'],
-        take:500
+        select: ['message', 'createdAt'],
+        take: 500,
       });
 
       client.emit('onConnection', logs);
@@ -167,7 +167,19 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'endTrip', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
+  }
+
+  async changeToAlternativeLog(
+    driverID: string,
+    driverName: string,
+    tripNumber: number,
+  ) {
+    const message = `قام السائق ${driverName} بتغيير الرحلة رقم${tripNumber} الى النمط البديل.`;
+    
+    this.sendMessageToAdmins(message, 'changeToAlternative', driverID);
+
+    await this.sendMessageToDriver(driverID, message);
   }
 
   async addWayPointLog(
@@ -179,7 +191,7 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'wayPoint', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
   }
 
   async pullTripLog(
@@ -192,7 +204,7 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'pullTrip', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
   }
 
   async assignNewDriverLog(
@@ -205,7 +217,7 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'assignNewDriver', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
   }
 
   async cancelledTripLog(ccName: string, tripNumber: number, driverID: string) {
@@ -213,7 +225,7 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'cancelledTrip', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
   }
 
   async driverUnAvailableLog(driverID: string, driverName: string) {
@@ -221,7 +233,7 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'driverUnavailable', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
   }
 
   async driverAvailableLog(driverID: string, driverName: string) {
@@ -229,7 +241,7 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'driverAvailable', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
   }
 
   async failedTripLog(
@@ -242,7 +254,7 @@ export class LogService {
 
     this.sendMessageToAdmins(message, 'failedTrip', driverID);
 
-    this.sendMessageToDriver(driverID, message);
+    await this.sendMessageToDriver(driverID, message);
   }
 
   private sendMessageToAdmins(

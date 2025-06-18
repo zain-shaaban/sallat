@@ -154,6 +154,46 @@ export class DriverService {
     this.logService.rejectTripLog(driverID, driverName, trip.tripNumber);
   }
 
+  handleChangeTripToAlternative(
+    driverID: string,
+    tripID: string,
+    driverName: string,
+  ) {
+    const trip = this.tripService.ongoingTrips.find(
+      (trip) => trip.tripID === tripID && trip.alternative == false,
+    );
+
+    if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
+
+    if (Object.keys(trip.tripState.onVendor).length > 0) {
+      const { location, time } = trip.tripState.onVendor;
+      delete location?.approximate;
+      location.description = trip.vendor.location?.description;
+      trip.tripState.wayPoints = [{ type: 'vendor', time, location }];
+    }
+
+    const keysToDelete = [
+      'routedPath',
+      'vendor',
+      'approxDistance',
+      'approxTime',
+      'approxPrice',
+    ];
+
+    for (const key of keysToDelete) delete trip[key];
+    delete trip.tripState?.onVendor;
+    delete trip.tripState?.leftVendor;
+
+    trip.alternative = true;
+    this.logService.changeToAlternativeLog(
+      driverID,
+      driverName,
+      trip.tripNumber,
+    );
+    this.adminService.sendTripsToAdmins();
+    return trip;
+  }
+
   handleNewPoint(
     driverID: string,
     driverName: string,

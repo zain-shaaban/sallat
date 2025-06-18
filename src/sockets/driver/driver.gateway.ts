@@ -137,6 +137,34 @@ export class DriverSocketGateway
     }
   }
 
+  @SubscribeMessage('changeToAlternative')
+  changeFromNormalTripToAlternative(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() changeToAlternative: TripIdDto,
+  ) {
+    try {
+      const trip = this.driverService.handleChangeTripToAlternative(
+        client.data.id,
+        changeToAlternative.tripID,
+        client.data.name,
+      );
+      return {
+        status: true,
+        data: trip,
+      };
+    } catch (error) {
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'changetoAlternative',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
+    }
+  }
+
   @SubscribeMessage('addWayPoint')
   addWayPoints(
     @ConnectedSocket() client: Socket,
@@ -200,7 +228,7 @@ export class DriverSocketGateway
         client.data.id,
         client.data.name,
         cancelTripData.tripID,
-        cancelTripData.reason
+        cancelTripData.reason,
       );
       return { status: true };
     } catch (error) {
