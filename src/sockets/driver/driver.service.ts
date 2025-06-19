@@ -285,7 +285,11 @@ export class DriverService {
     this.adminService.moveTripFromOngoingToPending(trip, reason);
   }
 
-  handleUpdateDriverAvailability(driverID: string, availability: boolean) {
+  handleUpdateDriverAvailability(
+    driverID: string,
+    availability: boolean,
+    driverName: string,
+  ) {
     const driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === driverID,
     );
@@ -293,6 +297,14 @@ export class DriverService {
     if (!driver) throw new WsException(`Driver with ID ${driverID} not found`);
 
     driver.available = availability;
+
+    if (availability)
+      this.logService.changeDriverToAvailableByDriverLog(driverID, driverName);
+    else
+      this.logService.changeDriverToUnAvailableByDriverLog(
+        driverID,
+        driverName,
+      );
 
     this.adminService.sendDriversArrayToAdmins();
   }

@@ -99,7 +99,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
       this.adminService.handleAssignNewDriverToTheTrip(
         idPairs.tripID,
         idPairs.driverID,
-        client.data.name
+        client.data.name,
       );
       return { status: true };
     } catch (error) {
@@ -124,6 +124,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
       this.adminService.handleChangeDriverAvailability(
         setAvailableData.driverID,
         setAvailableData.available,
+        client.data.name,
       );
       return {
         status: true,
@@ -168,7 +169,10 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
     @MessageBody() cancelTripData: TripIdDto,
   ) {
     try {
-      this.adminService.handleCancelTrip(cancelTripData.tripID,client.data.name);
+      this.adminService.handleCancelTrip(
+        cancelTripData.tripID,
+        client.data.name,
+      );
       return {
         status: true,
       };

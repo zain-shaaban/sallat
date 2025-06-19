@@ -77,7 +77,11 @@ export class AdminService {
     });
   }
 
-  handleChangeDriverAvailability(driverID: string, available: boolean) {
+  handleChangeDriverAvailability(
+    driverID: string,
+    available: boolean,
+    ccName: string,
+  ) {
     const driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === driverID,
     );
@@ -85,7 +89,18 @@ export class AdminService {
     if (!driver) throw new WsException(`Driver with ID ${driverID} not found`);
 
     driver.available = available;
-
+    if (available)
+      this.logService.changeDriverToAvailableByCcLog(
+        driverID,
+        driver.driverName,
+        ccName,
+      );
+    else
+      this.logService.changeDriverToUnAvailableByCcLog(
+        driverID,
+        driver.driverName,
+        ccName,
+      );
     this.sendDriversArrayToAdmins();
 
     if (driver?.socketID)

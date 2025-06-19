@@ -176,7 +176,7 @@ export class LogService {
     tripNumber: number,
   ) {
     const message = `قام السائق ${driverName} بتغيير الرحلة رقم${tripNumber} الى النمط البديل.`;
-    
+
     this.sendMessageToAdmins(message, 'changeToAlternative', driverID);
 
     await this.sendMessageToDriver(driverID, message);
@@ -253,6 +253,52 @@ export class LogService {
     const message = `قام السائق ${driverName} بإلغاء الرحلة رقم ${tripNumber}، :بسبب ${reason}.`;
 
     this.sendMessageToAdmins(message, 'failedTrip', driverID);
+
+    await this.sendMessageToDriver(driverID, message);
+  }
+
+  async changeDriverToUnAvailableByDriverLog(
+    driverID: string,
+    driverName: string,
+  ) {
+    const message = `السائق ${driverName} غير متاح الآن.`;
+
+    this.sendMessageToAdmins(message, 'driverUnAvailableByDriver', driverID);
+
+    await this.sendMessageToDriver(driverID, message);
+  }
+
+  async changeDriverToAvailableByDriverLog(
+    driverID: string,
+    driverName: string,
+  ) {
+    const message = `السائق ${driverName} متاح الآن.`;
+
+    this.sendMessageToAdmins(message, 'driverAvailableByDriver', driverID);
+
+    await this.sendMessageToDriver(driverID, message);
+  }
+
+  async changeDriverToUnAvailableByCcLog(
+    driverID: string,
+    driverName: string,
+    ccName: string,
+  ) {
+    const message = `قام الموظف ${ccName} بحجب السائق ${driverName}.`;
+
+    this.sendMessageToAdmins(message, 'driverUnAvailableByCc', driverID);
+
+    await this.sendMessageToDriver(driverID, message);
+  }
+
+  async changeDriverToAvailableByCcLog(
+    driverID: string,
+    driverName: string,
+    ccName: string,
+  ) {
+    const message = `قام الموظف ${ccName} بفك الحجب عن السائق ${driverName}.`;
+
+    this.sendMessageToAdmins(message, 'driverAvailableByCc', driverID);
 
     await this.sendMessageToDriver(driverID, message);
   }

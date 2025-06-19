@@ -253,6 +253,7 @@ export class DriverSocketGateway
       this.driverService.handleUpdateDriverAvailability(
         client.data.id,
         setAvailableData.available,
+        client.data.name,
       );
       return {
         status: true,

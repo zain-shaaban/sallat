@@ -335,7 +335,7 @@ Permanently deletes an account from the system.`,
       },
     },
   })
-  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
+  @Roles(AccountRole.SUPERADMIN)
   @Delete('delete/:id')
   async remove(@Param('id') id: string) {
     return await this.accountService.remove(id);
