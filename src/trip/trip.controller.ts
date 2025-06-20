@@ -361,7 +361,7 @@ Deletes a specific trip from the system using its ID.
     type: String,
     example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
   })
-  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
+  @Roles(AccountRole.SUPERADMIN)
   @Delete('/:tripID')
   async remove(@Param('tripID') tripID: string) {
     return await this.tripService.remove(tripID);

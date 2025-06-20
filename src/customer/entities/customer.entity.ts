@@ -41,6 +41,9 @@ export class Customer {
   @Column({ type: 'jsonb' })
   location: LocationDto;
 
+  @Column({ nullable: true })
+  telegramID: string;
+
   @ApiProperty({
     type: () => Trip,
     isArray: true,

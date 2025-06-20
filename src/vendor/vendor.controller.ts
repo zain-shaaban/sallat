@@ -240,7 +240,7 @@ Permanently deletes a vendor from the system.`,
       },
     },
   })
-  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles(AccountRole.SUPERADMIN)
   @Delete('delete/:vendorID')
   async remove(@Param('vendorID') vendorID: string) {
     return await this.vendorService.remove(vendorID);

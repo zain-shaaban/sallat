@@ -174,7 +174,7 @@ export class CategoryController {
       },
     },
   })
-  @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
+  @Roles(AccountRole.SUPERADMIN)
   @Delete('delete')
   async delete(@Body() deleteCategoryDto: DeleteCategoryDto) {
     return await this.categoryService.delete(deleteCategoryDto);
