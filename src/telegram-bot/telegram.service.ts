@@ -10,7 +10,7 @@ export class TelegramService {
   constructor(
     @InjectRepository(TelegramMessage)
     private readonly telegramRepository: Repository<TelegramMessage>,
-    @InjectBot() private readonly bot: Telegraf<any>,
+    @InjectBot('management') private readonly bot: Telegraf<any>,
   ) {}
 
   saveMessage(ctx: any) {
