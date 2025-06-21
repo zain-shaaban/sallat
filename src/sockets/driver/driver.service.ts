@@ -41,7 +41,7 @@ export class DriverService {
     @Inject()
     private readonly logService: LogService,
     @Inject() private readonly onlineDrivers: OnlineDrivers,
-    @Inject() private readonly telegramBotService:TelegramUserService
+    @Inject() private readonly telegramBotService: TelegramUserService,
   ) {}
 
   handleDriverConnection(client: Socket) {
@@ -226,8 +226,13 @@ export class DriverService {
   ) {
     const trip = this.tripService.ongoingTrips.find((t) => t.tripID === tripID);
 
+    if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
+
     if (stateName === 'onVendor') {
-      this.telegramBotService.sendMessageToCustomer(trip.customer.customerID,'وصل السائق الى المتجر.')
+      this.telegramBotService.sendMessageToCustomer(
+        trip.customer.customerID,
+        'وصل السائق الى المتجر.',
+      );
       this.logService.onVendorLog(
         driverID,
         driverName,
@@ -251,7 +256,10 @@ export class DriverService {
       trip.rawPath.push(stateData.location.coords);
       return;
     }
-    this.telegramBotService.sendMessageToCustomer(trip.customer.customerID,'غادر السائق المتجر.')
+    this.telegramBotService.sendMessageToCustomer(
+      trip.customer.customerID,
+      'غادر السائق المتجر.',
+    );
     trip.tripState.leftVendor = stateData;
 
     this.logService.leftVendorLog(

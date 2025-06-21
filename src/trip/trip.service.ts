@@ -28,7 +28,7 @@ export class TripService {
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly customerService: CustomerService,
     @Inject() private readonly logService: LogService,
-    @Inject() private readonly userBotService:TelegramUserService
+    @Inject() private readonly userBotService: TelegramUserService,
   ) {}
 
   async createNewTrip(
@@ -84,7 +84,10 @@ export class TripService {
 
     trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
 
-      this.userBotService.sendMessageToCustomer(trip.customer.customerID,'تم تسجيل رحلة جديدة باسمك.')
+    this.userBotService.sendMessageToCustomer(
+      trip.customer.customerID,
+      'تم تسجيل رحلة جديدة باسمك.',
+    );
     driverID
       ? this.handleSocketsIfTripIsNewAndDriverIdExist(trip, ccName)
       : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip, ccName);
@@ -170,7 +173,6 @@ export class TripService {
     this.readyTrips.push(trip);
     this.adminService.submitNewTrip(trip);
     this.adminService.sendDriversArrayToAdmins();
-    
 
     const driverName = this.onlineDrivers.drivers.find(
       (d) => d.driverID === trip.driverID,
