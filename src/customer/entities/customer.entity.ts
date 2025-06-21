@@ -51,4 +51,7 @@ export class Customer {
   })
   @OneToMany(() => Trip, (trip) => trip.customer)
   trips: Trip[];
+
+  @Column({ type: 'text', nullable: true })
+  telegramID: string
 }

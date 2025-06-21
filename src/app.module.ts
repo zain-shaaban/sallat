@@ -19,13 +19,27 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { PassportModule } from '@nestjs/passport';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { TelegramModule } from './telegram-bot/telegram.module';
+import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
 
 @Module({
   imports: [
     TelegrafModule.forRootAsync({
       imports: [ConfigModule],
+      botName: 'management',
       useFactory: (configService: ConfigService) => ({
         token: configService.get('TELEGRAM_TOKEN'),
+        botName: 'management',
+        include: [TelegramModule]
+      }),
+      inject: [ConfigService],
+    }),
+    TelegrafModule.forRootAsync({
+      imports: [ConfigModule],
+      botName: 'user',
+      useFactory: (configService: ConfigService) => ({
+        token: configService.get('USER_TELEGRAM_TOKEN'),
+        botName: 'user',
+        include: [TelegramUserModule]
       }),
       inject: [ConfigService],
     }),
@@ -69,7 +83,8 @@ import { TelegramModule } from './telegram-bot/telegram.module';
     NotificationModule,
     AccountModule,
     SessionsModule,
-    TelegramModule
+    TelegramModule,
+    TelegramUserModule
   ],
 })
 export class AppModule {}
