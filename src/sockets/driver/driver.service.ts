@@ -17,6 +17,7 @@ import { AdminService } from '../admin/admin.service';
 import { LogService } from '../logs/logs.service';
 import { logger } from 'src/common/error_logger/logger.util';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
+import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 
 @Injectable()
 export class DriverService {
@@ -40,6 +41,7 @@ export class DriverService {
     @Inject()
     private readonly logService: LogService,
     @Inject() private readonly onlineDrivers: OnlineDrivers,
+    @Inject() private readonly telegramBotService:TelegramUserService
   ) {}
 
   handleDriverConnection(client: Socket) {
@@ -225,6 +227,7 @@ export class DriverService {
     const trip = this.tripService.ongoingTrips.find((t) => t.tripID === tripID);
 
     if (stateName === 'onVendor') {
+      this.telegramBotService.sendMessageToCustomer(trip.customer.customerID,'وصل السائق الى المتجر.')
       this.logService.onVendorLog(
         driverID,
         driverName,
@@ -248,6 +251,7 @@ export class DriverService {
       trip.rawPath.push(stateData.location.coords);
       return;
     }
+    this.telegramBotService.sendMessageToCustomer(trip.customer.customerID,'غادر السائق المتجر.')
     trip.tripState.leftVendor = stateData;
 
     this.logService.leftVendorLog(

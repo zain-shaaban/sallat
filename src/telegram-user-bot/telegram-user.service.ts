@@ -3,47 +3,49 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { InjectBot } from 'nestjs-telegraf';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Context, Telegraf } from 'telegraf';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 
 @Injectable()
 export class TelegramUserService {
   constructor(
     @InjectBot('user') private readonly userBot: Telegraf<any>,
     @InjectRepository(Customer)
-    private readonly customerRespository: Repository<Customer>
+    private readonly customerRespository: Repository<Customer>,
   ) {}
 
   async startBot(ctx: Context) {
-    const userTelegramID = ctx?.message?.from?.id || undefined;
     await ctx.reply(
       `أهلاً بك في بوت شركة سلات!
 
 يمكنك تتبع حالة طلباتك من سلات عن طريق هذا البوت
 
-للبدء، أرسل رقم الهاتف الذي تطلب عن طريقه من سلات`
-    )
+للبدء، أرسل رقم الهاتف الذي تطلب عن طريقه من سلات`,
+    );
   }
 
   async verifyPhoneNumber(ctx: any) {
     const phoneNumber = this.formatPhoneNumber(ctx);
     if (!phoneNumber) {
-      await ctx.reply("هذا الرقم غير صالح، الرجاء إعادة المحاولة");
+      await ctx.reply('هذا الرقم غير صالح، الرجاء إعادة المحاولة');
       return;
     }
 
     const telegramID = ctx?.message?.from?.id || undefined;
     if (!telegramID) {
-      await ctx.reply("تعذر التفعيل، يرجى المحاولة لاحقاً");
+      await ctx.reply('تعذر التفعيل، يرجى المحاولة لاحقاً');
       return;
     }
 
-    const customer = await this.customerRespository
-      .createQueryBuilder('customer')
-      .where(':phoneNumber = ANY(customer.phoneNumbers)', { phoneNumber })
-      .getOne();
+    const customer = await this.customerRespository.findOne({
+      where: {
+        phoneNumbers: ArrayContains([phoneNumber]),
+      },
+    });
 
     if (!customer) {
-      await ctx.reply("لم يتم العثور على حساب بهذا الرقم، ربما ليس الرقم الذي اتصلت منه مع سلات.");
+      await ctx.reply(
+        'لم يتم العثور على حساب بهذا الرقم، ربما ليس الرقم الذي اتصلت منه مع سلات.',
+      );
       return;
     }
 
@@ -54,7 +56,7 @@ export class TelegramUserService {
 
 تم تفعيل حسابك على الرقم ${phoneNumber}
 
-يمكنك من الآن استقبال تحديثات أي طلب تطلبه من سلات!`)
+يمكنك من الآن استقبال تحديثات أي طلب تطلبه من سلات!`);
   }
 
   formatPhoneNumber(ctx: any): string | undefined {
@@ -79,7 +81,6 @@ export class TelegramUserService {
       return normalizedNumbers.join(', ');
     }
   }
-
 
   async sendMessageToCustomer(customerID: string, message: string) {
     const customer = await this.customerRespository.findOne({

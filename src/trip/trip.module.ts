@@ -7,6 +7,7 @@ import { Customer } from 'src/customer/entities/customer.entity';
 import { CustomerModule } from 'src/customer/customer.module';
 import { SocketsModule } from 'src/sockets/sockets.module';
 import { OnlineDriversModule } from 'src/sockets/shared-online-drivers/online-drivers.module';
+import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { OnlineDriversModule } from 'src/sockets/shared-online-drivers/online-dr
     forwardRef(() => SocketsModule),
     forwardRef(() => CustomerModule),
     OnlineDriversModule,
+    TelegramUserModule
   ],
   controllers: [TripController],
   providers: [TripService],

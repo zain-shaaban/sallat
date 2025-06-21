@@ -14,13 +14,15 @@ import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 import { TelegramModule } from 'src/telegram-bot/telegram.module';
 import { LogService } from './logs/logs.service';
 import { OnlineDriversModule } from './shared-online-drivers/online-drivers.module';
+import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
 
 @Module({
   imports: [
     forwardRef(() => TripModule),
     TypeOrmModule.forFeature([Log, Trip, Vendor, Customer]),
     TelegramModule,
-    OnlineDriversModule
+    OnlineDriversModule,
+    TelegramUserModule
   ],
   providers: [
     WsAuthMiddleware,
