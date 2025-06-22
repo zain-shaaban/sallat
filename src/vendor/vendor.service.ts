@@ -14,12 +14,24 @@ export class VendorService {
     @Inject() private readonly adminService: AdminService,
   ) {}
 
-  async create({ name, phoneNumber, location }: CreateVendorDtoRequest) {
-    const vendor = await this.vendorRepository.save({
+  async create({
+    name,
+    phoneNumber,
+    location,
+    password,
+    partner,
+  }: CreateVendorDtoRequest) {
+    const vendor = this.vendorRepository.create({
       name,
       phoneNumber,
       location,
+      password,
+      partner,
     });
+
+    await this.vendorRepository.save(vendor);
+
+    delete vendor.password;
 
     this.adminService.newVendor(vendor);
 
@@ -42,12 +54,16 @@ export class VendorService {
   }
 
   async update(vendorID: string, updateVendorDto: UpdateVendorDto) {
-    let { name, phoneNumber, location } = updateVendorDto;
+    let { name, phoneNumber, location, password, partner } = updateVendorDto;
+    if (partner === false) password = null;
+
     const updatedVendor = await this.vendorRepository.preload({
       vendorID,
       name,
       phoneNumber,
       location,
+      password,
+      partner,
     });
 
     if (!updatedVendor)

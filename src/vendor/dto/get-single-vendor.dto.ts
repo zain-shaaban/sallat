@@ -24,6 +24,13 @@ class SingleVendorData {
   phoneNumber: string;
 
   @ApiProperty({
+    type: 'boolean',
+    example: true,
+    description: 'To determine if the vendor is a partner or not.',
+  })
+  partner: boolean;
+
+  @ApiProperty({
     type: LocationDto,
     description: 'Geographic location of the vendor',
     example: {
@@ -52,6 +59,7 @@ export class GetSingleVendorDto {
       vendorID: '9ab58e3c-cb92-42b2-be1e-d2dfb31f817f',
       name: 'Restaurant Name',
       phoneNumber: '+962798765432',
+      partner: true,
       location: {
         coords: {
           lat: 31.9539,
@@ -60,7 +68,7 @@ export class GetSingleVendorDto {
         approximate: false,
         description: 'Downtown Amman',
       },
-    }
+    },
   })
   data: SingleVendorData;
 }

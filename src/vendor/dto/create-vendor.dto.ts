@@ -3,9 +3,11 @@ import {
   IsNotEmpty,
   IsString,
   MaxLength,
-  IsPhoneNumber,
   ValidateNested,
   Matches,
+  IsOptional,
+  MinLength,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { LocationDto } from 'src/customer/dto/location.dto';
@@ -35,6 +37,26 @@ export class CreateVendorDtoRequest {
   })
   @MaxLength(20)
   phoneNumber: string;
+
+  @ApiProperty({
+    example: 'example',
+    description: "Vendor's password",
+    maxLength: 20,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @MinLength(4)
+  password: string;
+
+  @ApiProperty({
+    example: true,
+    description: 'To determine if the vendor is a partner or not.',
+    default: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  partner: boolean;
 
   @ApiProperty({
     type: LocationDto,

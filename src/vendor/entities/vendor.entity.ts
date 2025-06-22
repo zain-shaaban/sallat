@@ -1,13 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LocationDto } from 'src/customer/dto/location.dto';
 import { Trip } from 'src/trip/entities/trip.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import {
   IsNotEmpty,
   IsString,
   MaxLength,
   IsPhoneNumber,
 } from 'class-validator';
+import { Exclude } from 'class-transformer';
+import * as bcrypt from 'bcryptjs';
 
 @Entity('sallat_vendors')
 export class Vendor {
@@ -31,6 +40,26 @@ export class Vendor {
   @IsPhoneNumber()
   @MaxLength(20)
   phoneNumber: string;
+
+  @Exclude()
+  @Column({ unique: true, nullable: true })
+  password: string;
+
+  @Exclude()
+  @BeforeInsert()
+  @BeforeUpdate()
+  hashPassword() {
+    if (this.password)
+      this.password = bcrypt.hashSync(this.password, bcrypt.genSaltSync());
+  }
+
+  @Exclude()
+  comparePassword(inputPassword: string) {
+    return bcrypt.compareSync(inputPassword, this.password);
+  }
+
+  @Column({ default: false })
+  partner: boolean;
 
   @ApiProperty({
     type: 'string',
