@@ -19,6 +19,7 @@ export interface ITripInSocketsArray {
   };
   vehicleNumber: string;
   alternative: boolean;
+  partner: boolean;
   tripState: {
     tripStart?: {
       time: number;

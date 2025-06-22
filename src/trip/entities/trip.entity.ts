@@ -28,7 +28,7 @@ export class Trip {
     description: 'Call center ID associated with the trip',
     required: false,
   })
-  @Column({ type: 'varchar'})
+  @Column({ type: 'varchar' })
   ccID: string;
 
   @ApiProperty({
@@ -80,6 +80,14 @@ export class Trip {
   })
   @Column({ type: 'boolean', default: false })
   alternative: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'To determine if the trip is a partner or not.',
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  partner: boolean;
 
   @ApiProperty({
     type: 'array',

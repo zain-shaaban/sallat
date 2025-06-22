@@ -14,6 +14,7 @@ export class GetSingleTripDto {
       driverID: '45aa7a9f-f527-4e42-a77b-58c8e6943a30',
       vehicleNumber: 'ABC123',
       alternative: false,
+      partner:false,
       itemTypes: ['شاورما', 'بطاطا مقلية'],
       tripState: {
         tripStart: {

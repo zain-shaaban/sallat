@@ -67,6 +67,7 @@ Creates a new trip with the provided details. The trip can be either a regular d
           customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
           customerPhoneNumber: '+96399887766',
           customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
+          partner:true,
           itemTypes: ['شاورما', 'بطاطا مقلية'],
           description: 'كتر كتشب',
           approxDistance: 5200,

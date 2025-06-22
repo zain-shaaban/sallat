@@ -134,6 +134,15 @@ export class CreateTripDto {
   customerLocation?: LocationDto;
 
   @ApiProperty({
+    example: true,
+    description: 'To determine if the trip is a partner or not.',
+    default: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  partner: boolean;
+
+  @ApiProperty({
     type: 'array',
     example: ['شاورما', 'بطاطا مقلية كاسة'],
     description: 'List of items to be delivered in this trip',

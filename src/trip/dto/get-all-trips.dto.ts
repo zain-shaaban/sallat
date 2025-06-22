@@ -52,6 +52,7 @@ export class GetAllTripsDto {
           },
         },
         description: 'كتر كتشب',
+        partner:false,
         approxDistance: 2123.5,
         distance: 1954,
         approxPrice: 9247,

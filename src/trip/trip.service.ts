@@ -51,6 +51,7 @@ export class TripService {
       approxTime,
       routedPath,
       alternative,
+      partner
     }: CreateTripDto,
     ccID: string,
     ccName: string,
@@ -80,6 +81,7 @@ export class TripService {
       approxTime,
       routedPath,
       alternative,
+      partner
     });
 
     trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
