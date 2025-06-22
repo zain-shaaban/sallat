@@ -10,7 +10,7 @@ export class WsAuthMiddleware {
   driverAuth() {
     return (client, next) => {
       try {
-        const token = client.handshake?.auth?.token;
+        const token = client.handshake?.headers?.authorization;
 
         if (!token) throw new WsException('Invalid token');
 
@@ -33,7 +33,7 @@ export class WsAuthMiddleware {
   adminAuth() {
     return (client, next) => {
       try {
-        const token = client.handshake?.auth?.token;
+        const token = client.handshake?.headers?.authorization;
 
         if (!token) throw new WsException('Invalid token');
 
@@ -57,7 +57,7 @@ export class WsAuthMiddleware {
   logAuth() {
     return (client, next) => {
       try {
-        const token = client.handshake?.auth?.token;
+        const token = client.handshake?.headers?.authorization;
 
         if (!token) throw new WsException('Invalid token');
 
@@ -71,6 +71,30 @@ export class WsAuthMiddleware {
         client.data = {
           id: payload.id,
           role: payload.role,
+          name: payload.name,
+        };
+
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
+
+  vendorAuth() {
+    return (client, next) => {
+      try {
+        const token = client.handshake?.headers?.authorization;
+
+        if (!token) throw new WsException('Invalid token');
+
+        const payload = this.jwtService.verify(token as string);
+
+        if (payload.role !== 'vendor')
+          throw new WsException('Invalid token');
+
+        client.data = {
+          id: payload.id,
           name: payload.name,
         };
 

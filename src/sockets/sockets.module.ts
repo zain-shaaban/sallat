@@ -15,11 +15,14 @@ import { TelegramModule } from 'src/telegram-bot/telegram.module';
 import { LogService } from './logs/logs.service';
 import { OnlineDriversModule } from './shared-online-drivers/online-drivers.module';
 import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
+import { VendorTrips } from './vendor/vendor-trips.entity';
+import { VendorSocketGateway } from './vendor/vendor.gateway';
+import { VendorSocketService } from './vendor/vendor.service';
 
 @Module({
   imports: [
     forwardRef(() => TripModule),
-    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer]),
+    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer,VendorTrips]),
     TelegramModule,
     OnlineDriversModule,
     TelegramUserModule
@@ -32,6 +35,8 @@ import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
     AdminService,
     DriverService,
     LogService,
+    VendorSocketGateway,
+    VendorSocketService
   ],
   exports: [AdminService,LogService],
 })

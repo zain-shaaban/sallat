@@ -48,6 +48,18 @@ export class LogService {
     this.telegramService.sendNotificationToTelegramGroup(message);
     this.logRepository.save({ message, type: 'logout' });
   }
+  
+    async createNewVendorTripLog(
+      vendorName:string,
+      customerName:string,
+    ) {
+      const message = `قام المتجر ${vendorName} بطلب رحلة للعميل ${customerName}.`;
+  
+      this.sendMessageToAdmins(
+        message,
+        'newVendorTrip',
+      );
+    }
 
   async createNewNormalTripWithDriverLog(
     ccName: string,

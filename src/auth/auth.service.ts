@@ -52,6 +52,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign({
       id: vendor.vendorID,
       name: vendor.name,
+      role:'vendor'
     });
     return { accessToken };
   }
