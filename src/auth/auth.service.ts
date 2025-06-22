@@ -5,8 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from 'src/account/entities/account.entity';
 import { LogService } from 'src/sockets/logs/logs.service';
-import { AccountRole } from 'src/account/enums/account-role.enum';
-import { OnlineDrivers } from 'src/sockets/shared-online-drivers/online-drivers';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +12,6 @@ export class AuthService {
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     private readonly jwtService: JwtService,
     @Inject() private readonly logService: LogService,
-    @Inject() private readonly onlineDrivers: OnlineDrivers,
   ) {}
 
   async login(loginDto: LoginRequestDto) {
@@ -38,12 +35,8 @@ export class AuthService {
     return { accessToken };
   }
 
-  async logout(id: string, name: string, role: string) {
-    this.logService.logOut(name);
-    if (role == AccountRole.DRIVER)
-      this.onlineDrivers.drivers = this.onlineDrivers.drivers.filter(
-        (d) => d.driverID !== id,
-      );
+  async logout(name: string) {
+    this.logService.logoutLog(name);
     return null;
   }
 }

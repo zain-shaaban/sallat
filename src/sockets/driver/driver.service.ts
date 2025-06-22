@@ -397,6 +397,14 @@ export class DriverService {
     };
   }
 
+  handleLogOut(driverID: string, driverName: string) {
+    this.onlineDrivers.drivers = this.onlineDrivers.drivers.filter(
+      (d) => d.driverID !== driverID,
+    );
+    this.adminService.sendDriversArrayToAdmins()
+    this.logService.logoutLog(driverName)
+  }
+
   private updateCustomerLocation(
     trip: ITripInSocketsArray,
     location: LocationDto,

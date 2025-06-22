@@ -10,7 +10,12 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AccountAuthGuard } from 'src/common/guards/account.guard';
 
@@ -73,10 +78,6 @@ Logging out from outside the system.`,
   @UseGuards(AccountAuthGuard)
   @Get('logout')
   async logout(@Req() req) {
-    return await this.authService.logout(
-      req.user.id,
-      req.user.name,
-      req.user.role,
-    );
+    return await this.authService.logout(req.user.name);
   }
 }

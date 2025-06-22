@@ -300,6 +300,26 @@ export class DriverSocketGateway
     }
   }
 
+  @SubscribeMessage('logout')
+  logout(@ConnectedSocket() client: Socket) {
+    try {
+      this.driverService.handleLogOut(client.data.id,client.data.name)
+      return {
+        status: true,
+      };
+    } catch (error) {
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'logout',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
+    }
+  }
+
   afterInit(client: Socket) {
     this.driverService.initIO(this.server);
     client.use(this.authMiddleware.driverAuth());

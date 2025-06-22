@@ -13,7 +13,6 @@ import { OnlineDriversModule } from 'src/sockets/shared-online-drivers/online-dr
   imports: [
     TypeOrmModule.forFeature([Account, Log]),
     TelegramModule,
-    OnlineDriversModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, LogService],
