@@ -48,18 +48,20 @@ export class LogService {
     this.telegramService.sendNotificationToTelegramGroup(message);
     this.logRepository.save({ message, type: 'logout' });
   }
-  
-    async createNewVendorTripLog(
-      vendorName:string,
-      customerName:string,
-    ) {
-      const message = `قام المتجر ${vendorName} بطلب رحلة للعميل ${customerName}.`;
-  
-      this.sendMessageToAdmins(
-        message,
-        'newVendorTrip',
-      );
-    }
+
+  async createNewVendorTripLog(vendorName: string, customerName: string) {
+    const message = `قام المتجر ${vendorName} بطلب رحلة للعميل ${customerName}.`;
+
+    this.sendMessageToAdmins(message, 'newVendorTrip');
+  }
+
+  async changeVendorAvailabilityLog(managerName, availability: boolean) {
+    if (!availability)
+      var message = `قام المدير ${managerName} بحجب الرحلات من المتاجر.`;
+    else
+      var message = `قام المدير ${managerName} بفك الحجب عن الرحلات من المتاجر.`;
+    this.sendMessageToAdmins(message, 'changeAvilability');
+  }
 
   async createNewNormalTripWithDriverLog(
     ccName: string,

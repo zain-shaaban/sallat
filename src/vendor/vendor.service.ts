@@ -6,12 +6,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { AdminService } from 'src/sockets/admin/admin.service';
+import { VendorSocketService } from 'src/sockets/vendor/vendor.service';
 
 @Injectable()
 export class VendorService {
   constructor(
     @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
     @Inject() private readonly adminService: AdminService,
+    @Inject() private readonly vendorSocketService: VendorSocketService,
   ) {}
 
   async create({
@@ -93,5 +95,10 @@ export class VendorService {
     });
 
     return vendorsOnMap;
+  }
+
+  async changeAvailability(managerName: string, availability: boolean) {
+    this.vendorSocketService.changeAvailability(managerName,availability);
+    return null
   }
 }

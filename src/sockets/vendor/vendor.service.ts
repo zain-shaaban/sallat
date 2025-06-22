@@ -8,7 +8,7 @@ import { LogService } from '../logs/logs.service';
 @Injectable()
 export class VendorSocketService {
   private io: Namespace;
-  private available: boolean = true;
+  private availability: boolean = true;
 
   constructor(
     @InjectRepository(VendorTrips)
@@ -22,7 +22,7 @@ export class VendorSocketService {
       order: { createdAt: 'DESC' },
     });
 
-    client.emit('onConnection', { trips, available: this.available });
+    client.emit('onConnection', { trips, availability: this.availability });
   }
 
   async handleSendNewTrip(
@@ -41,6 +41,13 @@ export class VendorSocketService {
     this.logService.createNewVendorTripLog(vendorName, customerName);
 
     this.vendorRepository.save({ vendorID, customerName, customerPhoneNumber });
+  }
+
+  changeAvailability(managerName: string, availability: boolean) {
+    this.availability = availability;
+    this.io.server.of('/admin').emit('changeAvailabtility', { availability });
+    this.io.server.of('/vendor').emit('changeAvailability', { availability });
+    this.logService.changeVendorAvailabilityLog(managerName, availability);
   }
 
   public initIO(server: Namespace) {

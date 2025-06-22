@@ -38,6 +38,6 @@ import { VendorSocketService } from './vendor/vendor.service';
     VendorSocketGateway,
     VendorSocketService
   ],
-  exports: [AdminService,LogService],
+  exports: [AdminService,LogService,VendorSocketService],
 })
 export class SocketsModule {}
