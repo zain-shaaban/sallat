@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from 'src/account/entities/account.entity';
 import { LogService } from 'src/sockets/logs/logs.service';
+import { VendorLoginRequestDto } from './dto/vendor-login.dto';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +14,8 @@ export class AuthService {
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     private readonly jwtService: JwtService,
     @Inject() private readonly logService: LogService,
+    @InjectRepository(Vendor)
+    private readonly vendorRepository: Repository<Vendor>,
   ) {}
 
   async login(loginDto: LoginRequestDto) {
@@ -31,6 +35,23 @@ export class AuthService {
       id: account.id,
       role: account.role,
       name: account.name,
+    });
+    return { accessToken };
+  }
+
+  async vendorLogin(loginDto: VendorLoginRequestDto) {
+    const { phoneNumber, password } = loginDto;
+
+    const vendor = await this.vendorRepository.findOne({
+      where: { phoneNumber },
+    });
+
+    if (!vendor || !vendor.comparePassword(password)||!vendor.partner)
+      throw new UnauthorizedException('Wrong credentials');
+
+    const accessToken = this.jwtService.sign({
+      id: vendor.vendorID,
+      name: vendor.name,
     });
     return { accessToken };
   }

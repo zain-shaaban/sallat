@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AccountAuthGuard } from 'src/common/guards/account.guard';
+import { VendorLoginRequestDto } from './dto/vendor-login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -49,6 +50,33 @@ Authenticates a user and returns a JWT token for subsequent API requests.`,
   @Post('login')
   async login(@Body() loginDto: LoginRequestDto) {
     return await this.authService.login(loginDto);
+  }
+
+  @ApiOperation({
+    summary: 'Vendor authentication',
+    description: `
+Authenticates a vendor and returns a JWT token for subsequent API requests.`,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: LoginResponseDto,
+    description: 'Authentication successful - Returns JWT token',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentication failed - Invalid credentials',
+    schema: {
+      example: {
+        status: false,
+        message: 'Wrong credentials',
+      },
+    },
+  })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerGuard)
+  @Post('vendorLogin')
+  async vendorLogin(@Body() loginDto: VendorLoginRequestDto) {
+    return await this.authService.vendorLogin(loginDto);
   }
 
   @ApiOperation({
