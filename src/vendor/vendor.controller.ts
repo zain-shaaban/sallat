@@ -30,7 +30,6 @@ import { AccountAuthGuard } from 'src/common/guards/account.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountRole } from 'src/account/enums/account-role.enum';
-import { ChangeAvailabilityDto } from './dto/change-vendor-availability.dto';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Vendors')
@@ -77,50 +76,10 @@ The response includes the newly created vendor's ID.
       },
     },
   })
-  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles( AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Post('add')
   async create(@Body() createVendorDto: CreateVendorDtoRequest) {
     return await this.vendorService.create(createVendorDto);
-  }
-
-  @ApiOperation({
-    summary: 'Change availability',
-    description: `Determine if delivery is available for stores.`,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Change availability done successfully.',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input data',
-    schema: {
-      example: {
-        status: false,
-        message: 'Validation error',
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing authentication token',
-    schema: {
-      example: {
-        status: false,
-        message: 'Invalid token',
-      },
-    },
-  })
-  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
-  @Post('changeAvailability')
-  async changeAvilability(
-    @Body() changeAvailabilityData: ChangeAvailabilityDto,
-    @Req() req,
-  ) {
-    return await this.vendorService.changeAvailability(
-      req.user.name,
-      changeAvailabilityData.availability,
-    );
   }
 
   @ApiOperation({
@@ -204,7 +163,7 @@ Updates an existing vendor's information.
       },
     },
   })
-  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles( AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Patch('update/:vendorID')
   async update(
     @Param('vendorID') vendorID: string,

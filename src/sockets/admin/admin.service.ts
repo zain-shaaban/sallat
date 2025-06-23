@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
 import { TripService } from 'src/trip/trip.service';
-import { DriverService } from '../driver/driver.service';
 import { WsException } from '@nestjs/websockets';
 import { ITripInSocketsArray } from 'src/trip/interfaces/trip-socket';
 import { NotificationService } from 'src/notification/notification.service';
@@ -11,6 +10,7 @@ import { Customer } from 'src/customer/entities/customer.entity';
 import { Account } from 'src/account/entities/account.entity';
 import { LogService } from '../logs/logs.service';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
+import { PartnerService } from '../partner/partner.service';
 
 @Injectable()
 export class AdminService {
@@ -22,6 +22,7 @@ export class AdminService {
     @Inject() private readonly onlineDrivers: OnlineDrivers,
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly logService: LogService,
+    @Inject() private readonly partnerService: PartnerService,
   ) {}
 
   handleAdminConnection(client: Socket) {
@@ -108,6 +109,28 @@ export class AdminService {
         .of('/driver')
         .to(driver.socketID)
         .emit('availabilityChange', { available });
+  }
+
+  handleChangePartnerAvailability(ccName: string, availability: boolean) {
+    this.partnerService.changePartnerAvailability(ccName, availability);
+  }
+
+  handleAcceptPartnerTrip(
+    ccName: string,
+    vendorID: string,
+    vendorName: string,
+  ) {
+    this.partnerService.tripAccepted(vendorID);
+    this.logService.partnerTripAcceptedLog(ccName, vendorName);
+  }
+
+  handleRejectPartnerTrip(
+    ccName: string,
+    vendorID: string,
+    vendorName: string,
+  ) {
+    this.partnerService.tripRejected(vendorID);
+    this.logService.partnerTripRejectedLog(ccName, vendorName);
   }
 
   handleAssignRoutedPath(tripID: string, routedPath: CoordinatesDto[]) {

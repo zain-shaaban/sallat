@@ -15,17 +15,17 @@ import { TelegramModule } from 'src/telegram-bot/telegram.module';
 import { LogService } from './logs/logs.service';
 import { OnlineDriversModule } from './shared-online-drivers/online-drivers.module';
 import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
-import { VendorTrips } from './vendor/vendor-trips.entity';
-import { VendorSocketGateway } from './vendor/vendor.gateway';
-import { VendorSocketService } from './vendor/vendor.service';
+import { PartnerTrips } from './partner/partner.entity';
+import { PartnerGateway } from './partner/partner.gateway';
+import { PartnerService} from './partner/partner.service';
 
 @Module({
   imports: [
     forwardRef(() => TripModule),
-    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer,VendorTrips]),
+    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer, PartnerTrips]),
     TelegramModule,
     OnlineDriversModule,
-    TelegramUserModule
+    TelegramUserModule,
   ],
   providers: [
     WsAuthMiddleware,
@@ -35,9 +35,9 @@ import { VendorSocketService } from './vendor/vendor.service';
     AdminService,
     DriverService,
     LogService,
-    VendorSocketGateway,
-    VendorSocketService
+    PartnerGateway,
+    PartnerService,
   ],
-  exports: [AdminService,LogService,VendorSocketService],
+  exports: [AdminService, LogService, PartnerService],
 })
 export class SocketsModule {}

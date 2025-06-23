@@ -49,18 +49,33 @@ export class LogService {
     this.logRepository.save({ message, type: 'logout' });
   }
 
-  async createNewVendorTripLog(vendorName: string, customerName: string) {
-    const message = `قام المتجر ${vendorName} بطلب رحلة للعميل ${customerName}.`;
+  async createPartnerTripLog(
+    vendorName: string,
+    customerName: string,
+    customerPhoneNumber: string,
+  ) {
+    const message = `قام المتجر ${vendorName} بطلب رحلة للعميل ${customerName} رقمه ${customerPhoneNumber}.`;
 
-    this.sendMessageToAdmins(message, 'newVendorTrip');
+    this.sendMessageToAdmins(message, 'newPartnerTrip');
   }
 
-  async changeVendorAvailabilityLog(managerName, availability: boolean) {
+  async partnerTripAcceptedLog(ccName: string, vendorName: string) {
+    const message = `قام الموظف ${ccName} بقبول الرحلة من المتجر ${vendorName}.`;
+
+    this.sendMessageToAdmins(message, 'acceptPartnerTrip');
+  }
+
+  async partnerTripRejectedLog(ccName: string, vendorName: string) {
+    const message = `قام الموظف ${ccName} برفض الرحلة من المتجر ${vendorName}.`;
+
+    this.sendMessageToAdmins(message, 'rejectPartnerTrip');
+  }
+
+  async changePartnerAvailabilityLog(ccName: string, availability: boolean) {
     if (!availability)
-      var message = `قام المدير ${managerName} بحجب الرحلات من المتاجر.`;
-    else
-      var message = `قام المدير ${managerName} بفك الحجب عن الرحلات من المتاجر.`;
-    this.sendMessageToAdmins(message, 'changeAvilability');
+      var message = `قام الموظف ${ccName} بحجب الرحلات من المتاجر.`;
+    else var message = `قام الموظف ${ccName} بفك الحجب عن الرحلات من المتاجر.`;
+    this.sendMessageToAdmins(message, 'partnerAvailabilityChanged');
   }
 
   async createNewNormalTripWithDriverLog(

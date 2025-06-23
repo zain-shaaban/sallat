@@ -17,6 +17,8 @@ import {
   AssignNewDriverDto,
   SetAvailableDto,
   TripIdDto,
+  ChangePartnerAvailabilityDto,
+  TripStateDto,
 } from '../dto/admin.dto';
 import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
@@ -134,6 +136,86 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
         logger.error(error.message, error.stack);
       client.emit('exception', {
         eventName: 'setAvailable',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
+    }
+  }
+
+  @SubscribeMessage('changePartnerAvailability')
+  changePartnerAvailability(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() changeAvailabilityData: ChangePartnerAvailabilityDto,
+  ) {
+    try {
+      this.adminService.handleChangePartnerAvailability(
+        client.data.name,
+        changeAvailabilityData.availability,
+      );
+      return {
+        status: true,
+      };
+    } catch (error) {
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'changePartnerAvailability',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
+    }
+  }
+
+  @SubscribeMessage('acceptPartnerTrip')
+  acceptPartnerTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() tripStateData: TripStateDto,
+  ) {
+    try {
+      this.adminService.handleAcceptPartnerTrip(
+        client.data.name,
+        tripStateData.vendorID,
+        tripStateData.vendorName,
+      );
+      return {
+        status: true,
+      };
+    } catch (error) {
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'acceptPartnerTrip',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
+    }
+  }
+
+  @SubscribeMessage('rejectPartnerTrip')
+  rejectPartnerTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() tripStateData: TripStateDto,
+  ) {
+    try {
+      this.adminService.handleRejectPartnerTrip(
+        client.data.name,
+        tripStateData.vendorID,
+        tripStateData.vendorName,
+      );
+      return {
+        status: true,
+      };
+    } catch (error) {
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'rejectPartnerTrip',
         message: error.message,
       });
       return {

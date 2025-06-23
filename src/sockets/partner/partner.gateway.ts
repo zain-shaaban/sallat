@@ -13,30 +13,30 @@ import { Namespace, Socket } from 'socket.io';
 import { logger } from 'src/common/error_logger/logger.util';
 import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
-import { VendorSocketService } from './vendor.service';
+import { PartnerService } from './partner.service';
 import { CreateNewVendorTripDto } from '../dto/vendor.dto';
 
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @UseFilters(ValidationSocketExceptionFilter)
 @WebSocketGateway({
-  namespace: 'vendor',
+  namespace: 'partner',
   cors: {
     origin: '*',
     credentials: true,
   },
 })
-export class VendorSocketGateway implements OnGatewayConnection, OnGatewayInit {
+export class PartnerGateway implements OnGatewayConnection, OnGatewayInit {
   @WebSocketServer()
   server: Namespace;
 
   constructor(
-    @Inject() private vendorService: VendorSocketService,
+    @Inject() private partnerService: PartnerService,
     @Inject() private authMiddleware: WsAuthMiddleware,
   ) {}
 
   handleConnection(client: Socket) {
     try {
-      this.vendorService.handleVendorConnection(client);
+      this.partnerService.handlePartnerConnection(client);
     } catch (error) {
       logger.error(error.message, error.stack);
       client.disconnect();
@@ -49,7 +49,7 @@ export class VendorSocketGateway implements OnGatewayConnection, OnGatewayInit {
     @MessageBody() newTripData: CreateNewVendorTripDto,
   ) {
     try {
-      this.vendorService.handleSendNewTrip(
+      this.partnerService.handleSendNewTrip(
         client.data.id,
         client.data.name,
         newTripData.customerName,
@@ -70,7 +70,7 @@ export class VendorSocketGateway implements OnGatewayConnection, OnGatewayInit {
   }
 
   afterInit(client: Socket) {
-    this.vendorService.initIO(this.server);
+    this.partnerService.initIO(this.server);
     client.use(this.authMiddleware.vendorAuth());
   }
 }

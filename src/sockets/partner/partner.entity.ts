@@ -5,8 +5,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity('sallat_vendor_trips')
-export class VendorTrips {
+@Entity('sallat_partner_trips')
+export class PartnerTrips {
   @PrimaryGeneratedColumn()
   tripID: number;
 
