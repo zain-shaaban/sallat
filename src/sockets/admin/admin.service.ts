@@ -123,6 +123,12 @@ export class AdminService {
   ) {
     this.partnerService.tripAccepted(vendorID);
     this.logService.partnerTripAcceptedLog(ccName, vendorName);
+    this.partnerService.partnerTrips = this.partnerService.partnerTrips.filter(
+      (trip) => trip.vendorID !== vendorID,
+    );
+    this.io.server
+      .of('/admin')
+      .emit('partnerTrips', { partnerTrips: this.partnerService.partnerTrips });
   }
 
   handleRejectPartnerTrip(
@@ -132,6 +138,12 @@ export class AdminService {
   ) {
     this.partnerService.tripRejected(vendorID);
     this.logService.partnerTripRejectedLog(ccName, vendorName);
+    this.partnerService.partnerTrips = this.partnerService.partnerTrips.filter(
+      (trip) => trip.vendorID !== vendorID,
+    );
+    this.io.server
+      .of('/admin')
+      .emit('partnerTrips', { partnerTrips: this.partnerService.partnerTrips });
   }
 
   handleAssignRoutedPath(tripID: string, routedPath: CoordinatesDto[]) {
