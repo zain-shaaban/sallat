@@ -4,11 +4,13 @@ import { Namespace, Socket } from 'socket.io';
 import { Repository } from 'typeorm';
 import { PartnerTrips } from './partner.entity';
 import { LogService } from '../logs/logs.service';
+import { IPartnerTrip } from './partner.interface';
 
 @Injectable()
 export class PartnerService {
   private io: Namespace;
   private availability: boolean = true;
+  public partnerTrips: IPartnerTrip[] = [];
 
   constructor(
     @InjectRepository(PartnerTrips)
@@ -44,6 +46,13 @@ export class PartnerService {
       customerPhoneNumber,
     );
 
+    this.partnerTrips.push({
+      vendorID,
+      vendorName,
+      customerName,
+      customerPhoneNumber,
+    });
+
     this.vendorRepository.save({ vendorID, customerName, customerPhoneNumber });
   }
 
@@ -72,6 +81,10 @@ export class PartnerService {
     );
 
     targetSocket?.emit('tripRejected');
+  }
+
+  returnParterTripsToAdmins() {
+    return this.partnerTrips;
   }
 
   public initIO(server: Namespace) {

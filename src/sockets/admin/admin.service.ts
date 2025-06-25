@@ -31,6 +31,7 @@ export class AdminService {
       readyTrips: this.tripService.readyTrips,
       ongoingTrips: this.tripService.ongoingTrips,
       pendingTrips: this.tripService.pendingTrips,
+      partnerTrips: this.partnerService.partnerTrips,
     });
   }
 
