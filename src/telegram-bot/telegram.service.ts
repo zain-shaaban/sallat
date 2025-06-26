@@ -24,9 +24,27 @@ export class TelegramService {
     }
   }
 
-  async sendNotificationToTelegramGroup(message: string) {
+  async sendNotificationToWorkTelegramGroup(message: string) {
     await this.bot.telegram.sendMessage(process.env.GROUP_ID, message, {
-      message_thread_id: +process.env.THREAD_ID,
+      message_thread_id: +process.env.WORK_THREAD_ID,
+    });
+  }
+
+  async sendNotificationToTripsTelegramGroup(message: string) {
+    await this.bot.telegram.sendMessage(process.env.GROUP_ID, message, {
+      message_thread_id: +process.env.TRIPS_THREAD_ID,
+    });
+  }
+
+  async sendNotificationToTripsEventsTelegramGroup(message: string) {
+    await this.bot.telegram.sendMessage(process.env.GROUP_ID, message, {
+      message_thread_id: +process.env.TRIP_EVENTS_THREAD_ID,
+    });
+  }
+
+  async sendNotificationToDriversTelegramGroup(message: string) {
+    await this.bot.telegram.sendMessage(process.env.GROUP_ID, message, {
+      message_thread_id: +process.env.DRIVERS_THREAD_ID,
     });
   }
 }

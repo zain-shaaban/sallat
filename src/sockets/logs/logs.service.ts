@@ -39,13 +39,13 @@ export class LogService {
 
   loginLog(username: string) {
     const message = `يرجى العلم أن الموظف ${username} قام بتسجيل الدخول.`;
-    this.telegramService.sendNotificationToTelegramGroup(message);
+    this.telegramService.sendNotificationToWorkTelegramGroup(message);
     this.logRepository.save({ message, type: 'login' });
   }
 
   logoutLog(username: string) {
     const message = `يرجى العلم أن الموظف ${username} قام بتسجيل الخروج.`;
-    this.telegramService.sendNotificationToTelegramGroup(message);
+    this.telegramService.sendNotificationToWorkTelegramGroup(message);
     this.logRepository.save({ message, type: 'logout' });
   }
 
@@ -57,18 +57,23 @@ export class LogService {
     const message = `قام المتجر ${vendorName} بطلب رحلة للعميل ${customerName} رقمه ${customerPhoneNumber}.`;
 
     this.sendMessageToAdmins(message, 'newPartnerTrip');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   async partnerTripAcceptedLog(ccName: string, vendorName: string) {
     const message = `قام الموظف ${ccName} بقبول الرحلة من المتجر ${vendorName}.`;
 
     this.sendMessageToAdmins(message, 'acceptPartnerTrip');
+
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   async partnerTripRejectedLog(ccName: string, vendorName: string) {
     const message = `قام الموظف ${ccName} برفض الرحلة من المتجر ${vendorName}.`;
 
     this.sendMessageToAdmins(message, 'rejectPartnerTrip');
+
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   async changePartnerAvailabilityLog(ccName: string, availability: boolean) {
@@ -76,6 +81,7 @@ export class LogService {
       var message = `قام الموظف ${ccName} بحجب الرحلات من المتاجر.`;
     else var message = `قام الموظف ${ccName} بفك الحجب عن الرحلات من المتاجر.`;
     this.sendMessageToAdmins(message, 'partnerAvailabilityChanged');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   async createNewNormalTripWithDriverLog(
@@ -95,6 +101,7 @@ export class LogService {
     );
 
     this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   async createNewAlternativeTripWithDriverLog(
@@ -113,6 +120,7 @@ export class LogService {
     );
 
     this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   createNewNormalTripWithoutDriverLog(
@@ -124,6 +132,7 @@ export class LogService {
     const message = `قام الموظف ${ccName} بتسجيل رحلة جديدة للعميل ${customerName} من المتجر ${vendorName} برقم ${tripNumber} ولم يتم اسنادها إلى سائق بعد.`;
 
     this.sendMessageToAdmins(message, 'createNewNormalTripWithoutDriver');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   async createNewAlternativeTripWithoutDriverLog(
@@ -134,6 +143,7 @@ export class LogService {
     const message = `قام الموظف ${ccName} بتسجيل رحلة جديدة من النمط البديل للعميل ${customerName} برقم ${tripNumber} ولم يتم اسنادها إلى سائق بعد.`;
 
     this.sendMessageToAdmins(message, 'createNewAlternativeTripWithoutDriver');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   async acceptTripLog(
@@ -146,6 +156,7 @@ export class LogService {
     this.sendMessageToAdmins(message, 'acceptTrip', driverID);
 
     this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToTripsEventsTelegramGroup(message)
   }
 
   async rejectTripLog(
@@ -158,6 +169,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'rejectTrip', driverID);
 
     this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToTripsEventsTelegramGroup(message)
+
   }
 
   async onVendorLog(
@@ -171,6 +184,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'onVendor', driverID);
 
     this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToTripsEventsTelegramGroup(message)
+
   }
 
   async leftVendorLog(
@@ -184,6 +199,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'leftVendor', driverID);
 
     this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToTripsEventsTelegramGroup(message)
+
   }
 
   async endTripLog(
@@ -197,6 +214,7 @@ export class LogService {
     this.sendMessageToAdmins(message, 'endTrip', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToTripsTelegramGroup(message)
   }
 
   async changeToAlternativeLog(
@@ -209,6 +227,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'changeToAlternative', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToTripsTelegramGroup(message)
+
   }
 
   async addWayPointLog(
@@ -221,6 +241,7 @@ export class LogService {
     this.sendMessageToAdmins(message, 'wayPoint', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToTripsEventsTelegramGroup(message)
   }
 
   async pullTripLog(
@@ -234,6 +255,7 @@ export class LogService {
     this.sendMessageToAdmins(message, 'pullTrip', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToTripsTelegramGroup(message)
   }
 
   async assignNewDriverLog(
@@ -247,6 +269,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'assignNewDriver', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToTripsTelegramGroup(message)
+
   }
 
   async cancelledTripLog(ccName: string, tripNumber: number, driverID: string) {
@@ -255,22 +279,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'cancelledTrip', driverID);
 
     await this.sendMessageToDriver(driverID, message);
-  }
+        this.telegramService.sendNotificationToTripsTelegramGroup(message)
 
-  async driverUnAvailableLog(driverID: string, driverName: string) {
-    const message = `السائق ${driverName} غير متاح الآن.`;
-
-    this.sendMessageToAdmins(message, 'driverUnavailable', driverID);
-
-    await this.sendMessageToDriver(driverID, message);
-  }
-
-  async driverAvailableLog(driverID: string, driverName: string) {
-    const message = `السائق ${driverName} متاح الآن.`;
-
-    this.sendMessageToAdmins(message, 'driverAvailable', driverID);
-
-    await this.sendMessageToDriver(driverID, message);
   }
 
   async failedTripLog(
@@ -284,6 +294,7 @@ export class LogService {
     this.sendMessageToAdmins(message, 'failedTrip', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToTripsTelegramGroup(message)
   }
 
   async changeDriverToUnAvailableByDriverLog(
@@ -295,6 +306,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'driverUnAvailableByDriver', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToDriversTelegramGroup(message)
+
   }
 
   async changeDriverToAvailableByDriverLog(
@@ -306,6 +319,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'driverAvailableByDriver', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToDriversTelegramGroup(message)
+
   }
 
   async changeDriverToUnAvailableByCcLog(
@@ -318,6 +333,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'driverUnAvailableByCc', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToDriversTelegramGroup(message)
+
   }
 
   async changeDriverToAvailableByCcLog(
@@ -330,6 +347,8 @@ export class LogService {
     this.sendMessageToAdmins(message, 'driverAvailableByCc', driverID);
 
     await this.sendMessageToDriver(driverID, message);
+        this.telegramService.sendNotificationToDriversTelegramGroup(message)
+
   }
 
   private sendMessageToAdmins(
@@ -339,8 +358,6 @@ export class LogService {
   ) {
     try {
       this.logRepository.save({ driverID, message, type });
-
-      this.telegramService.sendNotificationToTelegramGroup(message);
 
       this.io.to('cc').emit('newLog', { message, type });
     } catch (error) {
