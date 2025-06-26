@@ -9,12 +9,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import {
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  IsPhoneNumber,
-} from 'class-validator';
 import { Exclude } from 'class-transformer';
 import * as bcrypt from 'bcryptjs';
 
@@ -34,11 +28,7 @@ export class Vendor {
     description: "Vendor's contact phone number",
     maxLength: 20,
   })
-  @Column({ type: 'varchar', length: 20, nullable: false })
-  @IsNotEmpty()
-  @IsString()
-  @IsPhoneNumber()
-  @MaxLength(20)
+  @Column({ type: 'varchar', length: 20, nullable: true })
   phoneNumber: string;
 
   @Exclude()
@@ -68,9 +58,6 @@ export class Vendor {
     maxLength: 200,
   })
   @Column({ type: 'varchar', length: 200, nullable: false })
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(200)
   name: string;
 
   @ApiProperty({
@@ -87,7 +74,6 @@ export class Vendor {
     required: true,
   })
   @Column({ type: 'jsonb', nullable: false })
-  @IsNotEmpty()
   location: LocationDto;
 
   @OneToMany(() => Trip, (trip) => trip.vendor)
