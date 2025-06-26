@@ -31,7 +31,7 @@ export class CreateVendorDtoRequest {
     required: true,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Matches(/^[^a-zA-Z]+$/, {
     message: 'Phone number is not valid',
   })

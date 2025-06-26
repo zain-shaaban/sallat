@@ -51,7 +51,7 @@ export class TripService {
       approxTime,
       routedPath,
       alternative,
-      partner
+      partner,
     }: CreateTripDto,
     ccID: string,
     ccName: string,
@@ -81,8 +81,10 @@ export class TripService {
       approxTime,
       routedPath,
       alternative,
-      partner
+      partner,
     });
+
+    if (!alternative && !vendorID) this.adminService.newVendor(trip.vendor);
 
     trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
 
@@ -90,6 +92,7 @@ export class TripService {
       trip.customer.customerID,
       'تم تسجيل رحلة جديدة باسمك.',
     );
+
     driverID
       ? this.handleSocketsIfTripIsNewAndDriverIdExist(trip, ccName)
       : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip, ccName);
@@ -103,6 +106,9 @@ export class TripService {
   async findAll() {
     const trips = await this.tripRepository.find({
       relations: ['customer', 'vendor'],
+      order: {
+        createdAt: 'desc',
+      },
     });
     return trips;
   }
