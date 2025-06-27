@@ -57,6 +57,10 @@ export class GetAllTripsDto {
         distance: 1954,
         approxPrice: 9247,
         price: 8908,
+        discounts:{
+          item:0.2,
+          delivery:0.4
+        },
         itemPrice: 25000,
         approxTime: '6',
         time: '791920',

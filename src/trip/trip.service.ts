@@ -52,6 +52,7 @@ export class TripService {
       routedPath,
       alternative,
       partner,
+      discounts
     }: CreateTripDto,
     ccID: string,
     ccName: string,
@@ -82,6 +83,7 @@ export class TripService {
       routedPath,
       alternative,
       partner,
+      discounts
     });
 
     if (!alternative && !vendorID) this.adminService.newVendor(trip.vendor);

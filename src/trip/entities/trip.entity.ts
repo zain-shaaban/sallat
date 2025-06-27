@@ -296,4 +296,19 @@ export class Trip {
   @Column()
   @Generated('increment')
   tripNumber: number;
+
+  @ApiProperty({
+    type: 'object',
+    properties:{},
+    description: 'Discounts from the price',
+    example: {
+      item: 0.2,
+      delivery: 0.4,
+    },
+  })
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+  })
+  discounts: object;
 }

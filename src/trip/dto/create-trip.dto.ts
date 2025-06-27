@@ -14,6 +14,26 @@ import {
 import { CoordinatesDto, LocationDto } from 'src/customer/dto/location.dto';
 import { Type } from 'class-transformer';
 
+class Discounts {
+  @ApiProperty({
+    type: 'number',
+    description: 'discounts from items',
+    example: 0.2,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  item: number;
+
+  @ApiProperty({
+    type: 'number',
+    description: 'discounts from delivery',
+    example: 0.4,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  delivery: number;
+}
+
 export class CreateTripDto {
   @ApiProperty({
     type: 'string',
@@ -260,4 +280,18 @@ export class CreateTripDto {
   @IsString({ each: true })
   @MaxLength(100, { each: true })
   customerAlternativePhoneNumbers: string[];
+
+  @ApiProperty({
+    type: Discounts,
+    description: 'Discounts from the price',
+    example: {
+      item: 0.2,
+      delivery: 0.4,
+    },
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => Discounts)
+  discounts?: Discounts;
 }

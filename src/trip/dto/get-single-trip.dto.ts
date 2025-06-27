@@ -14,7 +14,7 @@ export class GetSingleTripDto {
       driverID: '45aa7a9f-f527-4e42-a77b-58c8e6943a30',
       vehicleNumber: 'ABC123',
       alternative: false,
-      partner:false,
+      partner: false,
       itemTypes: ['شاورما', 'بطاطا مقلية'],
       tripState: {
         tripStart: {
@@ -56,6 +56,10 @@ export class GetSingleTripDto {
       approxPrice: 9247,
       price: 8908,
       itemPrice: 25000,
+      discounts: {
+        item: 0.2,
+        price: 0.4,
+      },
       approxTime: '6',
       time: '791920',
       rawPath: [
@@ -83,8 +87,8 @@ export class GetSingleTripDto {
         [34.888192, 35.881591],
       ],
       status: 'success',
-      reason:null,
-      tripNumber:1,
+      reason: null,
+      tripNumber: 1,
       createAt: '2025-05-09T11:28:41.131Z',
       receipt: [
         {

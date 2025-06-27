@@ -360,6 +360,11 @@ export class DriverService {
       trip.price = this.pricing(trip.distance);
     }
 
+    if (Object.keys(trip.discounts).length > 0) {
+      trip.price = trip.price - trip.price * trip.discounts.delivery;
+      itemPrice = itemPrice - itemPrice * trip.discounts.item;
+    }
+
     this.tripRepository.update(trip.tripID, {
       driverID: trip.driverID,
       status: 'success',
@@ -386,7 +391,7 @@ export class DriverService {
     return {
       status: true,
       data: {
-        tripID: trip.tripID,
+        tripNumber: trip.tripNumber,
         status: 'success',
         itemPrice,
         time: trip.time,
@@ -401,8 +406,8 @@ export class DriverService {
     this.onlineDrivers.drivers = this.onlineDrivers.drivers.filter(
       (d) => d.driverID !== driverID,
     );
-    this.adminService.sendDriversArrayToAdmins()
-    this.logService.logoutLog(driverName)
+    this.adminService.sendDriversArrayToAdmins();
+    this.logService.logoutLog(driverName);
   }
 
   private updateCustomerLocation(

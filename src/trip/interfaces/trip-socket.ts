@@ -75,4 +75,6 @@ export interface ITripInSocketsArray {
   reason: string;
 
   tripNumber: number;
+
+  discounts: { item: number; delivery: number };
 }
