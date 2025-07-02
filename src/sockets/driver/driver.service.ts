@@ -349,7 +349,7 @@ export class DriverService {
     trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
 
     try {
-      await this.mapMatching(trip.rawPath);
+      await this.mapMatching(trip.rawPath, trip.vehicleNumber);
       trip.price = this.price;
       trip.distance = this.matchedDistance;
       trip.matchedPath = this.matchedPath;
@@ -357,7 +357,7 @@ export class DriverService {
       logger.error(error.message, error.stack);
       trip.matchedPath = [];
       trip.distance = getPathLength(trip.rawPath);
-      trip.price = this.pricing(trip.distance);
+      trip.price = this.pricing(trip.distance, trip.vehicleNumber);
     }
 
     if (Object.keys(trip.discounts).length > 0) {
@@ -446,11 +446,13 @@ export class DriverService {
     return latlngObject.map(({ lat, lng }) => [lat, lng]);
   }
 
-  private pricing(distance: number) {
-    return 5000 + 2 * distance;
+  private pricing(distance: number, vehicleNumber: string) {
+    if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K'))
+      return 5000 + 2.5 * distance;
+    else if (vehicleNumber.startsWith('T')) return 2000 + 6 * distance;
   }
 
-  private async mapMatching(rawPath: CoordinatesDto[]) {
+  private async mapMatching(rawPath: CoordinatesDto[], vehicleNumber: string) {
     const polylineFromCoords = polyline.encode(this.toCoordsArray(rawPath));
     function filterBackslashes(URL: string) {
       return URL.replace(/\\/g, '%5C');
@@ -469,6 +471,6 @@ export class DriverService {
         return { latitude: point[0], longitude: point[1] };
       }),
     );
-    this.price = this.pricing(this.matchedDistance);
+    this.price = this.pricing(this.matchedDistance, vehicleNumber);
   }
 }
