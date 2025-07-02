@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import {
   IUpdateAccountRequest,
 } from './interfaces/account.interface';
 import { AccountRole } from './enums/account-role.enum';
+import { AdminService } from 'src/sockets/admin/admin.service';
 
 @Injectable()
 export class AccountService {
@@ -23,6 +25,7 @@ export class AccountService {
     private readonly accountRepository: Repository<Account>,
     @InjectRepository(DriverMetadata)
     private readonly driverRepository: Repository<DriverMetadata>,
+    @Inject() private readonly adminService:AdminService
   ) {}
 
   async create({
@@ -153,6 +156,9 @@ export class AccountService {
       );
     if (!accountAffected && !driverAffected)
       throw new NotFoundException(`Account with ID ${id} not found`);
+
+    if(assignedVehicleNumber)
+      this.adminService.updateDriver({id,assignedVehicleNumber})
     return null;
   }
 

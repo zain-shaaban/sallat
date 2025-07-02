@@ -8,10 +8,11 @@ import { CustomerModule } from 'src/customer/customer.module';
 import { SocketsModule } from 'src/sockets/sockets.module';
 import { OnlineDriversModule } from 'src/sockets/shared-online-drivers/online-drivers.module';
 import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Trip, Customer]),
+    TypeOrmModule.forFeature([Trip, Customer,Vendor]),
     forwardRef(() => SocketsModule),
     forwardRef(() => CustomerModule),
     OnlineDriversModule,

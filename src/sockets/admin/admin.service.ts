@@ -342,7 +342,7 @@ export class AdminService {
     this.io.server.of('/admin').emit('updateCustomer', { customer });
   }
 
-  updateDriver(driver: Account) {
+  updateDriver(driver: {id:string,assignedVehicleNumber:string}) {
     this.io.server.of('/admin').emit('updateDriver', { driver });
   }
 
