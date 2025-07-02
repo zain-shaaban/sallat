@@ -447,9 +447,13 @@ export class DriverService {
   }
 
   private pricing(distance: number, vehicleNumber: string) {
-    if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K'))
+    if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K')) {
       return 5000 + 2.5 * distance;
-    else if (vehicleNumber.startsWith('T')) return 2000 + 6 * distance;
+    } else if (vehicleNumber.startsWith('T')) {
+      return 2000 + 6 * distance;
+    } else {
+      return 5000 + 2.5 * distance;
+    }
   }
 
   private async mapMatching(rawPath: CoordinatesDto[], vehicleNumber: string) {
