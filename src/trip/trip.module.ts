@@ -9,10 +9,11 @@ import { SocketsModule } from 'src/sockets/sockets.module';
 import { OnlineDriversModule } from 'src/sockets/shared-online-drivers/online-drivers.module';
 import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Trip, Customer,Vendor]),
+    TypeOrmModule.forFeature([Trip, Customer,Vendor,DriverMetadata]),
     forwardRef(() => SocketsModule),
     forwardRef(() => CustomerModule),
     OnlineDriversModule,

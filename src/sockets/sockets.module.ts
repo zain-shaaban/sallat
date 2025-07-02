@@ -18,11 +18,12 @@ import { TelegramUserModule } from 'src/telegram-user-bot/telegram-user.module';
 import { PartnerTrips } from './partner/partner.entity';
 import { PartnerGateway } from './partner/partner.gateway';
 import { PartnerService} from './partner/partner.service';
+import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 
 @Module({
   imports: [
     forwardRef(() => TripModule),
-    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer, PartnerTrips]),
+    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer, PartnerTrips,DriverMetadata]),
     TelegramModule,
     OnlineDriversModule,
     TelegramUserModule,

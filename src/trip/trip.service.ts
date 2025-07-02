@@ -13,6 +13,7 @@ import { LogService } from 'src/sockets/logs/logs.service';
 import { OnlineDrivers } from 'src/sockets/shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
+import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 
 @Injectable()
 export class TripService {
@@ -32,12 +33,13 @@ export class TripService {
     @Inject() private readonly customerService: CustomerService,
     @Inject() private readonly logService: LogService,
     @Inject() private readonly userBotService: TelegramUserService,
+    @InjectRepository(DriverMetadata)
+    private readonly driverRepository: Repository<DriverMetadata>,
   ) {}
 
   async createNewTrip(
     {
       driverID,
-      vehicleNumber,
       vendorID,
       vendorName,
       vendorPhoneNumber,
@@ -60,10 +62,12 @@ export class TripService {
     ccID: string,
     ccName: string,
   ) {
+    const driver = await this.driverRepository.findOneBy({ id: driverID });
+
     let trip: any = await this.tripRepository.save({
       ccID,
-      driverID,
-      vehicleNumber,
+      driverID: driver?.id,
+      vehicleNumber: driver?.assignedVehicleNumber,
       vendor: !alternative
         ? {
             vendorID,

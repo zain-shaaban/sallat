@@ -11,6 +11,9 @@ import { Account } from 'src/account/entities/account.entity';
 import { LogService } from '../logs/logs.service';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { PartnerService } from '../partner/partner.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AdminService {
@@ -23,6 +26,8 @@ export class AdminService {
     @Inject() private readonly notificationService: NotificationService,
     @Inject() private readonly logService: LogService,
     @Inject() private readonly partnerService: PartnerService,
+    @InjectRepository(DriverMetadata)
+    private readonly driverRepository: Repository<DriverMetadata>,
   ) {}
 
   handleAdminConnection(client: Socket) {
@@ -46,7 +51,7 @@ export class AdminService {
     }
   }
 
-  handleAssignNewDriverToTheTrip(
+  async handleAssignNewDriverToTheTrip(
     tripID: string,
     driverID: string,
     ccName: string,
@@ -57,9 +62,17 @@ export class AdminService {
       (d) => d.driverID === driverID,
     );
 
+    const driverMetadata = await this.driverRepository.findOneBy({
+      id: driverID,
+    });
+
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    this.moveTripFromPendingToReady(trip, driverID);
+    this.moveTripFromPendingToReady(
+      trip,
+      driverID,
+      driverMetadata.assignedVehicleNumber,
+    );
 
     this.submitNewTrip(trip);
 
@@ -253,12 +266,17 @@ export class AdminService {
     this.sendTripsToAdmins();
   }
 
-  moveTripFromPendingToReady(trip: ITripInSocketsArray, driverID: string) {
+  moveTripFromPendingToReady(
+    trip: ITripInSocketsArray,
+    driverID: string,
+    vehicleNumber: string,
+  ) {
     this.tripService.pendingTrips = this.tripService.pendingTrips.filter(
       (t) => t.tripID !== trip.tripID,
     );
 
     trip.driverID = driverID;
+    trip.vehicleNumber = vehicleNumber;
 
     this.tripService.readyTrips.push(trip);
   }
@@ -342,7 +360,7 @@ export class AdminService {
     this.io.server.of('/admin').emit('updateCustomer', { customer });
   }
 
-  updateDriver(driver: {id:string,assignedVehicleNumber:string}) {
+  updateDriver(driver: { id: string; assignedVehicleNumber: string }) {
     this.io.server.of('/admin').emit('updateDriver', { driver });
   }
 

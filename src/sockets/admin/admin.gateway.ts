@@ -93,12 +93,12 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
   }
 
   @SubscribeMessage('assignNewDriver')
-  assignNewDriver(
+  async assignNewDriver(
     @ConnectedSocket() client: Socket,
     @MessageBody() idPairs: AssignNewDriverDto,
   ) {
     try {
-      this.adminService.handleAssignNewDriverToTheTrip(
+      await this.adminService.handleAssignNewDriverToTheTrip(
         idPairs.tripID,
         idPairs.driverID,
         client.data.name,
