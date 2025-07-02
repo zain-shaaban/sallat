@@ -12,6 +12,7 @@ import { AdminService } from 'src/sockets/admin/admin.service';
 import { LogService } from 'src/sockets/logs/logs.service';
 import { OnlineDrivers } from 'src/sockets/shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
+import { Vendor } from 'src/vendor/entities/vendor.entity';
 
 @Injectable()
 export class TripService {
@@ -23,6 +24,8 @@ export class TripService {
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
+    @InjectRepository(Vendor)
+    private readonly vendorRepository: Repository<Vendor>,
     @Inject() private readonly adminService: AdminService,
     @Inject() private readonly onlineDrivers: OnlineDrivers,
     @Inject() private readonly notificationService: NotificationService,
@@ -52,7 +55,7 @@ export class TripService {
       routedPath,
       alternative,
       partner,
-      discounts
+      discounts,
     }: CreateTripDto,
     ccID: string,
     ccName: string,
@@ -83,10 +86,17 @@ export class TripService {
       routedPath,
       alternative,
       partner,
-      discounts
+      discounts,
     });
 
     if (!alternative && !vendorID) this.adminService.newVendor(trip.vendor);
+
+    if (!alternative && vendorID) {
+      const vendor = await this.vendorRepository.findOneBy({ vendorID });
+      trip.vendor = vendor;
+      if (vendorName || vendorLocation || vendorPhoneNumber)
+        this.adminService.updateVendor(vendor);
+    }
 
     trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
 
