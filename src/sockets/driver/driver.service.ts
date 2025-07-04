@@ -398,6 +398,7 @@ export class DriverService {
         distance: trip.distance,
         price: trip.price,
         receipt,
+        discounts: trip.discounts
       },
     };
   }
