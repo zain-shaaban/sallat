@@ -132,7 +132,14 @@ export class TripService {
   async customerSearch(phoneNumber: string) {
     let customers: any = await this.customerRepository.find({
       where: { phoneNumbers: ArrayContains([phoneNumber]) },
+      relations: ['trips'],
+      order: {
+        trips: {
+          createdAt: 'desc',
+        },
+      },
     });
+
     if (customers.length === 0)
       throw new NotFoundException(
         `Customer with phone number ${phoneNumber} not found`,
@@ -141,6 +148,10 @@ export class TripService {
       customer.alternativePhoneNumbers =
         customer.phoneNumbers.filter((n) => n !== phoneNumber) || [];
       delete customer.phoneNumbers;
+
+      const previousTrip = customer.trips[0];
+      customer.previousTrip = previousTrip;
+      delete customer.trips;
       return customer;
     });
     return customers;
