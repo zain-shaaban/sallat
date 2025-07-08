@@ -132,7 +132,11 @@ export class TripService {
   async customerSearch(phoneNumber: string) {
     let customers: any = await this.customerRepository.find({
       where: { phoneNumbers: ArrayContains([phoneNumber]) },
-      relations: ['trips'],
+      relations: {
+        trips:{
+          vendor:true
+        }
+      },
       order: {
         trips: {
           createdAt: 'desc',
