@@ -62,7 +62,8 @@ export class TripService {
     ccID: string,
     ccName: string,
   ) {
-    const driver = await this.driverRepository.findOneBy({ id: driverID });
+    if (driverID)
+      var driver = await this.driverRepository.findOneBy({ id: driverID });
 
     let trip: any = await this.tripRepository.save({
       ccID,
@@ -133,9 +134,9 @@ export class TripService {
     let customers: any = await this.customerRepository.find({
       where: { phoneNumbers: ArrayContains([phoneNumber]) },
       relations: {
-        trips:{
-          vendor:true
-        }
+        trips: {
+          vendor: true,
+        },
       },
       order: {
         trips: {
