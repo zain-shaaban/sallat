@@ -104,6 +104,15 @@ export class CreateAccountDtoRequest implements ICreateAccountRequest {
   @IsOptional()
   @IsString()
   notificationToken?: string;
+
+  @ApiProperty({
+    example: 'A041',
+    description: 'code name of the driver',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  code?: string;
 }
 
 export class CreateAccountDtoResponse implements IAccountResponse {
