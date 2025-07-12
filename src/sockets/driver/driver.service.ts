@@ -539,7 +539,7 @@ export class DriverService {
     const deliveryDiscountValue = trip.discounts?.delivery || 0;
     const itemDiscountValue = trip.discounts?.item || 0;
 
-    const total = formatPrice(trip.itemPrice + trip.price);
+    const total = formatPrice(trip.itemPrice + (trip.fixedPrice ?? trip.price));
 
     const lines = [
       `شكراً لثقتك.`,
