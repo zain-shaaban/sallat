@@ -15,6 +15,7 @@ export interface IAccount {
 export interface IDriverAccount extends IAccount {
   assignedVehicleNumber?: string;
   notificationToken?: string;
+  code?:string;
 }
 
 export interface ICreateAccountRequest {
@@ -26,6 +27,7 @@ export interface ICreateAccountRequest {
   salary?: number;
   assignedVehicleNumber?: string;
   notificationToken?: string;
+  code?:string
 }
 
 export interface IUpdateAccountRequest {
@@ -37,6 +39,7 @@ export interface IUpdateAccountRequest {
   salary?: number;
   assignedVehicleNumber?: string;
   notificationToken?: string;
+  code?:string
 }
 
 export interface IAccountResponse {

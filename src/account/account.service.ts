@@ -37,6 +37,7 @@ export class AccountService {
     role,
     assignedVehicleNumber,
     notificationToken,
+    code
   }: ICreateAccountRequest): Promise<{ id: string }> {
     const account = this.accountRepository.create({
       name,
@@ -53,6 +54,7 @@ export class AccountService {
         id,
         assignedVehicleNumber,
         notificationToken,
+        code
       });
     }
     return { id };
@@ -134,6 +136,7 @@ export class AccountService {
     {
       notificationToken,
       assignedVehicleNumber,
+      code,
       ...updateData
     }: IUpdateAccountRequest,
   ): Promise<null> {
@@ -146,12 +149,13 @@ export class AccountService {
         id,
         cleanUpdateData,
       );
-    if (notificationToken || assignedVehicleNumber)
+    if (notificationToken || assignedVehicleNumber||code)
       var { affected: driverAffected } = await this.driverRepository.update(
         id,
         {
           notificationToken,
           assignedVehicleNumber,
+          code
         },
       );
     if (!accountAffected && !driverAffected)
@@ -178,6 +182,7 @@ export class AccountService {
         phoneNumber: true,
         driverMetadata: {
           assignedVehicleNumber: true,
+          code:true
         },
       },
       where: { role: AccountRole.DRIVER },

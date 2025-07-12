@@ -36,6 +36,15 @@ export class DriverMetadata {
   @Column({ type: 'varchar', nullable: true })
   notificationToken: string;
 
+  @ApiProperty({
+    type: 'string',
+    example: 'P023',
+    description: 'code name unique for each driver',
+    required: false,
+  })
+  @Column({ type: 'varchar', nullable: true })
+  code: string;
+
   @OneToOne(() => Account, (account) => account.driverMetadata, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
