@@ -343,6 +343,15 @@ export class LogService {
     this.telegramService.sendNotificationToDriversTelegramGroup(message);
   }
 
+  async emergencyStateLog(driverID: string, driverName: string) {
+    const message = `الموظف ${driverName} في حالة خطر.`;
+
+    this.sendMessageToAdmins(message, 'emergencyState', driverID);
+
+    await this.sendMessageToDriver(driverID, message);
+    this.telegramService.sendNotificationToDriversTelegramGroup(message);
+  }
+
   private sendMessageToAdmins(
     message: string,
     type: string,

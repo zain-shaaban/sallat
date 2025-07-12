@@ -303,7 +303,7 @@ export class DriverSocketGateway
   @SubscribeMessage('logout')
   logout(@ConnectedSocket() client: Socket) {
     try {
-      this.driverService.handleLogOut(client.data.id,client.data.name)
+      this.driverService.handleLogOut(client.data.id, client.data.name);
       return {
         status: true,
       };
@@ -312,6 +312,26 @@ export class DriverSocketGateway
         logger.error(error.message, error.stack);
       client.emit('exception', {
         eventName: 'logout',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
+    }
+  }
+
+  @SubscribeMessage('emergencyState')
+  emergencyState(@ConnectedSocket() client: Socket) {
+    try {
+      this.driverService.handleEmergencyState(client.data.id, client.data.name);
+      return {
+        status: true,
+      };
+    } catch (error) {
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'emergencyState',
         message: error.message,
       });
       return {

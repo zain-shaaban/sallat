@@ -18,6 +18,7 @@ import { LogService } from '../logs/logs.service';
 import { logger } from 'src/common/error_logger/logger.util';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
+import { stringify } from 'querystring';
 
 @Injectable()
 export class DriverService {
@@ -217,6 +218,11 @@ export class DriverService {
     this.logService.addWayPointLog(driverID, driverName, trip.tripNumber);
   }
 
+  handleEmergencyState(driverID: string, driverName: string) {
+    this.io.server.of('/admin').emit('emergencyState',{driverID,driverName})
+    this.logService.emergencyStateLog(driverID,driverName)
+  }
+
   handleChangeStateOfTheNormalTrip(
     driverID: string,
     driverName: string,
@@ -398,7 +404,7 @@ export class DriverService {
         distance: trip.distance,
         price: trip.price,
         receipt,
-        discounts: trip.discounts
+        discounts: trip.discounts,
       },
     };
   }
