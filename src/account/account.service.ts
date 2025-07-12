@@ -25,7 +25,7 @@ export class AccountService {
     private readonly accountRepository: Repository<Account>,
     @InjectRepository(DriverMetadata)
     private readonly driverRepository: Repository<DriverMetadata>,
-    @Inject() private readonly adminService:AdminService
+    @Inject() private readonly adminService: AdminService,
   ) {}
 
   async create({
@@ -37,7 +37,7 @@ export class AccountService {
     role,
     assignedVehicleNumber,
     notificationToken,
-    code
+    code,
   }: ICreateAccountRequest): Promise<{ id: string }> {
     const account = this.accountRepository.create({
       name,
@@ -54,7 +54,7 @@ export class AccountService {
         id,
         assignedVehicleNumber,
         notificationToken,
-        code
+        code,
       });
     }
     return { id };
@@ -149,20 +149,20 @@ export class AccountService {
         id,
         cleanUpdateData,
       );
-    if (notificationToken || assignedVehicleNumber||code)
+    if (notificationToken || assignedVehicleNumber || code)
       var { affected: driverAffected } = await this.driverRepository.update(
         id,
         {
           notificationToken,
           assignedVehicleNumber,
-          code
+          code,
         },
       );
     if (!accountAffected && !driverAffected)
       throw new NotFoundException(`Account with ID ${id} not found`);
 
-    if(assignedVehicleNumber)
-      this.adminService.updateDriver({id,assignedVehicleNumber})
+    if (assignedVehicleNumber)
+      this.adminService.updateDriver({ id, assignedVehicleNumber });
     return null;
   }
 
@@ -182,16 +182,16 @@ export class AccountService {
         phoneNumber: true,
         driverMetadata: {
           assignedVehicleNumber: true,
-          code:true
+          code: true,
         },
       },
       where: { role: AccountRole.DRIVER },
     });
 
     const driversAfterFormatting = drivers.map((driver) => {
-      const assignedVehicleNumber = driver.driverMetadata.assignedVehicleNumber;
+      const { assignedVehicleNumber, code } = driver.driverMetadata;
       delete driver.driverMetadata;
-      return { ...driver, assignedVehicleNumber };
+      return { ...driver, assignedVehicleNumber, code };
     });
     return driversAfterFormatting;
   }
