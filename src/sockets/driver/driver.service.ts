@@ -338,12 +338,15 @@ export class DriverService {
     location: LocationDto,
     type: string,
     time: number,
+    rawPath: { lat: number; lng: number }[],
   ) {
     const trip = this.tripService.ongoingTrips.find(
       (t) => t.tripID === tripID && t.driverID === driverID,
     );
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
+
+    if (rawPath) trip.rawPath = rawPath;
 
     Object.assign(trip, { itemPrice, receipt, status: 'success' });
 

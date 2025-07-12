@@ -115,6 +115,12 @@ export class EndTripDto {
 
   @IsNumber()
   time: number;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CoordinatesDto)
+  rawPath?: CoordinatesDto[];
 }
 
 export class AvailabilityDto {

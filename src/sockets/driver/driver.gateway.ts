@@ -286,6 +286,7 @@ export class DriverSocketGateway
         endStateData.location,
         endStateData.type,
         endStateData.time,
+        endStateData.rawPath
       );
     } catch (error) {
       if (!(error instanceof WsException))
