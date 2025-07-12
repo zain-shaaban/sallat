@@ -498,6 +498,7 @@ export class DriverService {
   private generateReceiptMessage(trip: ITripInSocketsArray) {
     const formatDate = (iso: Date) => {
       const date = new Date(iso);
+      date.setHours(date.getHours() + 3);
       const day = date.getDate();
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
