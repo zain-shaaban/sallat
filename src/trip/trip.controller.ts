@@ -72,6 +72,7 @@ Creates a new trip with the provided details. The trip can be either a regular d
           approxDistance: 5200,
           approxPrice: 80000,
           approxTime: 133266423,
+          fixedPrice:true,
           routedPath: [
             { lng: 111.111, lat: 112.222 },
             { lng: 888.888, lat: 999.999 },

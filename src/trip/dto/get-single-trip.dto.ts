@@ -55,6 +55,7 @@ export class GetSingleTripDto {
       distance: 1954,
       approxPrice: 9247,
       price: 8908,
+      fixedPrice:9000,
       itemPrice: 25000,
       discounts: {
         item: 0.2,

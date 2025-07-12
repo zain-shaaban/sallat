@@ -183,6 +183,15 @@ export class Trip {
 
   @ApiProperty({
     type: 'number',
+    example: 6000.0,
+    description: 'Fixed price in local currency',
+    required: false,
+  })
+  @Column({nullable: true })
+  fixedPrice: number;
+
+  @ApiProperty({
+    type: 'number',
     example: 6200.0,
     description: 'Actual price in local currency',
     required: false,

@@ -403,6 +403,7 @@ export class DriverService {
         time: trip.time,
         distance: trip.distance,
         price: trip.price,
+        fixedPrice:trip.fixedPrice,
         receipt,
         discounts: trip.discounts,
       },

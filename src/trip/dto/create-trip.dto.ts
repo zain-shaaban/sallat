@@ -211,6 +211,17 @@ export class CreateTripDto {
   approxPrice?: number;
 
   @ApiProperty({
+    type: 'number',
+    example: 9000,
+    description: 'Fixed price of the trip in the local currency',
+    required: false,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  fixedPrice?: number;
+
+  @ApiProperty({
     type: 'array',
     example: [
       { lng: 111.111, lat: 112.222 },

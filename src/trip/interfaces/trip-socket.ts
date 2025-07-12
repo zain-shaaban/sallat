@@ -77,4 +77,6 @@ export interface ITripInSocketsArray {
   tripNumber: number;
 
   discounts: { item: number; delivery: number };
+
+  fixedPrice:number
 }
