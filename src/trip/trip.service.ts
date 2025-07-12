@@ -58,7 +58,7 @@ export class TripService {
       alternative,
       partner,
       discounts,
-      fixedPrice
+      fixedPrice,
     }: CreateTripDto,
     ccID: string,
     ccName: string,
@@ -93,7 +93,7 @@ export class TripService {
       alternative,
       partner,
       discounts,
-      fixedPrice
+      fixedPrice,
     });
 
     if (!alternative && !vendorID) this.adminService.newVendor(trip.vendor);

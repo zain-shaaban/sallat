@@ -219,8 +219,10 @@ export class DriverService {
   }
 
   handleEmergencyState(driverID: string, driverName: string) {
-    this.io.server.of('/admin').emit('emergencyState',{driverID,driverName})
-    this.logService.emergencyStateLog(driverID,driverName)
+    this.io.server
+      .of('/admin')
+      .emit('emergencyState', { driverID, driverName });
+    this.logService.emergencyStateLog(driverID, driverName);
   }
 
   handleChangeStateOfTheNormalTrip(
@@ -368,7 +370,7 @@ export class DriverService {
 
     if (Object.keys(trip.discounts).length > 0) {
       trip.price = trip.price - trip.price * trip.discounts.delivery;
-      itemPrice = itemPrice - itemPrice * trip.discounts.item;
+      trip.itemPrice = trip.itemPrice - trip.itemPrice * trip.discounts.item;
     }
 
     this.tripRepository.update(trip.tripID, {
@@ -381,7 +383,7 @@ export class DriverService {
       price: trip.price,
       itemPrice,
       time: trip.time,
-      receipt,
+      receipt: trip.receipt,
     });
 
     this.logService.endTripLog(
@@ -389,6 +391,13 @@ export class DriverService {
       driverName,
       trip.customer.name,
       trip.tripNumber,
+    );
+
+    const message = this.generateReceiptMessage(trip);
+
+    this.telegramBotService.sendMessageToCustomer(
+      trip.customer.customerID,
+      message,
     );
 
     this.adminService.removeTripFromOnGoing(trip);
@@ -403,7 +412,7 @@ export class DriverService {
         time: trip.time,
         distance: trip.distance,
         price: trip.price,
-        fixedPrice:trip.fixedPrice,
+        fixedPrice: trip.fixedPrice,
         receipt,
         discounts: trip.discounts,
       },
@@ -484,5 +493,83 @@ export class DriverService {
       }),
     );
     this.price = this.pricing(this.matchedDistance, vehicleNumber);
+  }
+
+  private generateReceiptMessage(trip: ITripInSocketsArray) {
+    const formatDate = (iso: Date) => {
+      const date = new Date(iso);
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      let hours = date.getHours();
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      return `${day}/${month}/${year} ${hours}:${minutes}${ampm}`;
+    };
+
+    const formatPrice = (price: number) =>
+      `${Number(price).toLocaleString('en-US')}sp`;
+
+    const timeDifference = (startTime: number, endTime: number) => {
+      const diffInMs = endTime - startTime;
+      const totalMinutes = Math.floor(diffInMs / 60000);
+      if (totalMinutes < 60) {
+        return `${totalMinutes} د`;
+      }
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return minutes === 0 ? `${hours} س` : `${hours} س ${minutes} د`;
+    };
+
+    const distance = `${Math.round(trip.distance || trip.approxDistance)}m`;
+
+    const duration = timeDifference(
+      trip.tripState.tripStart.time,
+      trip.tripState.tripEnd.time,
+    );
+
+    const receiptItems = trip.receipt
+      .map((item) => `- ${item.name}: ${formatPrice(item.price)}`)
+      .join('\n');
+
+    const deliveryFee = trip.fixedPrice
+      ? formatPrice(trip.fixedPrice)
+      : formatPrice(trip.price);
+    const deliveryDiscountValue = trip.discounts?.delivery || 0;
+    const itemDiscountValue = trip.discounts?.item || 0;
+
+    const total = formatPrice(trip.itemPrice + trip.price);
+
+    const lines = [
+      `شكراً لثقتك.`,
+      `فاتورة طلبك في ${formatDate(trip.createdAt)}`,
+      `الرحلة #${trip.tripNumber}`,
+      `المسافة المقطوعة: ${distance}`,
+      `المدة: ${duration}`,
+      `اجور التوصيل: ${deliveryFee}`,
+    ];
+
+    if (deliveryDiscountValue > 0) {
+      lines.push(`حسوم التوصيل: ${deliveryDiscountValue * 100}%`);
+    }
+
+    lines.push(`المشتريات:`);
+    lines.push(receiptItems);
+
+    if (itemDiscountValue > 0) {
+      lines.push(`حسوم الاغراض: ${itemDiscountValue * 100}%`);
+    }
+
+    lines.push(`الإجمالي: ${total}`);
+
+    lines.push(
+      `
+_
+
+سلات.. لعندك وين ما كنت`.trim(),
+    );
+
+    return lines.join('\n');
   }
 }

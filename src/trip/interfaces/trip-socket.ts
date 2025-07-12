@@ -79,4 +79,6 @@ export interface ITripInSocketsArray {
   discounts: { item: number; delivery: number };
 
   fixedPrice:number
+
+  createdAt:Date
 }
