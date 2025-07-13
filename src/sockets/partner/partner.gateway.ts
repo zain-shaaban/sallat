@@ -14,7 +14,10 @@ import { logger } from 'src/common/error_logger/logger.util';
 import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 import { PartnerService } from './partner.service';
-import { CreateNewPartnerTrip } from '../dto/vendor.dto';
+import {
+  CancelPartnerTripDto,
+  CreateNewPartnerTripDto,
+} from '../dto/partner.dto';
 
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @UseFilters(ValidationSocketExceptionFilter)
@@ -43,10 +46,34 @@ export class PartnerGateway implements OnGatewayConnection, OnGatewayInit {
     }
   }
 
-  @SubscribeMessage('newTrip')
+  @SubscribeMessage('cancelPartnerTrip')
+  async cancelPartnerTrip(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() cancelTripData: CancelPartnerTripDto,
+  ) {
+    try {
+      this.partnerService.handleCancelPartnerTrip(
+        client.data.id,
+        client.data.name,
+        cancelTripData.requestID,
+      );
+      return { status: true };
+    } catch (error) {
+      if (!(error instanceof WsException))
+        logger.error(error.message, error.stack);
+      client.emit('exception', {
+        eventName: 'cancelPartnerTrip',
+        message: error.message,
+      });
+      return {
+        status: false,
+      };
+    }
+  }
+  @SubscribeMessage('newPartnerTrip')
   async newPartnerTrip(
     @ConnectedSocket() client: Socket,
-    @MessageBody() newTripData: CreateNewPartnerTrip,
+    @MessageBody() newTripData: CreateNewPartnerTripDto,
   ) {
     try {
       this.partnerService.handleSendNewTrip(
@@ -60,7 +87,7 @@ export class PartnerGateway implements OnGatewayConnection, OnGatewayInit {
       if (!(error instanceof WsException))
         logger.error(error.message, error.stack);
       client.emit('exception', {
-        eventName: 'newTrip',
+        eventName: 'newPartnerTrip',
         message: error.message,
       });
       return {
@@ -68,7 +95,6 @@ export class PartnerGateway implements OnGatewayConnection, OnGatewayInit {
       };
     }
   }
-
   afterInit(client: Socket) {
     this.partnerService.initIO(this.server);
     client.use(this.authMiddleware.partnerAuth());

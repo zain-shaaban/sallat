@@ -5,11 +5,12 @@ import { Repository } from 'typeorm';
 import { PartnerTrips } from './partner.entity';
 import { LogService } from '../logs/logs.service';
 import { IPartnerTrip } from './partner.interface';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class PartnerService {
   private io: Namespace;
-  private availability: boolean = true;
+  public availability: boolean = true;
   public partnerTrips: IPartnerTrip[] = [];
 
   constructor(
@@ -99,6 +100,31 @@ export class PartnerService {
     );
 
     targetSocket?.emit('tripRejected');
+  }
+
+  handleCancelPartnerTrip(
+    partnerID: string,
+    partnerName: string,
+    requestID: number,
+  ) {
+    const targetTrip = this.partnerTrips.find(
+      (trip) => trip.requestID == requestID && trip.partnerID == partnerID,
+    );
+
+    if (!targetTrip)
+      throw new WsException(`Trip with id ${requestID} not found.`);
+
+    this.partnerTrips = this.partnerTrips.filter(
+      (trip) => trip.requestID !== requestID,
+    );
+
+    this.io.server
+      .of('/admin')
+      .emit('cancelPartnerTrip', { partnerTrips: this.partnerTrips });
+
+    this.partnerRepository.update(requestID, { state: 'cancelled' });
+
+    this.logService.cancelPartnerTripLog(partnerName, targetTrip.customerName);
   }
 
   returnParterTripsToAdmins() {

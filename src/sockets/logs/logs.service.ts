@@ -52,26 +52,33 @@ export class LogService {
   }
 
   async createPartnerTripLog(
-    vendorName: string,
+    partnerName: string,
     customerName: string,
     customerPhoneNumber: string,
   ) {
-    const message = `قام المتجر ${vendorName} بطلب رحلة للعميل ${customerName} رقمه ${customerPhoneNumber}.`;
+    const message = `قام المتجر ${partnerName} بطلب رحلة للعميل ${customerName} رقمه ${customerPhoneNumber}.`;
 
     this.sendMessageToAdmins(message, 'newPartnerTrip');
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
-  async partnerTripAcceptedLog(ccName: string, vendorName: string) {
-    const message = `قام الموظف ${ccName} بقبول الرحلة من المتجر ${vendorName}.`;
+  async cancelPartnerTripLog(partnerName: string, customerName: string) {
+    const message = `قام المتجر ${partnerName} بالغاء الطلب للعميل ${customerName}.`;
+
+    this.sendMessageToAdmins(message, 'cancelPartnerTrip');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
+  }
+
+  async partnerTripAcceptedLog(ccName: string, partnerName: string) {
+    const message = `قام الموظف ${ccName} بقبول الرحلة من المتجر ${partnerName}.`;
 
     this.sendMessageToAdmins(message, 'acceptPartnerTrip');
 
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
-  async partnerTripRejectedLog(ccName: string, vendorName: string) {
-    const message = `قام الموظف ${ccName} برفض الرحلة من المتجر ${vendorName}.`;
+  async partnerTripRejectedLog(ccName: string, partnerName: string) {
+    const message = `قام الموظف ${ccName} برفض الرحلة من المتجر ${partnerName}.`;
 
     this.sendMessageToAdmins(message, 'rejectPartnerTrip');
 
