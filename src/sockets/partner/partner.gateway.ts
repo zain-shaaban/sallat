@@ -14,7 +14,7 @@ import { logger } from 'src/common/error_logger/logger.util';
 import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-exception-socket.filter';
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 import { PartnerService } from './partner.service';
-import { CreateNewVendorTripDto } from '../dto/vendor.dto';
+import { CreateNewPartnerTrip } from '../dto/vendor.dto';
 
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @UseFilters(ValidationSocketExceptionFilter)
@@ -44,9 +44,9 @@ export class PartnerGateway implements OnGatewayConnection, OnGatewayInit {
   }
 
   @SubscribeMessage('newTrip')
-  async newVendorTrip(
+  async newPartnerTrip(
     @ConnectedSocket() client: Socket,
-    @MessageBody() newTripData: CreateNewVendorTripDto,
+    @MessageBody() newTripData: CreateNewPartnerTrip,
   ) {
     try {
       this.partnerService.handleSendNewTrip(
@@ -71,6 +71,6 @@ export class PartnerGateway implements OnGatewayConnection, OnGatewayInit {
 
   afterInit(client: Socket) {
     this.partnerService.initIO(this.server);
-    client.use(this.authMiddleware.vendorAuth());
+    client.use(this.authMiddleware.partnerAuth());
   }
 }

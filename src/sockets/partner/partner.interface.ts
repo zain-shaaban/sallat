@@ -1,6 +1,7 @@
 export interface IPartnerTrip {
-  vendorID: string;
-  vendorName: string;
+  requestID: number;
+  partnerID: string;
+  partnerName: string;
   customerName: string;
   customerPhoneNumber: string;
 }

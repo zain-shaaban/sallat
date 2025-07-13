@@ -4,6 +4,7 @@ import {
   IsArray,
   ValidateNested,
   IsNotEmpty,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CoordinatesDto } from 'src/customer/dto/location.dto';
@@ -51,11 +52,7 @@ export class ChangePartnerAvailabilityDto {
 }
 
 export class TripStateDto{
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  vendorID:string
-
-  @IsString()
-  @IsNotEmpty()
-  vendorName:string
+  requestID:number
 }

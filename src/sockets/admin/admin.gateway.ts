@@ -178,8 +178,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
     try {
       this.adminService.handleAcceptPartnerTrip(
         client.data.name,
-        tripStateData.vendorID,
-        tripStateData.vendorName,
+        tripStateData.requestID,
       );
       return {
         status: true,
@@ -205,8 +204,7 @@ export class AdminSocketGateway implements OnGatewayConnection, OnGatewayInit {
     try {
       this.adminService.handleRejectPartnerTrip(
         client.data.name,
-        tripStateData.vendorID,
-        tripStateData.vendorName,
+        tripStateData.requestID,
       );
       return {
         status: true,

@@ -81,7 +81,7 @@ export class WsAuthMiddleware {
     };
   }
 
-  vendorAuth() {
+  partnerAuth() {
     return (client, next) => {
       try {
         const token = client.handshake?.auth?.token;

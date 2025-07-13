@@ -8,16 +8,22 @@ import {
 @Entity('sallat_partner_trips')
 export class PartnerTrips {
   @PrimaryGeneratedColumn()
-  tripID: number;
+  requestID: number;
 
   @Column()
-  vendorID: string;
+  partnerID: string;
+
+  @Column()
+  partnerName: string;
 
   @Column()
   customerName: string;
 
   @Column()
   customerPhoneNumber: string;
+
+  @Column({ default: 'pending' })
+  state: string;
 
   @CreateDateColumn()
   createdAt: Date;

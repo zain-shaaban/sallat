@@ -14,13 +14,13 @@ export class PartnerService {
 
   constructor(
     @InjectRepository(PartnerTrips)
-    private readonly vendorRepository: Repository<PartnerTrips>,
+    private readonly partnerRepository: Repository<PartnerTrips>,
     @Inject() private readonly logService: LogService,
   ) {}
 
   async handlePartnerConnection(client: Socket) {
-    const trips = await this.vendorRepository.find({
-      where: { vendorID: client.data.id },
+    const trips = await this.partnerRepository.find({
+      where: { partnerID: client.data.id },
       order: { createdAt: 'DESC' },
     });
 
@@ -28,32 +28,39 @@ export class PartnerService {
   }
 
   async handleSendNewTrip(
-    vendorID: string,
-    vendorName: string,
+    partnerID: string,
+    partnerName: string,
     customerName: string,
     customerPhoneNumber: string,
   ) {
+    const partnerTrip = await this.partnerRepository.save({
+      partnerID,
+      partnerName,
+      customerName,
+      customerPhoneNumber,
+    });
+
     this.io.server.of('/admin').emit('newPartnerTrip', {
-      vendorID,
-      vendorName,
+      requestID: partnerTrip.requestID,
+      partnerID,
+      partnerName,
       customerName,
       customerPhoneNumber,
     });
 
     this.logService.createPartnerTripLog(
-      vendorName,
+      partnerName,
       customerName,
       customerPhoneNumber,
     );
 
     this.partnerTrips.push({
-      vendorID,
-      vendorName,
+      requestID: partnerTrip.requestID,
+      partnerID,
+      partnerName,
       customerName,
       customerPhoneNumber,
     });
-
-    this.vendorRepository.save({ vendorID, customerName, customerPhoneNumber });
   }
 
   changePartnerAvailability(ccName: string, availability: boolean) {
@@ -67,17 +74,28 @@ export class PartnerService {
     this.logService.changePartnerAvailabilityLog(ccName, availability);
   }
 
-  tripAccepted(vendorID: string) {
+  tripAccepted(requestID: number, partnerID: string) {
+    this.partnerTrips = this.partnerTrips.filter(
+      (trip) => trip.requestID !== requestID,
+    );
+
+    this.partnerRepository.update(requestID, { state: 'accepted' });
+
     const targetSocket = [...this.io.sockets.values()].find(
-      (socket) => socket.data.id === vendorID,
+      (socket) => socket.data.id === partnerID,
     );
 
     targetSocket?.emit('tripAccepted');
   }
 
-  tripRejected(vendorID: string) {
+  tripRejected(requestID: number, partnerID: string) {
+    this.partnerTrips = this.partnerTrips.filter(
+      (trip) => trip.requestID !== requestID,
+    );
+
+    this.partnerRepository.update(requestID, { state: 'rejected' });
     const targetSocket = [...this.io.sockets.values()].find(
-      (socket) => socket.data.id === vendorID,
+      (socket) => socket.data.id === partnerID,
     );
 
     targetSocket?.emit('tripRejected');
@@ -87,7 +105,17 @@ export class PartnerService {
     return this.partnerTrips;
   }
 
-  public initIO(server: Namespace) {
+  public async initIO(server: Namespace) {
     this.io = server;
+    this.partnerTrips = await this.partnerRepository.find({
+      where: { state: 'pending' },
+      select: {
+        requestID: true,
+        partnerID: true,
+        partnerName: true,
+        customerName: true,
+        customerPhoneNumber: true,
+      },
+    });
   }
 }

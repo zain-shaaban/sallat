@@ -129,31 +129,35 @@ export class AdminService {
     this.partnerService.changePartnerAvailability(ccName, availability);
   }
 
-  handleAcceptPartnerTrip(
-    ccName: string,
-    vendorID: string,
-    vendorName: string,
-  ) {
-    this.partnerService.tripAccepted(vendorID);
-    this.logService.partnerTripAcceptedLog(ccName, vendorName);
-    this.partnerService.partnerTrips = this.partnerService.partnerTrips.filter(
-      (trip) => trip.vendorID !== vendorID,
+  handleAcceptPartnerTrip(ccName: string, requestID: number) {
+    const targetTrip = this.partnerService.partnerTrips.find(
+      (trip) => trip.requestID === requestID,
     );
+
+    this.partnerService.tripAccepted(
+      targetTrip.requestID,
+      targetTrip.partnerID,
+    );
+
+    this.logService.partnerTripAcceptedLog(ccName, targetTrip.partnerName);
+
     this.io.server
       .of('/admin')
       .emit('partnerTrips', { partnerTrips: this.partnerService.partnerTrips });
   }
 
-  handleRejectPartnerTrip(
-    ccName: string,
-    vendorID: string,
-    vendorName: string,
-  ) {
-    this.partnerService.tripRejected(vendorID);
-    this.logService.partnerTripRejectedLog(ccName, vendorName);
-    this.partnerService.partnerTrips = this.partnerService.partnerTrips.filter(
-      (trip) => trip.vendorID !== vendorID,
+  handleRejectPartnerTrip(ccName: string, requestID: number) {
+    const targetTrip = this.partnerService.partnerTrips.find(
+      (trip) => trip.requestID === requestID,
     );
+
+    this.partnerService.tripRejected(
+      targetTrip.requestID,
+      targetTrip.partnerID,
+    );
+
+    this.logService.partnerTripRejectedLog(ccName, targetTrip.partnerName);
+
     this.io.server
       .of('/admin')
       .emit('partnerTrips', { partnerTrips: this.partnerService.partnerTrips });
