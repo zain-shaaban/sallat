@@ -120,7 +120,7 @@ export class PartnerService {
 
     this.io.server
       .of('/admin')
-      .emit('cancelPartnerTrip', { partnerTrips: this.partnerTrips });
+      .emit('partnerTrips', { partnerTrips: this.partnerTrips });
 
     this.partnerRepository.update(requestID, { state: 'cancelled' });
 
