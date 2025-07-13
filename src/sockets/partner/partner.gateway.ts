@@ -15,7 +15,6 @@ import { ValidationSocketExceptionFilter } from 'src/common/filters/validation-e
 import { WsAuthMiddleware } from 'src/common/middlewares/ws-auth.middleware';
 import { PartnerService } from './partner.service';
 import {
-  CancelPartnerTripDto,
   CreateNewPartnerTripDto,
 } from '../dto/partner.dto';
 
@@ -49,13 +48,11 @@ export class PartnerGateway implements OnGatewayConnection, OnGatewayInit {
   @SubscribeMessage('cancelPartnerTrip')
   async cancelPartnerTrip(
     @ConnectedSocket() client: Socket,
-    @MessageBody() cancelTripData: CancelPartnerTripDto,
   ) {
     try {
       this.partnerService.handleCancelPartnerTrip(
         client.data.id,
         client.data.name,
-        cancelTripData.requestID,
       );
       return { status: true };
     } catch (error) {

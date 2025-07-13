@@ -9,9 +9,3 @@ export class CreateNewPartnerTripDto {
   @IsNotEmpty()
   customerPhoneNumber: string;
 }
-
-export class CancelPartnerTripDto {
-  @IsNumber()
-  @IsNotEmpty()
-  requestID: number;
-}

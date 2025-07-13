@@ -105,24 +105,23 @@ export class PartnerService {
   handleCancelPartnerTrip(
     partnerID: string,
     partnerName: string,
-    requestID: number,
   ) {
     const targetTrip = this.partnerTrips.find(
-      (trip) => trip.requestID == requestID && trip.partnerID == partnerID,
+      (trip) =>trip.partnerID == partnerID,
     );
 
     if (!targetTrip)
-      throw new WsException(`Trip with id ${requestID} not found.`);
+      throw new WsException(`Trip with partner id ${partnerID} not found.`);
 
     this.partnerTrips = this.partnerTrips.filter(
-      (trip) => trip.requestID !== requestID,
+      (trip) => trip.partnerID !== partnerID,
     );
 
     this.io.server
       .of('/admin')
       .emit('partnerTrips', { partnerTrips: this.partnerTrips });
 
-    this.partnerRepository.update(requestID, { state: 'cancelled' });
+    this.partnerRepository.update(targetTrip.requestID, { state: 'cancelled' });
 
     this.logService.cancelPartnerTripLog(partnerName, targetTrip.customerName);
   }
