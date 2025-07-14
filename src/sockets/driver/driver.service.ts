@@ -467,11 +467,11 @@ export class DriverService {
 
   private pricing(distance: number, vehicleNumber: string) {
     if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K')) {
-      return 5000 + 2.5 * distance;
+      return Math.round(5000 + 2.5 * distance);
     } else if (vehicleNumber.startsWith('T')) {
-      return 2000 + 6 * distance;
+      return Math.round(2000 + 6 * distance);
     } else {
-      return 5000 + 2.5 * distance;
+      return Math.round(5000 + 2.5 * distance);
     }
   }
 
@@ -569,6 +569,14 @@ export class DriverService {
     lines.push(
       `
 _
+
+تابعنا هون : 
+<a href="https://www.facebook.com/sallatsy">فيسبوك</a>  
+<a href="https://www.instagram.com/sallatsy">انستاغرام</a>  
+<a href="http://t.me/sallatsy">تلغرام</a>
+
+خدمة الزبائن : wa.me/963986912912
+للشكاوي أو الاقتراحات : wa.me/963986914914
 
 سلات.. لعندك وين ما كنت`.trim(),
     );
