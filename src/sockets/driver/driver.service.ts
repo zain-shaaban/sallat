@@ -571,6 +571,14 @@ export class DriverService {
       `
 _
 
+تابعنا هون : 
+<a href="https://www.facebook.com/sallatsy">فيسبوك</a>  
+<a href="https://www.instagram.com/sallatsy">انستاغرام</a>  
+<a href="http://t.me/sallatsy">تلغرام</a>
+
+خدمة الزبائن : wa.me/963986912912
+للشكاوي أو الاقتراحات : wa.me/963986914914
+
 سلات.. لعندك وين ما كنت`.trim(),
     );
 

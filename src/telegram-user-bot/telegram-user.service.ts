@@ -91,6 +91,6 @@ export class TelegramUserService {
       return;
     }
 
-    await this.userBot.telegram.sendMessage(customer.telegramID, message);
+    await this.userBot.telegram.sendMessage(customer.telegramID, message, { parse_mode: "HTML" });
   }
 }
