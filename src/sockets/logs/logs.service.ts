@@ -93,7 +93,7 @@ export class LogService {
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
-  async createNewNormalTripWithDriverLog(
+  createNewNormalTripWithDriverLog(
     ccName: string,
     customerName: string,
     tripNumber: number,
@@ -113,7 +113,7 @@ export class LogService {
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
-  async createNewAlternativeTripWithDriverLog(
+  createNewAlternativeTripWithDriverLog(
     ccName: string,
     customerName: string,
     tripNumber: number,
@@ -144,7 +144,7 @@ export class LogService {
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
-  async createNewAlternativeTripWithoutDriverLog(
+  createNewAlternativeTripWithoutDriverLog(
     ccName: string,
     customerName: string,
     tripNumber: number,
@@ -152,6 +152,31 @@ export class LogService {
     const message = `قام الموظف ${ccName} بتسجيل رحلة جديدة من النمط البديل للعميل ${customerName} برقم ${tripNumber} ولم يتم اسنادها إلى سائق بعد.`;
 
     this.sendMessageToAdmins(message, 'createNewAlternativeTripWithoutDriver');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
+  }
+
+  createNewSchedulingNormalTripLog(
+    ccName: string,
+    customerName: string,
+    tripNumber: number,
+    vendorName: string,
+    time: number,
+  ) {
+    const message = `قام الموظف ${ccName} بتسجيل رحلة مجدولة للعميل ${customerName} من المتجر ${vendorName} برقم ${tripNumber} على الوقت ${new Date(time).toLocaleTimeString()}`;
+
+    this.sendMessageToAdmins(message, 'createSchedulingNormalTrip');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
+  }
+
+  createNewSchedulingAlternativeTripLog(
+    ccName: string,
+    customerName: string,
+    tripNumber: number,
+    time: number,
+  ) {
+    const message = `قام الموظف ${ccName} بتسجيل رحلة مجدولة من النمط البديل للعميل ${customerName} برقم ${tripNumber} على الوقت ${new Date(time).toLocaleTimeString()}`;
+
+    this.sendMessageToAdmins(message, 'createSchedulingAlternativeTrip');
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 

@@ -78,7 +78,9 @@ export interface ITripInSocketsArray {
 
   discounts: { item: number; delivery: number };
 
-  fixedPrice:number
+  fixedPrice: number;
 
-  createdAt:Date
+  createdAt: Date;
+
+  SchedulingDate: number;
 }

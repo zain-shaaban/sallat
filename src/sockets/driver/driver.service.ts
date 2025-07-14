@@ -18,7 +18,6 @@ import { LogService } from '../logs/logs.service';
 import { logger } from 'src/common/error_logger/logger.util';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
-import { stringify } from 'querystring';
 
 @Injectable()
 export class DriverService {

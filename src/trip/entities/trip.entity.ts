@@ -187,7 +187,7 @@ export class Trip {
     description: 'Fixed price in local currency',
     required: false,
   })
-  @Column({nullable: true })
+  @Column({ nullable: true })
   fixedPrice: number;
 
   @ApiProperty({
@@ -308,7 +308,7 @@ export class Trip {
 
   @ApiProperty({
     type: 'object',
-    properties:{},
+    properties: {},
     description: 'Discounts from the price',
     example: {
       item: 0.2,
@@ -320,4 +320,13 @@ export class Trip {
     nullable: true,
   })
   discounts: object;
+
+  @ApiProperty({
+    type: 'number',
+    example: Date.now(),
+    description: 'Scheduling date to the trip',
+    required: false,
+  })
+  @Column({ nullable: true })
+  schedulingDate: number;
 }

@@ -66,18 +66,19 @@ Creates a new trip with the provided details. The trip can be either a regular d
           customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
           customerPhoneNumber: '+96399887766',
           customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
-          partner:true,
+          partner: true,
           itemTypes: ['شاورما', 'بطاطا مقلية'],
           description: 'كتر كتشب',
           approxDistance: 5200,
           approxPrice: 80000,
           approxTime: 133266423,
-          fixedPrice:true,
+          fixedPrice: true,
           routedPath: [
             { lng: 111.111, lat: 112.222 },
             { lng: 888.888, lat: 999.999 },
             { lng: 555.555, lat: 333.333 },
           ],
+          schedulingDate: Date.now(),
         },
         summary: 'Regular Trip Example',
       },
@@ -90,6 +91,7 @@ Creates a new trip with the provided details. The trip can be either a regular d
           itemTypes: ['شاورما', 'بطاطا مقلية'],
           description: 'كتر كتشب',
           alternative: true,
+          schedulingDate: Date.now(),
         },
         summary: 'Alternative Trip Example',
       },
@@ -201,9 +203,9 @@ Updates the location of a driver when they are offline. This endpoint is used to
   @Post('sendLocation')
   async sendNewLocationIfDriverOffline(
     @Body() sendLocationDto: sendLocationDto,
-    @Req() req
+    @Req() req,
   ) {
-    return await this.tripService.sendNewLocation(sendLocationDto,req.user.id);
+    return await this.tripService.sendNewLocation(sendLocationDto, req.user.id);
   }
 
   @ApiOperation({

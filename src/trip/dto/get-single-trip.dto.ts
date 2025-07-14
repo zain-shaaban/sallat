@@ -63,6 +63,7 @@ export class GetSingleTripDto {
       },
       approxTime: '6',
       time: '791920',
+      schedulingDate:Date.now(),
       rawPath: [
         {
           lat: 34.8927543,

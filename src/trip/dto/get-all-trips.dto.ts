@@ -65,6 +65,7 @@ export class GetAllTripsDto {
         itemPrice: 25000,
         approxTime: '6',
         time: '791920',
+        schedulingDate:Date.now(),
         rawPath: [
           {
             lat: 34.8927543,

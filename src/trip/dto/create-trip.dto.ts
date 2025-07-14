@@ -296,4 +296,14 @@ export class CreateTripDto {
   @ValidateNested()
   @Type(() => Discounts)
   discounts?: Discounts;
+
+  @ApiProperty({
+    type: 'number',
+    example: Date.now(),
+    description: 'Scheduling date to the trip',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  schedulingDate: number;
 }

@@ -59,6 +59,7 @@ export class TripService {
       partner,
       discounts,
       fixedPrice,
+      schedulingDate,
     }: CreateTripDto,
     ccID: string,
     ccName: string,
@@ -94,6 +95,7 @@ export class TripService {
       partner,
       discounts,
       fixedPrice,
+      schedulingDate,
     });
 
     if (!alternative && !vendorID) this.adminService.newVendor(trip.vendor);
@@ -107,14 +109,21 @@ export class TripService {
 
     trip.customer = this.customerService.handlePhoneNumbers(trip.customer);
 
-    this.userBotService.sendMessageToCustomer(
-      trip.customer.customerID,
-      'تم تسجيل رحلة جديدة باسمك.',
-    );
-
-    driverID
-      ? this.handleSocketsIfTripIsNewAndDriverIdExist(trip, ccName)
-      : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip, ccName);
+    if (!schedulingDate) {
+      this.userBotService.sendMessageToCustomer(
+        trip.customer.customerID,
+        'تم تسجيل رحلة جديدة باسمك.',
+      );
+      driverID
+        ? this.handleSocketsIfTripIsNewAndDriverIdExist(trip, ccName)
+        : this.handleSocketsIfTripIsNewAndDriverIdNotExist(trip, ccName);
+    } else {
+      this.userBotService.sendMessageToCustomer(
+        trip.customer.customerID,
+        ` تم تسجيل رحلة جديدة باسمك على الساعة ${new Date(schedulingDate).toLocaleDateString()}.`,
+      );
+      this.handleSchedulingTrip(trip, ccName);
+    }
 
     return {
       tripID: trip.tripID,
@@ -261,6 +270,28 @@ export class TripService {
         ccName,
         trip.customer.name,
         trip.tripNumber,
+      );
+    }
+    this.pendingTrips.push(trip);
+    this.adminService.sendTripsToAdmins();
+    this.adminService.sendDriversArrayToAdmins();
+  }
+
+  handleSchedulingTrip(trip: ITripInSocketsArray, ccName) {
+    if (!trip.alternative) {
+      this.logService.createNewSchedulingNormalTripLog(
+        ccName,
+        trip.customer.name,
+        trip.tripNumber,
+        trip.vendor.name,
+        trip.time,
+      );
+    } else {
+      this.logService.createNewSchedulingAlternativeTripLog(
+        ccName,
+        trip.customer.name,
+        trip.tripNumber,
+        trip.time,
       );
     }
     this.pendingTrips.push(trip);
