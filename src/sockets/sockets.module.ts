@@ -19,11 +19,12 @@ import { PartnerTrips } from './partner/partner.entity';
 import { PartnerGateway } from './partner/partner.gateway';
 import { PartnerService} from './partner/partner.service';
 import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
+import { Account } from 'src/account/entities/account.entity';
 
 @Module({
   imports: [
     forwardRef(() => TripModule),
-    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer, PartnerTrips,DriverMetadata]),
+    TypeOrmModule.forFeature([Log, Trip, Vendor, Customer, PartnerTrips,DriverMetadata,Account]),
     TelegramModule,
     OnlineDriversModule,
     TelegramUserModule,

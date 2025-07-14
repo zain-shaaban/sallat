@@ -18,6 +18,7 @@ import { LogService } from '../logs/logs.service';
 import { logger } from 'src/common/error_logger/logger.util';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
+import { Account } from 'src/account/entities/account.entity';
 
 @Injectable()
 export class DriverService {
@@ -42,9 +43,11 @@ export class DriverService {
     private readonly logService: LogService,
     @Inject() private readonly onlineDrivers: OnlineDrivers,
     @Inject() private readonly telegramBotService: TelegramUserService,
+    @InjectRepository(Account)
+    private readonly accountRepository: Repository<Account>,
   ) {}
 
-  handleDriverConnection(client: Socket) {
+  async handleDriverConnection(client: Socket) {
     const { lng, lat } = client.handshake.query;
 
     const driverID = client.data.id;
@@ -73,8 +76,22 @@ export class DriverService {
       client.emit('alreadyAssignedTrip', { alreadyAssignedTrips });
     }
 
+    const account = await this.accountRepository.findOne({
+      where: { id: driverID },
+      relations: ['driverMetadata'],
+    });
+
     this.adminService.sendDriversArrayToAdmins();
-    client.emit('onConnection', { available: driver?.available || true });
+    client.emit('onConnection', {
+      available: driver?.available || true,
+      driverInfo: {
+        name: account.name,
+        phoneNumber: account.phoneNumber,
+        email: account.email,
+        assignedVehicleNumber: account.driverMetadata.assignedVehicleNumber,
+        code: account.driverMetadata.code,
+      },
+    });
   }
 
   handleDriverDisconnect(client: Socket) {

@@ -327,6 +327,6 @@ export class Trip {
     description: 'Scheduling date to the trip',
     required: false,
   })
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'bigint' })
   schedulingDate: number;
 }
