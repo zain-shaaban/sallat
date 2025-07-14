@@ -120,7 +120,7 @@ export class TripService {
     } else {
       this.userBotService.sendMessageToCustomer(
         trip.customer.customerID,
-        ` تم تسجيل رحلة جديدة باسمك على الساعة ${new Date(schedulingDate).toLocaleDateString()}.`,
+        ` تم تسجيل رحلة جديدة باسمك على الساعة ${this.logService.formatDate(schedulingDate)}.`,
       );
       this.handleSchedulingTrip(trip, ccName);
     }

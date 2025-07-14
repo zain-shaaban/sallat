@@ -162,7 +162,7 @@ export class LogService {
     vendorName: string,
     time: number,
   ) {
-    const message = `قام الموظف ${ccName} بتسجيل رحلة مجدولة للعميل ${customerName} من المتجر ${vendorName} برقم ${tripNumber} على الوقت ${new Date(time).toLocaleTimeString()}`;
+    const message = `قام الموظف ${ccName} بتسجيل رحلة مجدولة للعميل ${customerName} من المتجر ${vendorName} برقم ${tripNumber} على الوقت ${this.formatDate(time)}`;
 
     this.sendMessageToAdmins(message, 'createSchedulingNormalTrip');
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
@@ -174,7 +174,7 @@ export class LogService {
     tripNumber: number,
     time: number,
   ) {
-    const message = `قام الموظف ${ccName} بتسجيل رحلة مجدولة من النمط البديل للعميل ${customerName} برقم ${tripNumber} على الوقت ${new Date(time).toLocaleTimeString()}`;
+    const message = `قام الموظف ${ccName} بتسجيل رحلة مجدولة من النمط البديل للعميل ${customerName} برقم ${tripNumber} على الوقت ${this.formatDate(time)}`;
 
     this.sendMessageToAdmins(message, 'createSchedulingAlternativeTrip');
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
@@ -382,6 +382,19 @@ export class LogService {
 
     await this.sendMessageToDriver(driverID, message);
     this.telegramService.sendNotificationToDriversTelegramGroup(message);
+  }
+
+  public formatDate(iso: number) {
+    const date = new Date(iso);
+    date.setHours(date.getHours() + 3);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${day}/${month}/${year} ${hours}:${minutes}${ampm}`;
   }
 
   private sendMessageToAdmins(
