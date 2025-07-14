@@ -367,6 +367,10 @@ export class AdminService {
 
   updateDriver(driver: { id: string; assignedVehicleNumber: string }) {
     this.io.server.of('/admin').emit('updateDriver', { driver });
+    const driverSocketID = this.onlineDrivers.drivers.find(d => d.driverID === driver.id)?.socketID || null;
+    if(driverSocketID) {
+      this.io.server.of("/driver").to(driverSocketID).emit("vehicleUpdated", driver.assignedVehicleNumber);
+    }
   }
 
   sendNewLocation(driverID: string, location: object) {
