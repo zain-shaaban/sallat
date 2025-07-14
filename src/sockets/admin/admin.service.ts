@@ -369,7 +369,7 @@ export class AdminService {
     this.io.server.of('/admin').emit('updateDriver', { driver });
     const driverSocketID = this.onlineDrivers.drivers.find(d => d.driverID === driver.id)?.socketID || null;
     if(driverSocketID) {
-      this.io.server.of("/driver").to(driverSocketID).emit("vehicleUpdated", driver.assignedVehicleNumber);
+      this.io.server.of("/driver").to(driverSocketID).emit("vehicleUpdated", { assignedVehicleNumber: driver.assignedVehicleNumber });
     }
   }
 
