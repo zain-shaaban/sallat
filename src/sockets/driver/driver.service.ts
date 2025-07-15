@@ -19,6 +19,7 @@ import { logger } from 'src/common/error_logger/logger.util';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 import { Account } from 'src/account/entities/account.entity';
+import { CronExpression, Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class DriverService {
@@ -599,5 +600,30 @@ _
     );
 
     return lines.join('\n');
+  }
+
+  @Interval(1000 * 60 * 15)
+  private handleScheduleTrip() {
+    const schedulingTrips = this.tripService.pendingTrips.filter(
+      (trip) => trip?.schedulingDate,
+    );
+
+    schedulingTrips.map((trip) => {
+      if (trip.schedulingDate - Date.now() <= 1000 * 60 * 60) {
+        if (!trip.alternative)
+          this.logService.reminderNormalSchedulingTripLog(
+            trip.customer.name,
+            trip.vendor.name,
+            trip.tripNumber,
+            trip.time,
+          );
+        else
+          this.logService.reminderAlternativeSchedulingTripLog(
+            trip.customer.name,
+            trip.tripNumber,
+            trip.time,
+          );
+      }
+    });
   }
 }

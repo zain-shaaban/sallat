@@ -384,6 +384,29 @@ export class LogService {
     this.telegramService.sendNotificationToDriversTelegramGroup(message);
   }
 
+  reminderNormalSchedulingTripLog(
+    customerName: string,
+    vendorName: string,
+    tripNumber: number,
+    time: number,
+  ) {
+    const message = `تذكير: لديك رحلة مجدولة للعميل ${customerName} من المتجر ${vendorName} رقمها ${tripNumber} على الساعة ${this.formatDate(time)}.`;
+
+    this.sendMessageToAdmins(message, 'reminderNormalSchedulingTrip');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
+  }
+
+  reminderAlternativeSchedulingTripLog(
+    customerName: string,
+    tripNumber: number,
+    time: number,
+  ) {
+    const message = `تذكير: لديك رحلة مجدولة من النمط البديل للعميل ${customerName} رقمها ${tripNumber} على الساعة ${this.formatDate(time)}.`;
+
+    this.sendMessageToAdmins(message, 'reminderAlternativeSchedulingTrip');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
+  }
+
   public formatDate(iso: number) {
     const date = new Date(iso);
     date.setHours(date.getHours() + 3);

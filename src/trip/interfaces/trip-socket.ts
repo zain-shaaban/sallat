@@ -82,5 +82,5 @@ export interface ITripInSocketsArray {
 
   createdAt: Date;
 
-  SchedulingDate: number;
+  schedulingDate: number;
 }
