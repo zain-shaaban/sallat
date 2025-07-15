@@ -602,14 +602,18 @@ _
     return lines.join('\n');
   }
 
-  @Interval(1000 * 60 * 15)
+  @Interval(1000 * 10)
   private handleScheduleTrip() {
     const schedulingTrips = this.tripService.pendingTrips.filter(
       (trip) => trip?.schedulingDate,
     );
 
     schedulingTrips.map((trip) => {
-      if (trip.schedulingDate - Date.now() <= 1000 * 60 * 60) {
+      console.log(new Date(trip.schedulingDate));
+      if (
+        trip.schedulingDate - (Date.now() + 3 * 60 * 60 * 1000) <=
+        1000 * 60 * 60
+      ) {
         if (!trip.alternative)
           this.logService.reminderNormalSchedulingTripLog(
             trip.customer.name,
