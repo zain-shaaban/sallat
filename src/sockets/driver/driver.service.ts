@@ -363,7 +363,7 @@ export class DriverService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    if (rawPath) trip.rawPath = rawPath;
+    //if (rawPath) trip.rawPath = rawPath;
 
     Object.assign(trip, { itemPrice, receipt, status: 'success' });
 
