@@ -619,13 +619,13 @@ _
             trip.customer.name,
             trip.vendor.name,
             trip.tripNumber,
-            trip.time,
+            trip.schedulingDate,
           );
         else
           this.logService.reminderAlternativeSchedulingTripLog(
             trip.customer.name,
             trip.tripNumber,
-            trip.time,
+            trip.schedulingDate,
           );
       }
     });
