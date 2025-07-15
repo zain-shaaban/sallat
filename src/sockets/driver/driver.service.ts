@@ -602,7 +602,7 @@ _
     return lines.join('\n');
   }
 
-  @Interval(1000 * 10)
+  @Interval(1000 * 60 * 15)
   private handleScheduleTrip() {
     const schedulingTrips = this.tripService.pendingTrips.filter(
       (trip) => trip?.schedulingDate,
