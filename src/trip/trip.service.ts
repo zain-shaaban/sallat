@@ -120,7 +120,7 @@ export class TripService {
     } else {
       this.userBotService.sendMessageToCustomer(
         trip.customer.customerID,
-        ` تم تسجيل رحلة جديدة باسمك على الساعة ${this.logService.formatDate(schedulingDate)}.`,
+        ` تم تسجيل رحلة جديدة باسمك بتاريخ ${this.logService.formatDate(schedulingDate)}`,
       );
       this.handleSchedulingTrip(trip, ccName);
     }
@@ -284,14 +284,14 @@ export class TripService {
         trip.customer.name,
         trip.tripNumber,
         trip.vendor.name,
-        trip.time,
+        trip.schedulingDate,
       );
     } else {
       this.logService.createNewSchedulingAlternativeTripLog(
         ccName,
         trip.customer.name,
         trip.tripNumber,
-        trip.time,
+        trip.schedulingDate,
       );
     }
     this.pendingTrips.push(trip);
