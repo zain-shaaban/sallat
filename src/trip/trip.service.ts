@@ -14,6 +14,7 @@ import { OnlineDrivers } from 'src/sockets/shared-online-drivers/online-drivers'
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
+import { AddNoteDto } from './dto/add-note.dto';
 
 @Injectable()
 export class TripService {
@@ -186,6 +187,21 @@ export class TripService {
     const { affected } = await this.tripRepository.delete(tripID);
     if (affected === 0)
       throw new NotFoundException(`Trip with ID ${tripID} not found`);
+    return null;
+  }
+
+  async addNoteToTheTrip(
+    { tripID, note }: AddNoteDto,
+    adminID: string,
+    adminName: string,
+  ) {
+    const trip = await this.tripRepository.findOneBy({ tripID });
+
+    if (!trip) throw new NotFoundException(`Trip with ID ${tripID} not found`);
+
+    this.tripRepository.update(tripID, { note });
+
+    this.logService.addNoteToTheTripLog(adminName, trip.tripNumber);
     return null;
   }
 

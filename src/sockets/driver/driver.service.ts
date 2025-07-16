@@ -19,7 +19,7 @@ import { logger } from 'src/common/error_logger/logger.util';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 import { Account } from 'src/account/entities/account.entity';
-import { CronExpression, Interval } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class DriverService {

@@ -407,6 +407,13 @@ export class LogService {
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
+  addNoteToTheTripLog(adminName: string, tripNumber: number) {
+    const message = `قام المدير ${adminName} باضافة ملاحظة على الرحلة رقم ${tripNumber}.`;
+
+    this.sendMessageToAdmins(message,'addNoteToTheTrip')
+    this.telegramService.sendNotificationToTripsTelegramGroup(message)
+  }
+
   public formatDate(iso: number) {
     const date = new Date(iso);
     date.setHours(date.getHours() + 3);

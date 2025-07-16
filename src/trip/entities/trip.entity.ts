@@ -329,4 +329,13 @@ export class Trip {
   })
   @Column({ nullable: true, type: 'bigint' })
   schedulingDate: number;
+
+  @ApiProperty({
+    type: 'string',
+    example: 'العميل لم يرد على الاتصال',
+    description: 'note about problem or something else in the trip',
+    required: false,
+  })
+  @Column({ nullable: true, type: 'text' })
+  note: string;
 }
