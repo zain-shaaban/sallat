@@ -202,7 +202,6 @@ Creates a new trip with the provided details. The trip can be either a regular d
   async addNote(@Body() addNoteData: AddNoteDto, @Req() req) {
     return await this.tripService.addNoteToTheTrip(
       addNoteData,
-      req.user.id,
       req.user.name,
     );
   }

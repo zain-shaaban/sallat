@@ -121,6 +121,12 @@ export class EndTripDto {
   @ValidateNested({ each: true })
   @Type(() => CoordinatesDto)
   rawPath?: CoordinatesDto[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CoordinatesDto)
+  unpaidPath?: CoordinatesDto[];
 }
 
 export class AvailabilityDto {

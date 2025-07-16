@@ -192,7 +192,6 @@ export class TripService {
 
   async addNoteToTheTrip(
     { tripID, note }: AddNoteDto,
-    adminID: string,
     adminName: string,
   ) {
     const trip = await this.tripRepository.findOneBy({ tripID });
