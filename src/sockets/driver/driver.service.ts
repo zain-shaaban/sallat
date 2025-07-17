@@ -491,12 +491,45 @@ export class DriverService {
 
   private pricing(distance: number, vehicleNumber: string) {
     if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K')) {
-      return Math.round(5000 + 2.5 * distance);
+      return this.decreasedReductionPricing(distance);
     } else if (vehicleNumber.startsWith('T')) {
-      return Math.round(2000 + 6 * distance);
+      return Math.round(12000 + 5 * distance);
     } else {
-      return Math.round(5000 + 2.5 * distance);
+      return this.decreasedReductionPricing(distance);
     }
+  }
+
+  private decreasedReductionPricing(distance: number) {
+    const FIXED_PRICE = 10000;
+    let variablePrice = 0;
+    let metersLeft = distance;
+
+    const ratesPerKm = {
+      1: 2.5,
+      2: 2.5,
+      3: 2.5,
+      4: 2.5,
+      5: 2.5,
+      6: 2.4,
+      7: 2.3,
+      8: 2.2,
+      9: 2.1,
+      10: 2.0,
+      11: 1.9,
+      12: 1.8,
+      13: 1.7,
+      14: 1.6,
+      15: 1.5
+    };
+
+    for (let km = 1; metersLeft > 0; km++) {
+        let segmentMeters = Math.min(1000, metersLeft);
+        let rate = ratesPerKm[km] ?? 1.5;
+        variablePrice += segmentMeters * rate;
+        metersLeft -= segmentMeters;
+    }
+
+    return Math.round(FIXED_PRICE + variablePrice);
   }
 
   private async mapMatching(rawPath: CoordinatesDto[], vehicleNumber: string) {
