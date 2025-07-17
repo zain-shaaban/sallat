@@ -52,20 +52,21 @@ export class GetAllTripsDto {
           },
         },
         description: 'كتر كتشب',
-        partner:false,
+        partner: false,
         approxDistance: 2123.5,
         distance: 1954,
+        unpaidDistance: 350,
         approxPrice: 9247,
         price: 8908,
-        fixedPrice:9000,
-        discounts:{
-          item:0.2,
-          delivery:0.4
+        fixedPrice: 9000,
+        discounts: {
+          item: 0.2,
+          delivery: 0.4,
         },
         itemPrice: 25000,
         approxTime: '6',
         time: '791920',
-        schedulingDate:Date.now(),
+        schedulingDate: Date.now(),
         rawPath: [
           {
             lat: 34.8927543,
@@ -84,6 +85,16 @@ export class GetAllTripsDto {
           {
             lat: 34.89222,
             lng: 35.8933,
+          },
+        ],
+        unpaidPath: [
+          {
+            lat: 34.8927543,
+            lng: 35.8892337,
+          },
+          {
+            lat: 34.8882025,
+            lng: 35.8815156,
           },
         ],
         matchedPath: [

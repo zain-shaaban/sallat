@@ -306,4 +306,14 @@ export class CreateTripDto {
   @IsNumber()
   @IsOptional()
   schedulingDate: number;
+
+  @ApiProperty({
+    type: 'string',
+    example: 'العميل لم يرد على الاتصال',
+    description: 'note about problem or something else in the trip',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  note: string;
 }

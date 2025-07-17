@@ -53,6 +53,7 @@ export class GetSingleTripDto {
       description: 'كتر كتشب',
       approxDistance: 2123.5,
       distance: 1954,
+      unpaidDistance: 350,
       approxPrice: 9247,
       price: 8908,
       fixedPrice:9000,
@@ -65,6 +66,16 @@ export class GetSingleTripDto {
       time: '791920',
       schedulingDate:Date.now(),
       rawPath: [
+        {
+          lat: 34.8927543,
+          lng: 35.8892337,
+        },
+        {
+          lat: 34.8882025,
+          lng: 35.8815156,
+        },
+      ],
+      unpaidPath: [
         {
           lat: 34.8927543,
           lng: 35.8892337,

@@ -50,6 +50,8 @@ export interface ITripInSocketsArray {
 
   distance: number;
 
+  unpaidDistance: number;
+
   approxPrice: number;
 
   price: number;
@@ -63,6 +65,8 @@ export interface ITripInSocketsArray {
   itemTypes: string[];
 
   rawPath: CoordinatesDto[];
+
+  unpaidPath: CoordinatesDto[];
 
   routedPath: CoordinatesDto[];
 

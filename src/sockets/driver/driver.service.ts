@@ -19,7 +19,7 @@ import { logger } from 'src/common/error_logger/logger.util';
 import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 import { Account } from 'src/account/entities/account.entity';
-import { CronExpression, Interval } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class DriverService {
@@ -116,13 +116,13 @@ export class DriverService {
 
     this.tripService.ongoingTrips.forEach((trip) => {
       if (trip.driverID !== driver.driverID) return;
+
       if (
-        trip.alternative == false &&
-        Object.values(trip.tripState?.onVendor).length > 0
+        !Object.values(trip.tripState?.onVendor).length &&
+        !trip.tripState?.wayPoints.length
       )
-        trip.rawPath.push(coords);
-      else if (trip.alternative == true && trip.tripState.wayPoints.length > 0)
-        trip.rawPath.push(coords);
+        trip.unpaidPath.push(coords);
+      else trip.rawPath.push(coords);
     });
 
     this.io.server.of('/admin').emit('location', {
@@ -356,6 +356,7 @@ export class DriverService {
     type: string,
     time: number,
     rawPath: { lat: number; lng: number }[],
+    unpaidPath: { lat: number; lng: number }[],
   ) {
     const trip = this.tripService.ongoingTrips.find(
       (t) => t.tripID === tripID && t.driverID === driverID,
@@ -363,7 +364,9 @@ export class DriverService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    if (rawPath) trip.rawPath = rawPath;
+    //if (rawPath) trip.rawPath = rawPath;
+
+    //if (unpaidPath) trip.unpaidPath = unpaidPath;
 
     Object.assign(trip, { itemPrice, receipt, status: 'success' });
 
@@ -376,6 +379,7 @@ export class DriverService {
 
     trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
 
+    trip.unpaidDistance=getPathLength(trip.unpaidPath)
     try {
       await this.mapMatching(trip.rawPath, trip.vehicleNumber);
       trip.price = this.price;
@@ -404,6 +408,8 @@ export class DriverService {
       itemPrice,
       time: trip.time,
       receipt: trip.receipt,
+      unpaidPath:trip.unpaidPath,
+      unpaidDistance:trip.unpaidDistance
     });
 
     this.logService.endTripLog(

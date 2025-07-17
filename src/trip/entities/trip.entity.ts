@@ -174,6 +174,15 @@ export class Trip {
 
   @ApiProperty({
     type: 'number',
+    example: 888.666,
+    description: 'Actual distance in meters',
+    required: false,
+  })
+  @Column({ type: 'float', nullable: true })
+  unpaidDistance: number;
+
+  @ApiProperty({
+    type: 'number',
     example: 6000.0,
     description: 'Approximate price in local currency',
     required: false,
@@ -236,6 +245,17 @@ export class Trip {
   })
   @Column({ type: 'jsonb', default: [] })
   rawPath: CoordinatesDto[];
+
+  @ApiProperty({
+    type: 'array',
+    example: [
+      { lng: 111.111, lat: 112.222 },
+      { lng: 888.888, lat: 999.999 },
+      { lng: 555.555, lat: 333.333 },
+    ],
+  })
+  @Column({ type: 'jsonb', default: [] })
+  unpaidPath: CoordinatesDto[];
 
   @ApiProperty({
     type: 'array',
@@ -329,4 +349,13 @@ export class Trip {
   })
   @Column({ nullable: true, type: 'bigint' })
   schedulingDate: number;
+
+  @ApiProperty({
+    type: 'string',
+    example: 'العميل لم يرد على الاتصال',
+    description: 'note about problem or something else in the trip',
+    required: false,
+  })
+  @Column({ nullable: true, type: 'text' })
+  note: string;
 }

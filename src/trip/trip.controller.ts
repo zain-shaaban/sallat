@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
@@ -27,6 +28,7 @@ import { AccountAuthGuard } from 'src/common/guards/account.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountRole } from 'src/account/enums/account-role.enum';
+import { AddNoteDto } from './dto/add-note.dto';
 
 @ApiTags('Trips')
 @ApiBearerAuth('JWT-auth')
@@ -136,6 +138,70 @@ Creates a new trip with the provided details. The trip can be either a regular d
     return await this.tripService.createNewTrip(
       createTripDto,
       req.user.id,
+      req.user.name,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Add note',
+    description: `Add a note for the trip by manager or super admin`,
+  })
+  @ApiBody({
+    type: AddNoteDto,
+    description: 'Note content',
+    examples: {
+      default: {
+        value: {
+          note: 'لم يرد العميل على الاتصالات.',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    schema: {
+      example: {
+        status: true,
+        data: null,
+      },
+    },
+    description: 'The note has been successfully added',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'Validation error',
+      },
+    },
+    description: 'Invalid input data',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Trip not found',
+    schema: {
+      example: {
+        status: false,
+        message: 'Trip with ID 3c559f4a-ef14-4e62-8874-384a89c8689e not found',
+      },
+    },
+  })
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Patch('addNote')
+  async addNote(@Body() addNoteData: AddNoteDto, @Req() req) {
+    return await this.tripService.addNoteToTheTrip(
+      addNoteData,
       req.user.name,
     );
   }
