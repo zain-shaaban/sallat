@@ -493,7 +493,7 @@ export class DriverService {
     if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K')) {
       return this.decreasedReductionPricing(distance);
     } else if (vehicleNumber.startsWith('T')) {
-      return Math.round(12000 + 5 * distance);
+      return this.roundToNearestThousand(12000 + 5 * distance);
     } else {
       return this.decreasedReductionPricing(distance);
     }
@@ -529,7 +529,11 @@ export class DriverService {
         metersLeft -= segmentMeters;
     }
 
-    return Math.round(FIXED_PRICE + variablePrice);
+    return this.roundToNearestThousand(FIXED_PRICE + variablePrice);
+  }
+
+  private roundToNearestThousand(num: number) {
+      return Math.round(num / 1000) * 1000;
   }
 
   private async mapMatching(rawPath: CoordinatesDto[], vehicleNumber: string) {
@@ -569,7 +573,7 @@ export class DriverService {
     };
 
     const formatPrice = (price: number) =>
-      `${Number(Math.round(price)).toLocaleString('en-US')}sp`;
+      `${Number(this.roundToNearestThousand(price)).toLocaleString('en-US')}sp`;
 
     const timeDifference = (startTime: number, endTime: number) => {
       const diffInMs = endTime - startTime;
