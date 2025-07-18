@@ -569,7 +569,7 @@ export class DriverService {
     };
 
     const formatPrice = (price: number) =>
-      `${Number(price).toLocaleString('en-US')}sp`;
+      `${Number(Math.round(price)).toLocaleString('en-US')}sp`;
 
     const timeDifference = (startTime: number, endTime: number) => {
       const diffInMs = endTime - startTime;
