@@ -232,7 +232,7 @@ export class DriverService {
       trip.customer.location.approximate = wayPoint.location.approximate;
     }
 
-    this.logService.addWayPointLog(driverID, driverName, trip.tripNumber);
+    this.logService.addWayPointLog(driverID, driverName, trip.tripNumber,wayPoint.type,wayPoint.location.description);
   }
 
   handleEmergencyState(driverID: string, driverName: string) {

@@ -265,8 +265,19 @@ export class LogService {
     driverID: string,
     driverName: string,
     tripNumber: number,
+    type: string,
+    description: string | null,
   ) {
-    const message = `قام السائق ${driverName} بإضافة نقطة توقف جديدة أثناء الرحلة رقم ${tripNumber}.`;
+    switch (type) {
+      case 'customer':
+        type = 'زبون';
+        return;
+      case 'vendor':
+        type='متجر'
+        return;
+      default:type='غير محدد'
+    }
+    const message = `قام السائق ${driverName} بإضافة نقطة من النوع ${type} أثناء الرحلة رقم ${tripNumber} ${description?`وصفها: ${description}`:''}.`;
 
     this.sendMessageToAdmins(message, 'wayPoint', driverID);
 
@@ -410,8 +421,8 @@ export class LogService {
   addNoteToTheTripLog(adminName: string, tripNumber: number) {
     const message = `قام المدير ${adminName} باضافة ملاحظة على الرحلة رقم ${tripNumber}.`;
 
-    this.sendMessageToAdmins(message,'addNoteToTheTrip')
-    this.telegramService.sendNotificationToTripsTelegramGroup(message)
+    this.sendMessageToAdmins(message, 'addNoteToTheTrip');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
   public formatDate(iso: number) {
