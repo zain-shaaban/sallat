@@ -144,22 +144,17 @@ export class AccountService {
       Object.entries(updateData).filter(([_, value]) => value !== undefined),
     );
 
-    if (Object.keys(cleanUpdateData).length > 0)
-      var { affected: accountAffected } = await this.accountRepository.update(
-        id,
-        cleanUpdateData,
-      );
+    if (Object.keys(cleanUpdateData).length > 0) {
+      const account = await this.accountRepository.findOneBy({ id });
+      Object.assign(account, cleanUpdateData);
+      this.accountRepository.save(account);
+    }
     if (notificationToken || assignedVehicleNumber || code)
-      var { affected: driverAffected } = await this.driverRepository.update(
-        id,
-        {
-          notificationToken,
-          assignedVehicleNumber,
-          code,
-        },
-      );
-    if (!accountAffected && !driverAffected)
-      throw new NotFoundException(`Account with ID ${id} not found`);
+      this.driverRepository.update(id, {
+        notificationToken,
+        assignedVehicleNumber,
+        code,
+      });
 
     if (assignedVehicleNumber)
       this.adminService.updateDriver({ id, assignedVehicleNumber });
