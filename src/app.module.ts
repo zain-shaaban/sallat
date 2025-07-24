@@ -21,6 +21,7 @@ import { TelegrafModule } from 'nestjs-telegraf';
 import { TelegramModule } from './telegram-bot/telegram.module';
 import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
 
+// Delete me - adding comment to push to restart the server
 @Module({
   imports: [
     TelegrafModule.forRootAsync({
