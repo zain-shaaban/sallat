@@ -609,8 +609,8 @@ export class DriverService {
 
     const discountedDeliveryPrice = deliveryFee * (1 - deliveryDiscountValue);
     
-    const totalBeforeDiscount = formatPrice(itemPrice + deliveryFee);
-    const totalAfterDiscount = formatPrice(discountedItemPrice + discountedDeliveryPrice);
+    const totalBeforeDiscount = itemPrice + deliveryFee;
+    const totalAfterDiscount = discountedItemPrice + discountedDeliveryPrice;
 
     const lines = [
       `شكراً لثقتك.`,
