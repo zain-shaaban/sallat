@@ -561,7 +561,7 @@ export class DriverService {
   private generateReceiptMessage(trip: ITripInSocketsArray) {
     const formatDate = (iso: Date) => {
       const date = new Date(iso);
-      date.setHours(date.getHours() + 3);
+      date.setHours(date.getHours() + 3); // Keep the +3 hour offset here
       const day = date.getDate();
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
@@ -573,17 +573,23 @@ export class DriverService {
     };
 
     const formatPrice = (price: number) =>
-      `${Number(this.roundToNearestThousand(price)).toLocaleString('en-US')}sp`;
+      `${Number(price).toLocaleString('en-US')}sp`;
 
     const timeDifference = (startTime: number, endTime: number) => {
       const diffInMs = endTime - startTime;
       const totalMinutes = Math.floor(diffInMs / 60000);
       if (totalMinutes < 60) {
-        return `${totalMinutes} د`;
+          return `${totalMinutes} د`;
       }
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
       return minutes === 0 ? `${hours} س` : `${hours} س ${minutes} د`;
+    };
+
+    const calculatePriceBeforeDiscount = (price: number, discount: number): number => {
+      if (!discount) return price;
+      if (discount >= 1) return 0;
+      return price / (1 - discount);
     };
 
     const distance = `${Math.round(trip.distance || trip.approxDistance)}m`;
@@ -593,24 +599,23 @@ export class DriverService {
       trip.tripState.tripEnd.time,
     );
 
-    const receiptItems = trip.receipt
+    const receiptItems = (trip.receipt ?? [])
       .map((item) => `- ${item.name}: ${formatPrice(item.price)}`)
       .join('\n');
 
-    const deliveryFee: any = trip.fixedPrice
-      ? formatPrice(trip.fixedPrice)
-      : formatPrice(trip.price);
     const deliveryDiscountValue = trip.discounts?.delivery || 0;
     const itemDiscountValue = trip.discounts?.item || 0;
 
-    const itemPrice = trip.itemPrice;
+    const deliveryPrice = trip.fixedPrice ?? calculatePriceBeforeDiscount(trip.price, deliveryDiscountValue);
+    const itemPrice = calculatePriceBeforeDiscount(trip.itemPrice, itemDiscountValue);
 
-    const discountedItemPrice = itemPrice * (1 - itemDiscountValue);
+    const discountedDeliveryPrice = trip.fixedPrice ?? trip.price;
+    const discountedItemPrice = trip.itemPrice;
 
-    const discountedDeliveryPrice = deliveryFee * (1 - deliveryDiscountValue);
-    
-    const totalBeforeDiscount = itemPrice + deliveryFee;
-    const totalAfterDiscount = discountedItemPrice + discountedDeliveryPrice;
+    const totalBeforeDiscount = formatPrice(itemPrice + deliveryPrice);
+    const totalAfterDiscount = formatPrice(discountedItemPrice + discountedDeliveryPrice);
+
+    const deliveryFee = formatPrice(deliveryPrice);
 
     const lines = [
       `شكراً لثقتك.`,
@@ -618,7 +623,7 @@ export class DriverService {
       `الرحلة #${trip.tripNumber}`,
       `المسافة المقطوعة: ${distance}`,
       `المدة: ${duration}`,
-      `اجور التوصيل: ${deliveryFee}`,
+      `اجور التوصيل: ${deliveryFee}`
     ];
 
     if (deliveryDiscountValue > 0) {
@@ -628,17 +633,14 @@ export class DriverService {
     lines.push(`المشتريات:`);
     lines.push(receiptItems);
 
-    if (deliveryDiscountValue > 0) {
+    if (deliveryDiscountValue > 0 || itemDiscountValue > 0) {
       lines.push(`الإجمالي قبل الحسم: ${totalBeforeDiscount}`);
       lines.push(`الإجمالي بعد الحسم: ${totalAfterDiscount}`);
-    } else if(itemDiscountValue > 0) {
-      lines.push(`الإجمالي: ${totalAfterDiscount}`);
     } else {
       lines.push(`الإجمالي: ${totalBeforeDiscount}`);
     }
-    
-    lines.push(
-      `
+
+    lines.push(`
 _
 
 تابعنا هون : 
@@ -649,11 +651,11 @@ _
 خدمة الزبائن: 0986912912 أو <a href="https://wa.me/963986912912">واتس</a>
 للشكاوي أو الاقتراحات: <a href="https://wa.me/963986914914">واتس</a>
 
-سلات.. لعندك وين ما كنت`.trim(),
-    );
+سلات.. لعندك وين ما كنت`.trim());
 
     return lines.join('\n');
   }
+
 
   @Interval(1000 * 60 * 15)
   private handleScheduleTrip() {
