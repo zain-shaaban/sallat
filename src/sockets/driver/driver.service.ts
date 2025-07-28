@@ -652,7 +652,6 @@ _
     );
 
     schedulingTrips.map((trip) => {
-      console.log(new Date(trip.schedulingDate));
       if (
         trip.schedulingDate - (Date.now() + 3 * 60 * 60 * 1000) <=
         1000 * 60 * 60
