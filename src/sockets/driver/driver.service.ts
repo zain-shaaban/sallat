@@ -118,7 +118,7 @@ export class DriverService {
       if (trip.driverID !== driver.driverID) return;
 
       if (
-        !Object.values(trip.tripState?.onVendor).length &&
+        !Object.values(trip.tripState?.onVendor||{}).length &&
         !trip.tripState?.wayPoints.length
       )
         trip.unpaidPath.push(coords);
