@@ -405,7 +405,7 @@ export class DriverService {
       distance: trip.distance,
       tripState: trip.tripState,
       price: trip.price,
-      itemPrice,
+      itemPrice:trip.itemPrice,
       time: trip.time,
       receipt: trip.receipt,
       unpaidPath:trip.unpaidPath,
