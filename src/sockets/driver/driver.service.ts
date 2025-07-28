@@ -597,13 +597,20 @@ export class DriverService {
       .map((item) => `- ${item.name}: ${formatPrice(item.price)}`)
       .join('\n');
 
-    const deliveryFee = trip.fixedPrice
+    const deliveryFee: any = trip.fixedPrice
       ? formatPrice(trip.fixedPrice)
       : formatPrice(trip.price);
     const deliveryDiscountValue = trip.discounts?.delivery || 0;
     const itemDiscountValue = trip.discounts?.item || 0;
 
-    const total = formatPrice(trip.itemPrice + (trip.fixedPrice ?? trip.price));
+    const itemPrice = trip.itemPrice;
+
+    const discountedItemPrice = itemPrice * (1 - itemDiscountValue);
+
+    const discountedDeliveryPrice = deliveryFee * (1 - deliveryDiscountValue);
+    
+    const totalBeforeDiscount = itemPrice + deliveryFee;
+    const totalAfterDiscount = discountedItemPrice + discountedDeliveryPrice;
 
     const lines = [
       `شكراً لثقتك.`,
@@ -621,12 +628,15 @@ export class DriverService {
     lines.push(`المشتريات:`);
     lines.push(receiptItems);
 
-    if (itemDiscountValue > 0) {
-      lines.push(`حسوم الاغراض: ${itemDiscountValue * 100}%`);
+    if (deliveryDiscountValue > 0) {
+      lines.push(`الإجمالي قبل الحسم: ${totalBeforeDiscount}`);
+      lines.push(`الإجمالي بعد الحسم: ${totalAfterDiscount}`);
+    } else if(itemDiscountValue > 0) {
+      lines.push(`الإجمالي: ${totalAfterDiscount}`);
+    } else {
+      lines.push(`الإجمالي: ${totalBeforeDiscount}`);
     }
-
-    lines.push(`الإجمالي: ${total}`);
-
+    
     lines.push(
       `
 _
