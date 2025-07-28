@@ -434,7 +434,7 @@ export class DriverService {
       data: {
         tripNumber: trip.tripNumber,
         status: 'success',
-        itemPrice,
+        itemPrice:trip.itemPrice,
         time: trip.time,
         distance: trip.distance,
         price: trip.price,
