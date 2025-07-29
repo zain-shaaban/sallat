@@ -633,9 +633,11 @@ export class DriverService {
     lines.push(`المشتريات:`);
     lines.push(receiptItems);
 
-    if (deliveryDiscountValue > 0 || itemDiscountValue > 0) {
+    if (deliveryDiscountValue > 0) {
       lines.push(`الإجمالي قبل الحسم: ${totalBeforeDiscount}`);
       lines.push(`الإجمالي بعد الحسم: ${totalAfterDiscount}`);
+    } else if(itemDiscountValue > 0) {
+      lines.push(`الإجمالي: ${totalAfterDiscount}`);
     } else {
       lines.push(`الإجمالي: ${totalBeforeDiscount}`);
     }
