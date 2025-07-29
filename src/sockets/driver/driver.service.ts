@@ -493,7 +493,12 @@ export class DriverService {
     if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K')) {
       return this.decreasedReductionPricing(distance);
     } else if (vehicleNumber.startsWith('T')) {
-      return this.roundToNearestThousand(12000 + 5 * distance);
+      const price = this.roundToNearestThousand(5 * distance)
+      if(price < 12000) {
+        return 12000;
+      }
+
+      return price;
     } else {
       return this.decreasedReductionPricing(distance);
     }
