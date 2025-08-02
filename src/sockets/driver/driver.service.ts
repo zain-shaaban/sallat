@@ -441,6 +441,7 @@ export class DriverService {
         fixedPrice: trip.fixedPrice,
         receipt,
         discounts: trip.discounts,
+        customerPhoneNumber: trip.customer.phoneNumber
       },
     };
   }
