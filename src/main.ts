@@ -43,7 +43,7 @@ Sallat is a comprehensive delivery management system that handles trips, custome
     .addTag('Auth', 'Authentication endpoints')
     .addTag('Categories', 'Category management endpoints')
     .addTag('Error Logs', 'Error log management endpoints')
-    .addTag('Sessions','Session managment endpoints')
+    .addTag('Sessions', 'Session managment endpoints')
     .addBearerAuth(
       {
         type: 'http',
@@ -68,6 +68,13 @@ Sallat is a comprehensive delivery management system that handles trips, custome
     },
     customSiteTitle: 'Sallat API Documentation',
   });
+
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .get('/health', (_req, res) => {
+      res.status(200).send('OK');
+    });
 
   await app.listen(process.env.PORT ?? 3000);
 }

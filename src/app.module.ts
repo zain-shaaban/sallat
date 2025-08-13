@@ -30,6 +30,12 @@ import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
       useFactory: (configService: ConfigService) => ({
         token: configService.get('TELEGRAM_TOKEN'),
         botName: 'management',
+        launchOptions:{
+          webhook:{
+            domain:configService.get<string>('APP_URL')!,
+            path:`/telegraf/${configService.get<string>('MANAGEMENT_WEBHOOK_SECRET')}`
+          }
+        },
         include: [TelegramModule]
       }),
       inject: [ConfigService],
@@ -40,6 +46,12 @@ import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
       useFactory: (configService: ConfigService) => ({
         token: configService.get('USER_TELEGRAM_TOKEN'),
         botName: 'user',
+        launchOptions:{
+          webhook:{
+            domain:configService.get<string>('APP_URL')!,
+            path:`/telegraf/${configService.get<string>('USER_WEBHOOK_SECRET')}`
+          }
+        },
         include: [TelegramUserModule]
       }),
       inject: [ConfigService],
