@@ -33,7 +33,7 @@ import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
         launchOptions:{
           webhook:{
             domain:configService.get<string>('APP_URL')!,
-            path:`/telegraf/${configService.get<string>('MANAGEMENT_WEBHOOK_SECRET')}`
+            hookPath:`/telegraf/${configService.get<string>('MANAGEMENT_WEBHOOK_SECRET')}`
           }
         },
         include: [TelegramModule]
@@ -49,7 +49,7 @@ import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
         launchOptions:{
           webhook:{
             domain:configService.get<string>('APP_URL')!,
-            path:`/telegraf/${configService.get<string>('USER_WEBHOOK_SECRET')}`
+            hookPath:`/telegraf/${configService.get<string>('USER_WEBHOOK_SECRET')}`
           }
         },
         include: [TelegramUserModule]
