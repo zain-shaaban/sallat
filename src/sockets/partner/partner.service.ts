@@ -82,11 +82,9 @@ export class PartnerService {
 
     this.partnerRepository.update(requestID, { state: 'accepted' });
 
-    const targetSocket = [...this.io.sockets.values()].find(
-      (socket) => socket.data.id === partnerID,
-    );
-
-    targetSocket?.emit('tripAccepted');
+    [...this.io.sockets.values()].forEach((socket) => {
+      if (socket.data.id === partnerID) socket.emit('tripAccepted');
+    });
   }
 
   tripRejected(requestID: number, partnerID: string) {
@@ -95,19 +93,14 @@ export class PartnerService {
     );
 
     this.partnerRepository.update(requestID, { state: 'rejected' });
-    const targetSocket = [...this.io.sockets.values()].find(
-      (socket) => socket.data.id === partnerID,
-    );
-
-    targetSocket?.emit('tripRejected');
+    [...this.io.sockets.values()].forEach((socket) => {
+      if (socket.data.id === partnerID) socket.emit('tripRejected');
+    });
   }
 
-  handleCancelPartnerTrip(
-    partnerID: string,
-    partnerName: string,
-  ) {
+  handleCancelPartnerTrip(partnerID: string, partnerName: string) {
     const targetTrip = this.partnerTrips.find(
-      (trip) =>trip.partnerID == partnerID,
+      (trip) => trip.partnerID == partnerID,
     );
 
     if (!targetTrip)
