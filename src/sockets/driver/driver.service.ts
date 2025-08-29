@@ -417,6 +417,10 @@ export class DriverService {
       driverName,
       trip.customer.name,
       trip.tripNumber,
+      this.timeDifference(
+        trip.tripState.tripStart.time,
+        trip.tripState.tripEnd.time
+      )
     );
 
     const message = this.generateReceiptMessage(trip);
@@ -445,6 +449,17 @@ export class DriverService {
       },
     };
   }
+
+  timeDifference = (startTime: number, endTime: number) => {
+    const diffInMs = endTime - startTime;
+    const totalMinutes = Math.floor(diffInMs / 60000);
+    if (totalMinutes < 60) {
+      return `${totalMinutes} د`;
+    }
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return minutes === 0 ? `${hours} س` : `${hours} س ${minutes} د`;
+  };
 
   handleLogOut(driverID: string, driverName: string) {
     this.onlineDrivers.drivers = this.onlineDrivers.drivers.filter(

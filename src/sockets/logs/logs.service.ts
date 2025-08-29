@@ -239,8 +239,9 @@ export class LogService {
     driverName: string,
     customerName: string,
     tripNumber: number,
+    duration: string
   ) {
-    const message = `وصل السائق ${driverName} إلى موقع العميل ${customerName} وتم تسليم الطلب للرحلة رقم ${tripNumber} بنجاح.`;
+    const message = `وصل السائق ${driverName} إلى موقع العميل ${customerName} وتم تسليم الطلب للرحلة رقم ${tripNumber} بنجاح، مدة الرحلة ${duration}`;
 
     this.sendMessageToAdmins(message, 'endTrip', driverID);
 
