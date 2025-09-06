@@ -95,7 +95,7 @@ export class CustomerController {
       },
     },
   })
-  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN, AccountRole.CC)
   @Get('')
   async findAll() {
     return await this.customerService.findAll();
@@ -185,7 +185,7 @@ export class CustomerController {
       },
     },
   })
-  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN, AccountRole.CC)
   @Get('onMap')
   async findAllOnMap() {
     return await this.customerService.findOnMap();
@@ -279,7 +279,7 @@ export class CustomerController {
       },
     },
   })
-  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN, AccountRole.CC)
   @Get(':customerID')
   async findOne(@Param('customerID') customerID: string) {
     return await this.customerService.findOne(customerID);
