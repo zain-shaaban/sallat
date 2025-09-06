@@ -232,6 +232,8 @@ export class DriverService {
       trip.customer.location.approximate = wayPoint.location.approximate;
     }
 
+    this.adminService.sendTripsToAdmins()
+
     this.logService.addWayPointLog(driverID, driverName, trip.tripNumber,wayPoint.type,wayPoint.location.description);
   }
 
