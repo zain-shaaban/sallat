@@ -1,10 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Trip } from '../entities/trip.entity';
 
-export class GetAllTripsDto {
-  @ApiProperty({ type: 'boolean', example: true })
-  status: boolean;
+class BmsDto {
+  @ApiProperty({
+    type: String,
+    description: 'BMS user name',
+    example: 'example',
+  })
+  username: string;
 
+  @ApiProperty({
+    type: String,
+    description: 'BMS password',
+    example: 'example123',
+  })
+  password: string;
+}
+
+class GetAllTripsData {
   @ApiProperty({
     type: Trip,
     isArray: true,
@@ -140,5 +153,22 @@ export class GetAllTripsDto {
       },
     ],
   })
-  data: Trip[];
+  trips: Trip[];
+
+  @ApiProperty({
+    type: BmsDto,
+    description:"BMS crednetails"
+  })
+  bms: BmsDto;
+}
+
+export class GetAllTripsDto {
+  @ApiProperty({ type: 'boolean', example: true })
+  status: boolean;
+
+  @ApiProperty({
+    type: GetAllTripsData,
+    description: 'Response data',
+  })
+  data: GetAllTripsData;
 }

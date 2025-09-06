@@ -17,6 +17,7 @@ import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 import { AddNoteDto } from './dto/add-note.dto';
 import { AccountRole } from 'src/account/enums/account-role.enum';
 import { ModerateTripDto } from './dto/moderate-trip.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TripService {
@@ -38,6 +39,7 @@ export class TripService {
     @Inject() private readonly userBotService: TelegramUserService,
     @InjectRepository(DriverMetadata)
     private readonly driverRepository: Repository<DriverMetadata>,
+    private configService: ConfigService,
   ) {}
 
   async createNewTrip(
@@ -134,12 +136,15 @@ export class TripService {
     };
   }
 
-  async moderateTrip(moderateTripDto:ModerateTripDto,ccName:string){
-    const trip=await this.tripRepository.save({...moderateTripDto,status:'added'})
+  async moderateTrip(moderateTripDto: ModerateTripDto, ccName: string) {
+    const trip = await this.tripRepository.save({
+      ...moderateTripDto,
+      status: 'added',
+    });
 
-    this.logService.moderateTripLog(ccName,trip.tripNumber)
+    this.logService.moderateTripLog(ccName, trip.tripNumber);
 
-    return {tripID:trip.tripID,tripNumber:trip.tripNumber}
+    return { tripID: trip.tripID, tripNumber: trip.tripNumber };
   }
 
   async findAll(accountID: string, role: string) {
@@ -151,7 +156,13 @@ export class TripService {
           createdAt: 'desc',
         },
       });
-      return trips;
+      return {
+        trips,
+        bms: {
+          username: this.configService.get('BMS_USERNAME'),
+          password: this.configService.get('BMS_PASSWORD'),
+        },
+      };
     }
     const trips = await this.tripRepository.find({
       relations: ['customer', 'vendor'],
@@ -159,7 +170,13 @@ export class TripService {
         createdAt: 'desc',
       },
     });
-    return trips;
+    return {
+      trips,
+      bms: {
+        username: this.configService.get('BMS_USERNAME'),
+        password: this.configService.get('BMS_PASSWORD'),
+      },
+    };
   }
 
   async customerSearch(phoneNumber: string) {
