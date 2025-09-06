@@ -143,13 +143,91 @@ Creates a new trip with the provided details. The trip can be either a regular d
     );
   }
 
-  @Roles(AccountRole.CC,AccountRole.MANAGER,AccountRole.SUPERADMIN)
+  @ApiOperation({
+    summary: 'Moderate a trip',
+    description: `
+moderates a trip with the provided details. The trip can be either a regular delivery trip or an alternative trip.
+    `,
+  })
+  @ApiBody({
+    type: ModerateTripDto,
+    description: 'Trip moderation data',
+    examples: {
+      regularTrip: {
+        value: {
+          driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerPhoneNumber: '+96399887766',
+          customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
+          partner: true,
+          itemTypes: ['شاورما', 'بطاطا مقلية'],
+          description: 'كتر كتشب',
+          approxDistance: 5200,
+          approxPrice: 80000,
+          approxTime: 133266423,
+          fixedPrice: true,
+          routedPath: [
+            { lng: 111.111, lat: 112.222 },
+            { lng: 888.888, lat: 999.999 },
+            { lng: 555.555, lat: 333.333 },
+          ],
+          schedulingDate: Date.now(),
+        },
+        summary: 'Regular Trip Example',
+      },
+      alternativeTrip: {
+        value: {
+          driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          customerPhoneNumber: '+96399887766',
+          customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
+          itemTypes: ['شاورما', 'بطاطا مقلية'],
+          description: 'كتر كتشب',
+          alternative: true,
+          schedulingDate: Date.now(),
+        },
+        summary: 'Alternative Trip Example',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    schema: {
+      example: {
+        status: true,
+        data: {
+          tripID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+          tripNumber: 45,
+        },
+      },
+    },
+    description: 'The trip has been successfully created',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'Validation error',
+      },
+    },
+    description: 'Invalid input data',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Post('moderate')
-  async moderateTrip(@Body() moderateTripDto:ModerateTripDto,@Req() req){
-    return await this.tripService.moderateTrip(
-      moderateTripDto,
-      req.user.name
-    )
+  async moderateTrip(@Body() moderateTripDto: ModerateTripDto, @Req() req) {
+    return await this.tripService.moderateTrip(moderateTripDto, req.user.name);
   }
 
   @ApiOperation({
@@ -210,10 +288,7 @@ Creates a new trip with the provided details. The trip can be either a regular d
   @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Patch('addNote')
   async addNote(@Body() addNoteData: AddNoteDto, @Req() req) {
-    return await this.tripService.addNoteToTheTrip(
-      addNoteData,
-      req.user.name,
-    );
+    return await this.tripService.addNoteToTheTrip(addNoteData, req.user.name);
   }
 
   @ApiOperation({
@@ -351,7 +426,7 @@ Retrieves a list of all trips in the system
   @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('/')
   async getAllTrips(@Req() req) {
-    return await this.tripService.findAll(req.user.id,req.user.role);
+    return await this.tripService.findAll(req.user.id, req.user.role);
   }
 
   @ApiOperation({
