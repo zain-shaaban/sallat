@@ -340,8 +340,8 @@ Retrieves a list of all trips in the system
   })
   @Roles(AccountRole.CC, AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Get('/')
-  async getAllTrips() {
-    return await this.tripService.findAll();
+  async getAllTrips(@Req() req) {
+    return await this.tripService.findAll(req.user.id,req.user.role);
   }
 
   @ApiOperation({

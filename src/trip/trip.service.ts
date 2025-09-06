@@ -15,6 +15,7 @@ import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service
 import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 import { AddNoteDto } from './dto/add-note.dto';
+import { AccountRole } from 'src/account/enums/account-role.enum';
 
 @Injectable()
 export class TripService {
@@ -132,7 +133,17 @@ export class TripService {
     };
   }
 
-  async findAll() {
+  async findAll(accountID: string, role: string) {
+    if (role == AccountRole.CC) {
+      const trips = await this.tripRepository.find({
+        where: { ccID: accountID },
+        relations: ['customer', 'vendor'],
+        order: {
+          createdAt: 'desc',
+        },
+      });
+      return trips;
+    }
     const trips = await this.tripRepository.find({
       relations: ['customer', 'vendor'],
       order: {
@@ -190,10 +201,7 @@ export class TripService {
     return null;
   }
 
-  async addNoteToTheTrip(
-    { tripID, note }: AddNoteDto,
-    adminName: string,
-  ) {
+  async addNoteToTheTrip({ tripID, note }: AddNoteDto, adminName: string) {
     const trip = await this.tripRepository.findOneBy({ tripID });
 
     if (!trip) throw new NotFoundException(`Trip with ID ${tripID} not found`);
