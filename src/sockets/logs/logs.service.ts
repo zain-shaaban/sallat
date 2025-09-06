@@ -62,6 +62,13 @@ export class LogService {
     this.telegramService.sendNotificationToTripsTelegramGroup(message);
   }
 
+  async moderateTripLog(ccName: string, tripNumber: number) {
+    const message = `قام الموظف ${ccName} بادراج رحلة مضافة رقمها ${tripNumber}.`;
+
+    this.sendMessageToAdmins(message, 'moderateTrip');
+    this.telegramService.sendNotificationToTripsTelegramGroup(message);
+  }
+
   async cancelPartnerTripLog(partnerName: string, customerName: string) {
     const message = `قام المتجر ${partnerName} بالغاء الطلب للعميل ${customerName}.`;
 
@@ -273,11 +280,12 @@ export class LogService {
         type = 'زبون';
         return;
       case 'vendor':
-        type='متجر'
+        type = 'متجر';
         return;
-      default:type='غير محدد'
+      default:
+        type = 'غير محدد';
     }
-    const message = `قام السائق ${driverName} بإضافة نقطة من النوع ${type} أثناء الرحلة رقم ${tripNumber} ${description?`وصفها: ${description}`:''}.`;
+    const message = `قام السائق ${driverName} بإضافة نقطة من النوع ${type} أثناء الرحلة رقم ${tripNumber} ${description ? `وصفها: ${description}` : ''}.`;
 
     this.sendMessageToAdmins(message, 'wayPoint', driverID);
 

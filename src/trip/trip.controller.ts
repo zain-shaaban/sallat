@@ -29,6 +29,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountRole } from 'src/account/enums/account-role.enum';
 import { AddNoteDto } from './dto/add-note.dto';
+import { ModerateTripDto } from './dto/moderate-trip.dto';
 
 @ApiTags('Trips')
 @ApiBearerAuth('JWT-auth')
@@ -140,6 +141,15 @@ Creates a new trip with the provided details. The trip can be either a regular d
       req.user.id,
       req.user.name,
     );
+  }
+
+  @Roles(AccountRole.CC,AccountRole.MANAGER,AccountRole.SUPERADMIN)
+  @Post('moderate')
+  async moderateTrip(@Body() moderateTripDto:ModerateTripDto,@Req() req){
+    return await this.tripService.moderateTrip(
+      moderateTripDto,
+      req.user.name
+    )
   }
 
   @ApiOperation({

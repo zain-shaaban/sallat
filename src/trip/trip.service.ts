@@ -16,6 +16,7 @@ import { Vendor } from 'src/vendor/entities/vendor.entity';
 import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 import { AddNoteDto } from './dto/add-note.dto';
 import { AccountRole } from 'src/account/enums/account-role.enum';
+import { ModerateTripDto } from './dto/moderate-trip.dto';
 
 @Injectable()
 export class TripService {
@@ -131,6 +132,14 @@ export class TripService {
       tripID: trip.tripID,
       vendorID: vendorID ? null : trip.vendor?.vendorID,
     };
+  }
+
+  async moderateTrip(moderateTripDto:ModerateTripDto,ccName:string){
+    const trip=await this.tripRepository.save({...moderateTripDto,status:'added'})
+
+    this.logService.moderateTripLog(ccName,trip.tripNumber)
+
+    return {tripID:trip.tripID,tripNumber:trip.tripNumber}
   }
 
   async findAll(accountID: string, role: string) {
