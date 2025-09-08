@@ -70,6 +70,7 @@ class GetAllTripsData {
         distance: 1954,
         unpaidDistance: 350,
         approxPrice: 9247,
+        isSMSSent:false,
         price: 8908,
         fixedPrice: 9000,
         discounts: {

@@ -183,5 +183,14 @@ export class UpdateTripDto {
   })
   @IsNumber()
   @IsOptional()
-  unpaidDistance: number;
+  unpaidDistance?: number;
+
+  @ApiProperty({
+    type:Boolean,
+    description:"Determine whether the message has been sent or not",
+    example:false
+  })
+  @IsOptional()
+  @IsBoolean()
+  isSMSSend?:boolean
 }

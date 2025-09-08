@@ -100,6 +100,7 @@ export class GetSingleTripDto {
         [34.888192, 35.881591],
       ],
       status: 'success',
+      isSMSSent:false,
       reason: null,
       tripNumber: 1,
       createAt: '2025-05-09T11:28:41.131Z',

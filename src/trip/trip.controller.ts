@@ -31,7 +31,6 @@ import { AccountRole } from 'src/account/enums/account-role.enum';
 import { AddNoteDto } from './dto/add-note.dto';
 import { ModerateTripDto } from './dto/moderate-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
-import { Update } from 'telegraf/typings/core/types/typegram';
 
 @ApiTags('Trips')
 @ApiBearerAuth('JWT-auth')
@@ -220,17 +219,6 @@ updates a trip with the provided details. The trip can be either a regular deliv
   @ApiBody({
     type: UpdateTripDto,
     description: 'Trip update data',
-    schema: {
-      example: {
-        driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-        vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-        customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-        partner: true,
-        description: 'كتر كتشب',
-        itemPrice: 15000,
-        price: 25000,
-      },
-    },
   })
   @ApiResponse({
     status: HttpStatus.OK,

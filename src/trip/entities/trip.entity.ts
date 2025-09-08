@@ -358,4 +358,13 @@ export class Trip {
   })
   @Column({ nullable: true, type: 'text' })
   note: string;
+
+  @ApiProperty({
+    type: 'boolean',
+    example: false,
+    description: 'Determine whether the message has been sent or not',
+    required: false,
+  })
+  @Column({ type: 'boolean',default:false })
+  isSMSSend: boolean;
 }
