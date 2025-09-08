@@ -152,42 +152,15 @@ moderates a trip with the provided details. The trip can be either a regular del
   @ApiBody({
     type: ModerateTripDto,
     description: 'Trip moderation data',
-    examples: {
-      regularTrip: {
-        value: {
-          driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-          vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-          customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-          customerPhoneNumber: '+96399887766',
-          customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
-          partner: true,
-          itemTypes: ['شاورما', 'بطاطا مقلية'],
-          description: 'كتر كتشب',
-          approxDistance: 5200,
-          approxPrice: 80000,
-          approxTime: 133266423,
-          fixedPrice: true,
-          routedPath: [
-            { lng: 111.111, lat: 112.222 },
-            { lng: 888.888, lat: 999.999 },
-            { lng: 555.555, lat: 333.333 },
-          ],
-          schedulingDate: Date.now(),
-        },
-        summary: 'Regular Trip Example',
-      },
-      alternativeTrip: {
-        value: {
-          driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-          customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
-          customerPhoneNumber: '+96399887766',
-          customerAlternativePhoneNumbers: ['+96399882211', '+96399884433'],
-          itemTypes: ['شاورما', 'بطاطا مقلية'],
-          description: 'كتر كتشب',
-          alternative: true,
-          schedulingDate: Date.now(),
-        },
-        summary: 'Alternative Trip Example',
+    schema: {
+      example: {
+        driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        partner: true,
+        description: 'كتر كتشب',
+        itemPrice: 15000,
+        price: 25000,
       },
     },
   })
