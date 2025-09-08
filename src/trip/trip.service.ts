@@ -18,6 +18,7 @@ import { AddNoteDto } from './dto/add-note.dto';
 import { AccountRole } from 'src/account/enums/account-role.enum';
 import { ModerateTripDto } from './dto/moderate-trip.dto';
 import { ConfigService } from '@nestjs/config';
+import { UpdateTripDto } from './dto/update-trip.dto';
 
 @Injectable()
 export class TripService {
@@ -145,6 +146,22 @@ export class TripService {
     this.logService.moderateTripLog(ccName, trip.tripNumber);
 
     return { tripID: trip.tripID, tripNumber: trip.tripNumber };
+  }
+
+  async updateTrip(
+    tripID: string,
+    updateTripDto: UpdateTripDto,
+    ccName: string,
+  ) {
+    const { affected } = await this.tripRepository.update(
+      tripID,
+      updateTripDto,
+    );
+
+    if (!affected)
+      throw new NotFoundException(`trip with ID ${tripID} not found`);
+
+    return null;
   }
 
   async findAll(accountID: string, role: string) {

@@ -30,6 +30,8 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountRole } from 'src/account/enums/account-role.enum';
 import { AddNoteDto } from './dto/add-note.dto';
 import { ModerateTripDto } from './dto/moderate-trip.dto';
+import { UpdateTripDto } from './dto/update-trip.dto';
+import { Update } from 'telegraf/typings/core/types/typegram';
 
 @ApiTags('Trips')
 @ApiBearerAuth('JWT-auth')
@@ -201,6 +203,77 @@ moderates a trip with the provided details. The trip can be either a regular del
   @Post('moderate')
   async moderateTrip(@Body() moderateTripDto: ModerateTripDto, @Req() req) {
     return await this.tripService.moderateTrip(moderateTripDto, req.user.name);
+  }
+
+  @ApiOperation({
+    summary: 'Update trip details',
+    description: `
+updates a trip with the provided details. The trip can be either a regular delivery trip or an alternative trip.
+    `,
+  })
+  @ApiParam({
+    name: 'tripID',
+    description: 'The unique identifier of the trip',
+    type: String,
+    example: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+  })
+  @ApiBody({
+    type: UpdateTripDto,
+    description: 'Trip update data',
+    schema: {
+      example: {
+        driverID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        vendorID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        customerID: '3c559f4a-ef14-4e62-8874-384a89c8689e',
+        partner: true,
+        description: 'كتر كتشب',
+        itemPrice: 15000,
+        price: 25000,
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    schema: {
+      example: {
+        status: true,
+        data: null,
+      },
+    },
+    description: 'The trip has been successfully updated',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    schema: {
+      example: {
+        status: false,
+        message: 'Validation error',
+      },
+    },
+    description: 'Invalid input data',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing authentication token',
+    schema: {
+      example: {
+        status: false,
+        message: 'Invalid token',
+      },
+    },
+  })
+  @Roles(AccountRole.CC, AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Patch('update/:tripID')
+  async updateTrip(
+    @Param('tripID') tripID: string,
+    @Body() updateTripDto: UpdateTripDto,
+    @Req() req,
+  ) {
+    return await this.tripService.updateTrip(
+      tripID,
+      updateTripDto,
+      req.user.name,
+    );
   }
 
   @ApiOperation({
