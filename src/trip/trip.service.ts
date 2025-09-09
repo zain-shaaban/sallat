@@ -138,9 +138,12 @@ export class TripService {
   }
 
   async moderateTrip(moderateTripDto: ModerateTripDto, ccName: string) {
+    const { customerID,vendorID,...otherFields } = moderateTripDto;
     const trip = await this.tripRepository.save({
-      ...moderateTripDto,
+      customer: customerID?{customerID}:null,
+      vendor: vendorID?{vendorID}:null,
       status: 'added',
+      ...otherFields,
     });
 
     this.logService.moderateTripLog(ccName, trip.tripNumber);

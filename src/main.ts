@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseFormatInterceptor } from './common/interceptors/response-format.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -75,6 +76,9 @@ Sallat is a comprehensive delivery management system that handles trips, custome
     .get('/health', (_req, res) => {
       res.status(200).send('OK');
     });
+
+  app.use(bodyParser.json({ limit: '1mb' }));
+  app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 
   await app.listen(process.env.PORT ?? 3000);
 }

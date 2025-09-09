@@ -135,6 +135,9 @@ export class AdminService {
       (trip) => trip.requestID === requestID,
     );
 
+    if (!targetTrip)
+      throw new WsException(`Trip with request ID ${requestID} not found`);
+
     this.partnerService.tripAccepted(
       targetTrip.requestID,
       targetTrip.partnerID,
@@ -367,9 +370,16 @@ export class AdminService {
 
   updateDriver(driver: { id: string; assignedVehicleNumber: string }) {
     this.io.server.of('/admin').emit('updateDriver', { driver });
-    const driverSocketID = this.onlineDrivers.drivers.find(d => d.driverID === driver.id)?.socketID || null;
-    if(driverSocketID) {
-      this.io.server.of("/driver").to(driverSocketID).emit("vehicleUpdated", { assignedVehicleNumber: driver.assignedVehicleNumber });
+    const driverSocketID =
+      this.onlineDrivers.drivers.find((d) => d.driverID === driver.id)
+        ?.socketID || null;
+    if (driverSocketID) {
+      this.io.server
+        .of('/driver')
+        .to(driverSocketID)
+        .emit('vehicleUpdated', {
+          assignedVehicleNumber: driver.assignedVehicleNumber,
+        });
     }
   }
 

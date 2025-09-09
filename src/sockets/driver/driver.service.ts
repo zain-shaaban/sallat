@@ -118,8 +118,8 @@ export class DriverService {
       if (trip.driverID !== driver.driverID) return;
 
       if (
-        !Object.values(trip.tripState?.onVendor||{}).length &&
-        !trip.tripState?.wayPoints.length
+        !Object.values(trip.tripState?.onVendor || {}).length &&
+        !(trip.tripState?.wayPoints || []).length
       )
         trip.unpaidPath.push(coords);
       else trip.rawPath.push(coords);
@@ -232,9 +232,15 @@ export class DriverService {
       trip.customer.location.approximate = wayPoint.location.approximate;
     }
 
-    this.adminService.sendTripsToAdmins()
+    this.adminService.sendTripsToAdmins();
 
-    this.logService.addWayPointLog(driverID, driverName, trip.tripNumber,wayPoint.type,wayPoint.location.description);
+    this.logService.addWayPointLog(
+      driverID,
+      driverName,
+      trip.tripNumber,
+      wayPoint.type,
+      wayPoint.location.description,
+    );
   }
 
   handleEmergencyState(driverID: string, driverName: string) {
@@ -381,7 +387,7 @@ export class DriverService {
 
     trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
 
-    trip.unpaidDistance=getPathLength(trip.unpaidPath)
+    trip.unpaidDistance = getPathLength(trip.unpaidPath);
     try {
       await this.mapMatching(trip.rawPath, trip.vehicleNumber);
       trip.price = this.price;
@@ -407,11 +413,11 @@ export class DriverService {
       distance: trip.distance,
       tripState: trip.tripState,
       price: trip.price,
-      itemPrice:trip.itemPrice,
+      itemPrice: trip.itemPrice,
       time: trip.time,
       receipt: trip.receipt,
-      unpaidPath:trip.unpaidPath,
-      unpaidDistance:trip.unpaidDistance
+      unpaidPath: trip.unpaidPath,
+      unpaidDistance: trip.unpaidDistance,
     });
 
     this.logService.endTripLog(
@@ -421,8 +427,8 @@ export class DriverService {
       trip.tripNumber,
       this.timeDifference(
         trip.tripState.tripStart.time,
-        trip.tripState.tripEnd.time
-      )
+        trip.tripState.tripEnd.time,
+      ),
     );
 
     const message = this.generateReceiptMessage(trip);
@@ -440,14 +446,14 @@ export class DriverService {
       data: {
         tripNumber: trip.tripNumber,
         status: 'success',
-        itemPrice:trip.itemPrice,
+        itemPrice: trip.itemPrice,
         time: trip.time,
         distance: trip.distance,
         price: trip.price,
         fixedPrice: trip.fixedPrice,
         receipt,
         discounts: trip.discounts,
-        customerPhoneNumber: trip.customer.phoneNumber
+        customerPhoneNumber: trip.customer.phoneNumber,
       },
     };
   }
@@ -511,8 +517,8 @@ export class DriverService {
     if (vehicleNumber.startsWith('N') || vehicleNumber.startsWith('K')) {
       return this.decreasedReductionPricing(distance);
     } else if (vehicleNumber.startsWith('T')) {
-      const price = this.roundToNearestThousand(5 * distance)
-      if(price < 12000) {
+      const price = this.roundToNearestThousand(5 * distance);
+      if (price < 12000) {
         return 12000;
       }
 
@@ -542,21 +548,21 @@ export class DriverService {
       12: 1.8,
       13: 1.7,
       14: 1.6,
-      15: 1.5
+      15: 1.5,
     };
 
     for (let km = 1; metersLeft > 0; km++) {
-        let segmentMeters = Math.min(1000, metersLeft);
-        let rate = ratesPerKm[km] ?? 1.5;
-        variablePrice += segmentMeters * rate;
-        metersLeft -= segmentMeters;
+      let segmentMeters = Math.min(1000, metersLeft);
+      let rate = ratesPerKm[km] ?? 1.5;
+      variablePrice += segmentMeters * rate;
+      metersLeft -= segmentMeters;
     }
 
     return this.roundToNearestThousand(FIXED_PRICE + variablePrice);
   }
 
   private roundToNearestThousand(num: number) {
-      return Math.round(num / 1000) * 1000;
+    return Math.round(num / 1000) * 1000;
   }
 
   private async mapMatching(rawPath: CoordinatesDto[], vehicleNumber: string) {
@@ -570,6 +576,11 @@ export class DriverService {
     );
     const res = await fetch(matchURL);
     const json = await res.json();
+
+    if (!json.tracepoints) {
+      throw new Error(`OSRM response invalid: ${JSON.stringify(json)}`);
+    }
+
     this.matchedPath = await json.tracepoints
       .filter(Boolean)
       .map((p) => p.location.reverse());
@@ -602,14 +613,17 @@ export class DriverService {
       const diffInMs = endTime - startTime;
       const totalMinutes = Math.floor(diffInMs / 60000);
       if (totalMinutes < 60) {
-          return `${totalMinutes} د`;
+        return `${totalMinutes} د`;
       }
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
       return minutes === 0 ? `${hours} س` : `${hours} س ${minutes} د`;
     };
 
-    const calculatePriceBeforeDiscount = (price: number, discount: number): number => {
+    const calculatePriceBeforeDiscount = (
+      price: number,
+      discount: number,
+    ): number => {
       if (!discount) return price;
       if (discount >= 1) return 0;
       return price / (1 - discount);
@@ -629,14 +643,21 @@ export class DriverService {
     const deliveryDiscountValue = trip.discounts?.delivery || 0;
     const itemDiscountValue = trip.discounts?.item || 0;
 
-    const deliveryPrice = trip.fixedPrice ?? calculatePriceBeforeDiscount(trip.price, deliveryDiscountValue);
-    const itemPrice = calculatePriceBeforeDiscount(trip.itemPrice, itemDiscountValue);
+    const deliveryPrice =
+      trip.fixedPrice ??
+      calculatePriceBeforeDiscount(trip.price, deliveryDiscountValue);
+    const itemPrice = calculatePriceBeforeDiscount(
+      trip.itemPrice,
+      itemDiscountValue,
+    );
 
     const discountedDeliveryPrice = trip.fixedPrice ?? trip.price;
     const discountedItemPrice = trip.itemPrice;
 
     const totalBeforeDiscount = formatPrice(itemPrice + deliveryPrice);
-    const totalAfterDiscount = formatPrice(discountedItemPrice + discountedDeliveryPrice);
+    const totalAfterDiscount = formatPrice(
+      discountedItemPrice + discountedDeliveryPrice,
+    );
 
     const deliveryFee = formatPrice(deliveryPrice);
 
@@ -646,7 +667,7 @@ export class DriverService {
       `الرحلة #${trip.tripNumber}`,
       `المسافة المقطوعة: ${distance}`,
       `المدة: ${duration}`,
-      `اجور التوصيل: ${deliveryFee}`
+      `اجور التوصيل: ${deliveryFee}`,
     ];
 
     if (deliveryDiscountValue > 0) {
@@ -659,13 +680,14 @@ export class DriverService {
     if (deliveryDiscountValue > 0) {
       lines.push(`الإجمالي قبل الحسم: ${totalBeforeDiscount}`);
       lines.push(`الإجمالي بعد الحسم: ${totalAfterDiscount}`);
-    } else if(itemDiscountValue > 0) {
+    } else if (itemDiscountValue > 0) {
       lines.push(`الإجمالي: ${totalAfterDiscount}`);
     } else {
       lines.push(`الإجمالي: ${totalBeforeDiscount}`);
     }
 
-    lines.push(`
+    lines.push(
+      `
 _
 
 تابعنا هون : 
@@ -676,11 +698,11 @@ _
 خدمة الزبائن: 0986912912 أو <a href="https://wa.me/963986912912">واتس</a>
 للشكاوي أو الاقتراحات: <a href="https://wa.me/963986914914">واتس</a>
 
-سلات.. لعندك وين ما كنت`.trim());
+سلات.. لعندك وين ما كنت`.trim(),
+    );
 
     return lines.join('\n');
   }
-
 
   @Interval(1000 * 60 * 15)
   private handleScheduleTrip() {
