@@ -89,7 +89,7 @@ export class DriverService {
         name: account.name,
         phoneNumber: account.phoneNumber,
         email: account.email,
-        assignedVehicleNumber: account.driverMetadata.assignedVehicleNumber,
+        assignedVehicleNumber: account.driverMetadata?.assignedVehicleNumber,
         code: account.driverMetadata.code,
       },
     });
@@ -318,6 +318,7 @@ export class DriverService {
     this.tripRepository.update(trip.tripID, {
       driverID,
       reason,
+      status: 'failed',
     });
 
     this.logService.failedTripLog(
@@ -401,7 +402,10 @@ export class DriverService {
     }
 
     if (Object.keys(trip.discounts).length > 0) {
-      trip.price = trip.price - trip.price * trip.discounts.delivery;
+      trip.price = Math.max(
+        0,
+        trip.price - trip.price * trip.discounts.delivery,
+      );
       trip.itemPrice = trip.itemPrice - trip.itemPrice * trip.discounts.item;
     }
 
@@ -707,7 +711,7 @@ _
   @Interval(1000 * 60 * 15)
   private handleScheduleTrip() {
     const schedulingTrips = this.tripService.pendingTrips.filter(
-      (trip) => trip?.schedulingDate,
+      (trip) => trip?.schedulingDate>0,
     );
 
     schedulingTrips.map((trip) => {

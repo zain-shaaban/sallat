@@ -59,6 +59,8 @@ export class AdminService {
   ) {
     const trip = this.tripService.pendingTrips.find((t) => t.tripID === tripID);
 
+    if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
+
     const driver = this.onlineDrivers.drivers.find(
       (d) => d.driverID === driverID,
     );
@@ -67,7 +69,6 @@ export class AdminService {
       id: driverID,
     });
 
-    if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
     this.moveTripFromPendingToReady(
       trip,

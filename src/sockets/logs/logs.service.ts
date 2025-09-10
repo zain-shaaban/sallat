@@ -279,10 +279,10 @@ export class LogService {
     switch (type) {
       case 'customer':
         type = 'زبون';
-        return;
+        break;
       case 'vendor':
         type = 'متجر';
-        return;
+        break;
       default:
         type = 'غير محدد';
     }
