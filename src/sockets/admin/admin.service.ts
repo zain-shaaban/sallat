@@ -14,6 +14,7 @@ import { PartnerService } from '../partner/partner.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 import { Repository } from 'typeorm';
+import { Trip } from 'src/trip/entities/trip.entity';
 
 @Injectable()
 export class AdminService {
@@ -68,7 +69,6 @@ export class AdminService {
     const driverMetadata = await this.driverRepository.findOneBy({
       id: driverID,
     });
-
 
     this.moveTripFromPendingToReady(
       trip,
@@ -235,6 +235,8 @@ export class AdminService {
 
         arr.splice(index, 1);
 
+        this.tripService.updateTrip(tripID, { status: 'cancelled' }, ccName);
+
         this.sendDriversArrayToAdmins();
 
         this.sendTripsToAdmins();
@@ -375,12 +377,9 @@ export class AdminService {
       this.onlineDrivers.drivers.find((d) => d.driverID === driver.id)
         ?.socketID || null;
     if (driverSocketID) {
-      this.io.server
-        .of('/driver')
-        .to(driverSocketID)
-        .emit('vehicleUpdated', {
-          assignedVehicleNumber: driver.assignedVehicleNumber,
-        });
+      this.io.server.of('/driver').to(driverSocketID).emit('vehicleUpdated', {
+        assignedVehicleNumber: driver.assignedVehicleNumber,
+      });
     }
   }
 

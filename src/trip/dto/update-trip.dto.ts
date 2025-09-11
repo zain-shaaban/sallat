@@ -193,4 +193,8 @@ export class UpdateTripDto {
   @IsOptional()
   @IsBoolean()
   isSMSSend?:boolean
+
+  @IsString()
+  @IsOptional()
+  status?:string
 }
