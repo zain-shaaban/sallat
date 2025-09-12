@@ -389,16 +389,28 @@ export class DriverService {
     trip.time = trip.tripState.tripEnd.time - trip.tripState.tripStart.time;
 
     trip.unpaidDistance = getPathLength(trip.unpaidPath);
-    try {
-      await this.mapMatching(trip.rawPath, trip.vehicleNumber);
-      trip.price = this.price;
-      trip.distance = this.matchedDistance;
-      trip.matchedPath = this.matchedPath;
-    } catch (error) {
-      logger.error(error.message, error.stack);
-      trip.matchedPath = [];
-      trip.distance = getPathLength(trip.rawPath);
+
+    if(
+      trip.rawPath?.length < 4 &&
+      time > 60 * 1000 * 3 &&
+      !trip.alternative &&
+      trip.routedPath?.length
+    ) {
+      trip.matchedPath = trip.routedPath.map(l => [l.lat, l.lng]) || [];
+      trip.distance = getPathLength(trip.matchedPath);
       trip.price = this.pricing(trip.distance, trip.vehicleNumber);
+    } else {
+      try {
+        await this.mapMatching(trip.rawPath, trip.vehicleNumber);
+        trip.price = this.price;
+        trip.distance = this.matchedDistance;
+        trip.matchedPath = this.matchedPath;
+      } catch (error) {
+        logger.error(error.message, error.stack);
+        trip.matchedPath = [];
+        trip.distance = getPathLength(trip.rawPath);
+        trip.price = this.pricing(trip.distance, trip.vehicleNumber);
+      }
     }
 
     if (Object.keys(trip.discounts).length > 0) {

@@ -102,6 +102,18 @@ export class UpdateTripDto {
   price?: number;
 
   @ApiProperty({
+    type: 'number',
+    example: 80000,
+    description: 'Sum of the prices of the receipt items in the local currency',
+    required: false,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  itemPrice?: number;
+
+  @ApiProperty({
     type: ReceiptItemDto,
     description: 'Receipt details',
     isArray: true,
