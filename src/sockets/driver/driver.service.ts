@@ -20,6 +20,7 @@ import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 import { Account } from 'src/account/entities/account.entity';
 import { Interval } from '@nestjs/schedule';
+import { v } from '@faker-js/faker/dist/airline-BUL6NtOJ';
 
 @Injectable()
 export class DriverService {
@@ -722,28 +723,32 @@ _
 
   @Interval(1000 * 60 * 15)
   private handleScheduleTrip() {
+    const now = Date.now();
+
     const schedulingTrips = this.tripService.pendingTrips.filter(
       (trip) => trip?.schedulingDate>0,
     );
 
-    schedulingTrips.map((trip) => {
-      if (
-        trip.schedulingDate - (Date.now() + 3 * 60 * 60 * 1000) <=
-        1000 * 60 * 60
-      ) {
-        if (!trip.alternative)
+    schedulingTrips.forEach((trip) => {
+      const diff = trip.schedulingDate - now;
+
+      // const diff = trip.schedulingDate - (Date.now() + 3 * 60 * 60 * 1000); // only if the timezine is different by 3 hours
+
+      if (diff > 0 && diff <= 1000 * 60 * 60) {
+        if (!trip.alternative) {
           this.logService.reminderNormalSchedulingTripLog(
             trip.customer.name,
             trip.vendor.name,
             trip.tripNumber,
             trip.schedulingDate,
           );
-        else
+        } else {
           this.logService.reminderAlternativeSchedulingTripLog(
             trip.customer.name,
             trip.tripNumber,
             trip.schedulingDate,
           );
+        }
       }
     });
   }
