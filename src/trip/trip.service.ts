@@ -175,6 +175,7 @@ export class TripService {
         order: {
           createdAt: 'desc',
         },
+        take: 50
       });
       return {
         trips,
