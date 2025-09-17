@@ -730,9 +730,9 @@ _
     );
 
     schedulingTrips.forEach((trip) => {
-      const diff = trip.schedulingDate - now;
+      // const diff = trip.schedulingDate - now;
 
-      // const diff = trip.schedulingDate - (Date.now() + 3 * 60 * 60 * 1000); // only if the timezine is different by 3 hours
+      const diff = trip.schedulingDate - (Date.now() + 3 * 60 * 60 * 1000); // only if the timezine is different by 3 hours
 
       if (diff > 0 && diff <= 1000 * 60 * 60) {
         if (!trip.alternative) {
