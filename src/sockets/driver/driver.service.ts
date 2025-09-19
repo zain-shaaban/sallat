@@ -20,7 +20,6 @@ import { OnlineDrivers } from '../shared-online-drivers/online-drivers';
 import { TelegramUserService } from 'src/telegram-user-bot/telegram-user.service';
 import { Account } from 'src/account/entities/account.entity';
 import { Interval } from '@nestjs/schedule';
-import { v } from '@faker-js/faker/dist/airline-BUL6NtOJ';
 
 @Injectable()
 export class DriverService {
