@@ -19,6 +19,9 @@ export class FirebaseService implements OnModuleInit {
       try {
         const serviceAccount = JSON.parse(serviceAccountEnv);
 
+        // This fixes the SDK's parsing errors on VPS
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
         this.firebaseAdmin = admin.initializeApp({
           credential: admin.credential.cert(
             serviceAccount as admin.ServiceAccount,
@@ -35,7 +38,10 @@ export class FirebaseService implements OnModuleInit {
 
   messaging(): admin.messaging.Messaging {
     if (!this.firebaseAdmin) {
-      logger.error('Firebase Admin is not initialized','src/firebase/firebase.service.ts_38')
+      logger.error(
+        'Firebase Admin is not initialized',
+        'src/firebase/firebase.service.ts_38',
+      );
       throw new Error('Firebase Admin is not initialized');
     }
     return this.firebaseAdmin.messaging();
