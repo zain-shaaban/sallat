@@ -175,7 +175,7 @@ export class TripService {
         order: {
           createdAt: 'desc',
         },
-        take: 50
+        take: 10
       });
       return {
         trips,
@@ -190,6 +190,7 @@ export class TripService {
       order: {
         createdAt: 'desc',
       },
+      take: role == AccountRole.MANAGER ? 50 : null
     });
     return {
       trips,
