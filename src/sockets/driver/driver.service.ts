@@ -185,6 +185,10 @@ export class DriverService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
+    if(!trip.tripState?.wayPoints) {
+      trip.tripState.wayPoints = [];
+    }
+
     if (Object.keys(trip.tripState.onVendor).length > 0) {
       const { location, time } = trip.tripState.onVendor;
       delete location?.approximate;
