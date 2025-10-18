@@ -5,6 +5,7 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Column,
+  CreateDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -78,4 +79,12 @@ export class Vendor {
 
   @OneToMany(() => Trip, (trip) => trip.vendor)
   trips: Trip[];
+
+  @ApiProperty({
+    type: 'string',
+    example: '2025-01-01 14:32:57.973928',
+    description: 'Timestamp when the customer was created',
+  })
+  @CreateDateColumn()
+  createdAt: Date;
 }

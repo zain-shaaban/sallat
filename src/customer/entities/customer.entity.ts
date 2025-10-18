@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Trip } from 'src/trip/entities/trip.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { LocationDto } from '../dto/location.dto';
 
 @Entity('sallat_customers')
@@ -51,4 +57,12 @@ export class Customer {
   })
   @OneToMany(() => Trip, (trip) => trip.customer)
   trips: Trip[];
+
+  @ApiProperty({
+    type: 'string',
+    example: '2025-01-01 14:32:57.973928',
+    description: 'Timestamp when the customer was created',
+  })
+  @CreateDateColumn()
+  createdAt: Date;
 }

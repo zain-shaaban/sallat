@@ -20,6 +20,7 @@ import { PassportModule } from '@nestjs/passport';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { TelegramModule } from './telegram-bot/telegram.module';
 import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { TelegramUserModule } from './telegram-user-bot/telegram-user.module';
     SessionsModule,
     TelegramModule,
     TelegramUserModule,
+    StatisticsModule,
   ],
 })
 export class AppModule {}
