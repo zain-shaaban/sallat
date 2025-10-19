@@ -13,6 +13,31 @@ export class TelegramService {
     @InjectBot('management') private readonly bot: Telegraf<any>,
   ) {}
 
+  // async onModuleInit() {
+  //   console.log('Attempting to initialize Telegram Bot connection...');
+
+  //   try {
+  //     const botInfo = await this.bot.telegram.getMe();
+  //     console.log(
+  //       `✅ Telegram Bot initialized successfully: @${botInfo.username}`,
+  //     );
+  //   } catch (error) {
+  //     if (error.code === 'ETIMEDOUT' || error.type === 'system') {
+  //       console.error(
+  //         'CRITICAL ERROR: Failed to connect to Telegram API (ETIMEDOUT).',
+  //       );
+  //       console.error(
+  //         'The Telegram bot feature will be DISABLED but the server will continue to run.',
+  //       );
+  //     } else {
+  //       console.error(
+  //         'Telegraf initialization failed for an unknown reason:',
+  //         error.message,
+  //       );
+  //     }
+  //   }
+  // }
+
   saveMessage(ctx: any) {
     if (ctx?.message?.chat?.id == process.env.GROUP_ID) {
       const text = ctx?.message?.text || undefined;

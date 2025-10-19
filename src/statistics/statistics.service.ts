@@ -33,6 +33,19 @@ export class StatisticsService {
     trips.leftJoinAndSelect('trip.vendor', 'vendor');
     trips.leftJoinAndSelect('trip.customer', 'customer');
 
+    trips.select([
+      'trip',
+      'vendor.vendorID',
+      'vendor.phoneNumber',
+      'vendor.name',
+      'vendor.partner',
+      'vendor.location',
+      'customer.customerID',
+      'customer.name',
+      'customer.phoneNumbers',
+      'customer.location',
+    ]);
+
     const [data, total] = await trips.getManyAndCount();
     return { trips: data, total };
   }
@@ -51,6 +64,14 @@ export class StatisticsService {
 
     customers.take(customerStatisticsQuery.limit);
 
+    customers.select([
+      'customer.customerID',
+      'customer.name',
+      'customer.phoneNumbers',
+      'customer.location',
+      'customer.createdAt',
+    ]);
+
     const [data, total] = await customers.getManyAndCount();
     return { customers: data, total };
   }
@@ -68,6 +89,15 @@ export class StatisticsService {
     );
 
     vendors.take(vendorStatisticsQuery.limit);
+
+    vendors.select([
+      'vendor.vendorID',
+      'vendor.phoneNumber',
+      'vendor.name',
+      'vendor.partner',
+      'vendor.location',
+      'vendor.createdAt',
+    ]);
 
     const [data, total] = await vendors.getManyAndCount();
     return { vendors: data, total };
