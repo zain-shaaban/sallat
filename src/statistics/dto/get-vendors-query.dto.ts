@@ -4,6 +4,26 @@ import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class GetVendorsQueryDTO {
   @ApiProperty({
+    description: 'Filter by vendor name',
+    example: 'Acme Corp',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  name?: string;
+
+  @ApiProperty({
+    description: 'Filter by vendor phone number',
+    example: '+1234567890',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  phoneNumber?: string;
+
+  @ApiProperty({
     description: 'The page number',
     example: 1,
     required: false,

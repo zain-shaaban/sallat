@@ -53,6 +53,18 @@ export class StatisticsService {
   async getCustomerStatistics(customerStatisticsQuery: GetCustomersQueryDTO) {
     const customers = this.customerRepository.createQueryBuilder('customer');
 
+    if (customerStatisticsQuery.name) {
+      customers.where('customer.name LIKE :name', {
+        name: `%${customerStatisticsQuery.name}%`,
+      });
+    }
+
+    if (customerStatisticsQuery.phoneNumber) {
+      customers.andWhere(':phoneNumber = ANY(customer.phoneNumbers)', {
+        phoneNumber: customerStatisticsQuery.phoneNumber,
+      });
+    }
+
     customers.orderBy(
       `customer.${customerStatisticsQuery.sortBy}`,
       customerStatisticsQuery.order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC',
@@ -78,6 +90,18 @@ export class StatisticsService {
 
   async getVendorStatistics(vendorStatisticsQuery: GetVendorsQueryDTO) {
     const vendors = this.vendorRepository.createQueryBuilder('vendor');
+
+    if (vendorStatisticsQuery.name) {
+      vendors.where('vendor.name LIKE :name', {
+        name: `%${vendorStatisticsQuery.name}%`,
+      });
+    }
+
+    if (vendorStatisticsQuery.phoneNumber) {
+      vendors.andWhere('vendor.phoneNumber = :phoneNumber', {
+        phoneNumber: vendorStatisticsQuery.phoneNumber,
+      });
+    }
 
     vendors.orderBy(
       `vendor.${vendorStatisticsQuery.sortBy}`,
