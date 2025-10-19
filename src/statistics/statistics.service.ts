@@ -30,6 +30,9 @@ export class StatisticsService {
 
     trips.take(tripStatisticsQuery.limit);
 
+    trips.leftJoinAndSelect('trip.vendor', 'vendor');
+    trips.leftJoinAndSelect('trip.customer', 'customer');
+
     const [data, total] = await trips.getManyAndCount();
     return { trips: data, total };
   }
