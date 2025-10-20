@@ -46,6 +46,7 @@ Sallat is a comprehensive delivery management system that handles trips, custome
     .addTag('Statistics', 'Statistics management endpoints')
     .addTag('Error Logs', 'Error log management endpoints')
     .addTag('Sessions', 'Session managment endpoints')
+    .addTag('Bms', 'Session managment endpoints')
     .addBearerAuth(
       {
         type: 'http',

@@ -194,10 +194,6 @@ export class TripService {
     });
     return {
       trips,
-      bms: {
-        username: this.configService.get('BMS_USERNAME'),
-        password: this.configService.get('BMS_PASSWORD'),
-      },
     };
   }
 
