@@ -185,7 +185,7 @@ export class DriverService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    if(!trip.tripState?.wayPoints) {
+    if (!trip.tripState?.wayPoints) {
       trip.tripState.wayPoints = [];
     }
 
@@ -264,6 +264,8 @@ export class DriverService {
     const trip = this.tripService.ongoingTrips.find((t) => t.tripID === tripID);
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
+
+    this.adminService.sendTripsToAdmins();
 
     if (stateName === 'onVendor') {
       this.telegramBotService.sendMessageToCustomer(
@@ -394,13 +396,13 @@ export class DriverService {
 
     trip.unpaidDistance = getPathLength(trip.unpaidPath);
 
-    if(
+    if (
       trip.rawPath?.length < 4 &&
       time > 60 * 1000 * 3 &&
       !trip.alternative &&
       trip.routedPath?.length
     ) {
-      trip.matchedPath = trip.routedPath.map(l => [l.lat, l.lng]) || [];
+      trip.matchedPath = trip.routedPath.map((l) => [l.lat, l.lng]) || [];
       trip.distance = getPathLength(trip.matchedPath);
       trip.price = this.pricing(trip.distance, trip.vehicleNumber);
     } else {
@@ -729,7 +731,7 @@ _
     const now = Date.now();
 
     const schedulingTrips = this.tripService.pendingTrips.filter(
-      (trip) => trip?.schedulingDate>0,
+      (trip) => trip?.schedulingDate > 0,
     );
 
     schedulingTrips.forEach((trip) => {
