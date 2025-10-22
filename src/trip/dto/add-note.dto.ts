@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 
 export class AddNoteDto {
   @ApiProperty({
@@ -18,7 +18,8 @@ export class AddNoteDto {
     description: 'note about problem or something else in the trip',
     required: true,
   })
+  @ValidateIf((object, value) => value !== null)
   @IsString()
   @IsNotEmpty()
-  note: string;
+  note: string | null;
 }

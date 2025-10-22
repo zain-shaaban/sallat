@@ -249,7 +249,6 @@ export class TripService {
     const trip = await this.tripRepository.findOneBy({ tripID });
 
     if (!trip) throw new NotFoundException(`Trip with ID ${tripID} not found`);
-
     this.tripRepository.update(tripID, { note });
 
     this.logService.addNoteToTheTripLog(adminName, trip.tripNumber);
