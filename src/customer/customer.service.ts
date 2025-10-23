@@ -41,14 +41,14 @@ export class CustomerService {
 
   async update(
     customerID: string,
-    { name, phoneNumbers, location }: UpdateCustomerDto,
+    { name, phoneNumbers, location, note }: UpdateCustomerDto,
   ) {
     let customer: any = await this.customerRepository.findOneBy({ customerID });
     if (!customer)
       throw new NotFoundException(`Customer with ID ${customerID} not found`);
 
     let updates = Object.fromEntries(
-      Object.entries({ name, phoneNumbers, location }).filter(
+      Object.entries({ name, phoneNumbers, location, note }).filter(
         ([_, value]) => value !== undefined,
       ),
     );

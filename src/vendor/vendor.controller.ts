@@ -8,7 +8,6 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import {

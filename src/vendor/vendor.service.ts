@@ -54,7 +54,8 @@ export class VendorService {
   }
 
   async update(vendorID: string, updateVendorDto: UpdateVendorDto) {
-    let { name, phoneNumber, location, password, partner } = updateVendorDto;
+    let { name, phoneNumber, location, password, partner, note } =
+      updateVendorDto;
     if (partner === false) password = null;
 
     const updatedVendor = await this.vendorRepository.preload({
@@ -64,6 +65,7 @@ export class VendorService {
       location,
       password,
       partner,
+      note,
     });
 
     if (!updatedVendor)

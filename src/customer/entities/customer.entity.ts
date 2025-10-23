@@ -47,6 +47,15 @@ export class Customer {
   @Column({ type: 'jsonb' })
   location: LocationDto;
 
+  @ApiProperty({
+    type: 'string',
+    example: 'العميل لم يرد على الاتصال',
+    description: 'note about problem or something else in the trip',
+    required: false,
+  })
+  @Column({ nullable: true, type: 'text' })
+  note: string;
+
   @Column({ nullable: true })
   telegramID: string;
 

@@ -77,6 +77,15 @@ export class Vendor {
   @Column({ type: 'jsonb', nullable: false })
   location: LocationDto;
 
+  @ApiProperty({
+    type: 'string',
+    example: 'يتاخر عادة في تنفيذ الطلب',
+    description: 'note about problem or something else in the trip',
+    required: false,
+  })
+  @Column({ nullable: true, type: 'text' })
+  note: string;
+
   @OneToMany(() => Trip, (trip) => trip.vendor)
   trips: Trip[];
 
