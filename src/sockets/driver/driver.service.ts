@@ -388,6 +388,10 @@ export class DriverService {
     if (!trip.alternative || type === 'customer')
       this.updateCustomerLocation(trip, location);
 
+    if(!trip.alternative){
+      trip.waitingTime=trip.tripState.leftVendor.time - trip.tripState.onVendor.time;
+    }
+
     trip.tripState.tripEnd = { location, time };
 
     trip.rawPath.push(location.coords);
@@ -440,6 +444,7 @@ export class DriverService {
       receipt: trip.receipt,
       unpaidPath: trip.unpaidPath,
       unpaidDistance: trip.unpaidDistance,
+      waitingTime:trip.waitingTime
     });
 
     this.logService.endTripLog(

@@ -74,9 +74,8 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  alternative: boolean;
+  @IsString()
+  alternative: string;
 
   @ApiProperty({
     description: 'Filter for partner trips',
@@ -84,9 +83,8 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  partner: boolean;
+  @IsString()
+  partner: string;
 
   @ApiProperty({
     description: 'Filter for trips with SMS sent',
@@ -94,9 +92,8 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  isSMSSend: boolean;
+  @IsString()
+  isSMSSend: string;
 
   @ApiProperty({
     description: 'The vehicle number to filter trips',
@@ -145,9 +142,8 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  discounts: boolean;
+  @IsString()
+  discounts: string;
 
   @ApiProperty({
     description: 'Filter for trips with fixed price',
@@ -155,9 +151,8 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  fixedPrice: boolean;
+  @IsString()
+  fixedPrice: string;
 
   @ApiProperty({
     description: 'Filter for trips with scheduling date',
@@ -165,9 +160,8 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  schedulingDate: boolean;
+  @IsString()
+  schedulingDate: string;
 
   @ApiProperty({
     description: 'The start time to filter trips',
@@ -195,9 +189,8 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  note: boolean;
+  @IsString()
+  note: string;
 
   @ApiProperty({
     description: 'The status of the trip',

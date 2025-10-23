@@ -1,22 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Trip } from '../entities/trip.entity';
 
-class BmsDto {
-  @ApiProperty({
-    type: String,
-    description: 'BMS user name',
-    example: 'example',
-  })
-  username: string;
-
-  @ApiProperty({
-    type: String,
-    description: 'BMS password',
-    example: 'example123',
-  })
-  password: string;
-}
-
 class GetAllTripsData {
   @ApiProperty({
     type: Trip,
@@ -116,6 +100,7 @@ class GetAllTripsData {
           [34.888192, 35.881591],
         ],
         status: 'success',
+        waitingTime: '771039',
         reason: null,
         tripNumber: 1,
         createAt: '2025-05-09T11:28:41.131Z',
@@ -155,12 +140,6 @@ class GetAllTripsData {
     ],
   })
   trips: Trip[];
-
-  @ApiProperty({
-    type: BmsDto,
-    description:"BMS crednetails"
-  })
-  bms: BmsDto;
 }
 
 export class GetAllTripsDto {

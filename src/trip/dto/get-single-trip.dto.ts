@@ -64,6 +64,7 @@ export class GetSingleTripDto {
       },
       approxTime: '6',
       time: '791920',
+      waitingTime:'771039',
       schedulingDate:Date.now(),
       rawPath: [
         {

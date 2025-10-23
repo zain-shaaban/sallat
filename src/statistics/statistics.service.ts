@@ -102,19 +102,41 @@ export class StatisticsService {
     }
 
     if (tripStatisticsQuery.discounts) {
-      trips.andWhere('trip.discounts IS NOT NULL');
+      if (tripStatisticsQuery.discounts === 'true') {
+        trips.andWhere('trip.discounts IS NOT NULL');
+        trips.andWhere('NOT (trip.discounts @> :excludedValue::jsonb)', {
+          excludedValue: JSON.stringify({ item: 0, delivery: 0 }),
+        });
+      } else if (tripStatisticsQuery.discounts === 'false') {
+        trips.andWhere('trip.discounts IS NULL');
+        trips.orWhere('trip.discounts @> :excludedValue::jsonb', {
+          excludedValue: JSON.stringify({ item: 0, delivery: 0 }),
+        });
+      }
     }
 
     if (tripStatisticsQuery.fixedPrice) {
-      trips.andWhere('trip.fixedPrice IS NOT NULL');
+      if (tripStatisticsQuery.fixedPrice === 'true') {
+        trips.andWhere('trip.fixedPrice IS NOT NULL');
+      } else if (tripStatisticsQuery.fixedPrice === 'false') {
+        trips.andWhere('trip.fixedPrice IS NULL');
+      }
     }
 
     if (tripStatisticsQuery.schedulingDate) {
-      trips.andWhere('trip.schedulingDate IS NOT NULL');
+      if (tripStatisticsQuery.schedulingDate === 'true') {
+        trips.andWhere('trip.schedulingDate IS NOT NULL');
+      } else if (tripStatisticsQuery.schedulingDate === 'false') {
+        trips.andWhere('trip.schedulingDate IS NULL');
+      }
     }
 
     if (tripStatisticsQuery.note) {
-      trips.andWhere('trip.note IS NOT NULL');
+      if (tripStatisticsQuery.note === 'true') {
+        trips.andWhere('trip.note IS NOT NULL');
+      } else if (tripStatisticsQuery.note === 'false') {
+        trips.andWhere('trip.note IS NULL');
+      }
     }
 
     if (tripStatisticsQuery.status) {
@@ -163,10 +185,12 @@ export class StatisticsService {
       'vendor.name',
       'vendor.partner',
       'vendor.location',
+      'vendor.note',
       'customer.customerID',
       'customer.name',
       'customer.phoneNumbers',
       'customer.location',
+      'customer.note',
     ]);
 
     const [data, total] = await trips.getManyAndCount();
@@ -205,6 +229,7 @@ export class StatisticsService {
       'customer.phoneNumbers',
       'customer.location',
       'customer.createdAt',
+      'customer.note',
     ]);
 
     const [data, total] = await customers.getManyAndCount();
@@ -244,6 +269,7 @@ export class StatisticsService {
       'vendor.partner',
       'vendor.location',
       'vendor.createdAt',
+      'vendor.note',
     ]);
 
     const [data, total] = await vendors.getManyAndCount();

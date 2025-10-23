@@ -236,6 +236,15 @@ export class Trip {
   time: number;
 
   @ApiProperty({
+    type: 'number',
+    example: 9000.0,
+    description: 'Waiting time taken in milliseconds',
+    required: false,
+  })
+  @Column({ type: 'bigint', nullable: true })
+  waitingTime: number;
+
+  @ApiProperty({
     type: 'array',
     example: [
       { lng: 111.111, lat: 112.222 },
