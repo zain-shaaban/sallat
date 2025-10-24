@@ -6,13 +6,37 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { AdminService } from 'src/sockets/admin/admin.service';
+import { Trip } from 'src/trip/entities/trip.entity';
 
 @Injectable()
 export class VendorService {
   constructor(
     @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
+    @InjectRepository(Trip) private tripRepository: Repository<Trip>,
     @Inject() private readonly adminService: AdminService,
   ) {}
+
+  async mergeVendors(originalVendorID: string, fakeVendorID: string) {
+    const originalVendor = await this.vendorRepository.findOneBy({
+      vendorID: originalVendorID,
+    });
+    const fakeVendor = await this.vendorRepository.findOneBy({
+      vendorID: fakeVendorID,
+    });
+
+    if (!originalVendor || !fakeVendor) {
+      throw new NotFoundException('Invalid vendor id');
+    }
+
+    this.tripRepository.update(
+      { vendor: fakeVendor },
+      { vendor: originalVendor },
+    );
+
+    this.vendorRepository.delete({ vendorID: fakeVendorID });
+
+    return null;
+  }
 
   async create({
     name,

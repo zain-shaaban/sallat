@@ -29,6 +29,7 @@ import { AccountAuthGuard } from 'src/common/guards/account.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountRole } from 'src/account/enums/account-role.enum';
+import { MergeTwoVendorsDTO } from './dto/merge-two-vendors.dto';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Vendors')
@@ -36,6 +37,15 @@ import { AccountRole } from 'src/account/enums/account-role.enum';
 @Controller('vendor')
 export class VendorController {
   constructor(private readonly vendorService: VendorService) {}
+
+  @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
+  @Post('merge')
+  async mergeVendors(@Body() mergeTwoVendorsDTO: MergeTwoVendorsDTO) {
+    return this.vendorService.mergeVendors(
+      mergeTwoVendorsDTO.originalVendorID,
+      mergeTwoVendorsDTO.fakeVendorID,
+    );
+  }
 
   @ApiOperation({
     summary: 'Create new vendor',
@@ -75,7 +85,7 @@ The response includes the newly created vendor's ID.
       },
     },
   })
-  @Roles( AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Post('add')
   async create(@Body() createVendorDto: CreateVendorDtoRequest) {
     return await this.vendorService.create(createVendorDto);
@@ -162,7 +172,7 @@ Updates an existing vendor's information.
       },
     },
   })
-  @Roles( AccountRole.MANAGER, AccountRole.SUPERADMIN)
+  @Roles(AccountRole.MANAGER, AccountRole.SUPERADMIN)
   @Patch('update/:vendorID')
   async update(
     @Param('vendorID') vendorID: string,

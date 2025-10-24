@@ -5,14 +5,44 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AdminService } from 'src/sockets/admin/admin.service';
+import { Trip } from 'src/trip/entities/trip.entity';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
+    @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @Inject() private readonly adminService: AdminService,
   ) {}
+
+  async mergeCustomers(originalCustomerID: string, fakeCustomerID: string) {
+    const originalCustomer = await this.customerRepository.findOneBy({
+      customerID: originalCustomerID,
+    });
+    const fakeCustomer = await this.customerRepository.findOneBy({
+      customerID: fakeCustomerID,
+    });
+
+    if (!originalCustomer || !fakeCustomer) {
+      throw new NotFoundException('Invalid vendor id');
+    }
+
+    this.tripRepository.update(
+      { customer: fakeCustomer },
+      { customer: originalCustomer },
+    );
+
+    originalCustomer.phoneNumbers = Array.from(
+      new Set([...originalCustomer.phoneNumbers, ...fakeCustomer.phoneNumbers]),
+    );
+
+    this.customerRepository.save(originalCustomer);
+
+    this.customerRepository.delete({ customerID: fakeCustomerID });
+
+    return null;
+  }
 
   async create({ name, phoneNumbers, location }: CreateCustomerDtoRequest) {
     let customer: any = await this.customerRepository.save({

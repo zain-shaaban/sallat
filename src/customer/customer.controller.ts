@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import {
@@ -29,6 +30,7 @@ import { AccountAuthGuard } from 'src/common/guards/account.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountRole } from 'src/account/enums/account-role.enum';
+import { MergeTwoCustomersDTO } from './dto/merge-two-customers.dto';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Customers')
@@ -36,6 +38,15 @@ import { AccountRole } from 'src/account/enums/account-role.enum';
 @Controller('customer')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
+
+  @Roles(AccountRole.SUPERADMIN,AccountRole.MANAGER)
+  @Post('merge')
+  async mergeCustomers(@Body() mergeTwoCustomersDTO: MergeTwoCustomersDTO) {
+    return this.customerService.mergeCustomers(
+      mergeTwoCustomersDTO.originalCustomerID,
+      mergeTwoCustomersDTO.fakeCustomerID,
+    );
+  }
 
   @ApiOperation({
     summary: 'Create new customer',
