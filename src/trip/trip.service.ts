@@ -138,10 +138,10 @@ export class TripService {
   }
 
   async moderateTrip(moderateTripDto: ModerateTripDto, ccName: string) {
-    const { customerID,vendorID,...otherFields } = moderateTripDto;
+    const { customerID, vendorID, ...otherFields } = moderateTripDto;
     const trip = await this.tripRepository.save({
-      customer: customerID?{customerID}:null,
-      vendor: vendorID?{vendorID}:null,
+      customer: customerID ? { customerID } : null,
+      vendor: vendorID ? { vendorID } : null,
       status: 'added',
       ...otherFields,
     });
@@ -154,16 +154,15 @@ export class TripService {
   async updateTrip(
     tripID: string,
     updateTripDto: UpdateTripDto,
-    ccName: string,
+    managerName: string,
   ) {
-    const { affected } = await this.tripRepository.update(
-      tripID,
-      updateTripDto,
-    );
+    const trip = await this.tripRepository.findOneBy({ tripID });
 
-    if (!affected)
+    if (!trip)
       throw new NotFoundException(`trip with ID ${tripID} not found`);
 
+    await this.tripRepository.update(tripID, updateTripDto);
+    this.logService.updateTripDetailsLog(managerName, trip.tripNumber);
     return null;
   }
 
@@ -175,7 +174,7 @@ export class TripService {
         order: {
           createdAt: 'desc',
         },
-        take: 10
+        take: 10,
       });
       return {
         trips,
@@ -186,7 +185,7 @@ export class TripService {
       order: {
         createdAt: 'desc',
       },
-      take: role == AccountRole.MANAGER ? 50 : null
+      take: role == AccountRole.MANAGER ? 50 : null,
     });
     return {
       trips,

@@ -51,6 +51,24 @@ export class LogService {
     this.logRepository.save({ message, type: 'logout' });
   }
 
+  async updateVendorDetailsLog(managerName: string, vendorName: string) {
+    const message = `قام ${managerName} بتعديل معلومات المتجر ${vendorName}.`;
+
+    this.telegramService.sendNotificationToUpdatesTelegramGroup(message);
+  }
+
+  async updateCustomerDetailsLog(managerName: string, customerName: string) {
+    const message = `قام ${managerName} بتعديل معلومات العميل ${customerName}.`;
+
+    this.telegramService.sendNotificationToUpdatesTelegramGroup(message);
+  }
+
+  async updateTripDetailsLog(managerName: string, tripNumber: number) {
+    const message = `قام ${managerName} بتعديل معلومات الرحلة رقم ${tripNumber}.`;
+
+    this.telegramService.sendNotificationToUpdatesTelegramGroup(message);
+  }
+
   async createPartnerTripLog(
     partnerName: string,
     customerName: string,
@@ -246,7 +264,7 @@ export class LogService {
     driverName: string,
     customerName: string,
     tripNumber: number,
-    duration: string
+    duration: string,
   ) {
     const message = `وصل السائق ${driverName} إلى موقع العميل ${customerName} وتم تسليم الطلب للرحلة رقم ${tripNumber} بنجاح، مدة الرحلة ${duration}`;
 

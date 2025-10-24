@@ -4,6 +4,7 @@ import { TelegramMessage } from './entities/messages.entity';
 import { Repository } from 'typeorm';
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
+import { permittedCrossDomainPolicies } from 'helmet';
 
 @Injectable()
 export class TelegramService {
@@ -45,6 +46,12 @@ export class TelegramService {
   async sendNotificationToDriversTelegramGroup(message: string) {
     await this.bot.telegram.sendMessage(process.env.GROUP_ID, message, {
       message_thread_id: +process.env.DRIVERS_THREAD_ID,
+    });
+  }
+
+  async sendNotificationToUpdatesTelegramGroup(message: string) {
+    await this.bot.telegram.sendMessage(process.env.GROUP_ID, message, {
+      message_thread_id: +process.env.UPDATES_THREAD_ID,
     });
   }
 }

@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import {
@@ -40,10 +41,14 @@ export class VendorController {
 
   @Roles(AccountRole.SUPERADMIN, AccountRole.MANAGER)
   @Post('merge')
-  async mergeVendors(@Body() mergeTwoVendorsDTO: MergeTwoVendorsDTO) {
+  async mergeVendors(
+    @Body() mergeTwoVendorsDTO: MergeTwoVendorsDTO,
+    @Req() req,
+  ) {
     return this.vendorService.mergeVendors(
       mergeTwoVendorsDTO.originalVendorID,
       mergeTwoVendorsDTO.fakeVendorID,
+      req.user.name,
     );
   }
 
@@ -177,8 +182,13 @@ Updates an existing vendor's information.
   async update(
     @Param('vendorID') vendorID: string,
     @Body() updateVendorDto: UpdateVendorDto,
+    @Req() req,
   ) {
-    return await this.vendorService.update(vendorID, updateVendorDto);
+    return await this.vendorService.update(
+      vendorID,
+      updateVendorDto,
+      req.user.name,
+    );
   }
 
   @ApiOperation({

@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AdminService } from 'src/sockets/admin/admin.service';
 import { Trip } from 'src/trip/entities/trip.entity';
+import { LogService } from 'src/sockets/logs/logs.service';
 
 @Injectable()
 export class CustomerService {
@@ -14,9 +15,14 @@ export class CustomerService {
     private readonly customerRepository: Repository<Customer>,
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @Inject() private readonly adminService: AdminService,
+    @Inject() private readonly logService: LogService,
   ) {}
 
-  async mergeCustomers(originalCustomerID: string, fakeCustomerID: string) {
+  async mergeCustomers(
+    originalCustomerID: string,
+    fakeCustomerID: string,
+    managerName: string,
+  ) {
     const originalCustomer = await this.customerRepository.findOneBy({
       customerID: originalCustomerID,
     });
@@ -40,6 +46,11 @@ export class CustomerService {
     this.customerRepository.save(originalCustomer);
 
     this.customerRepository.delete({ customerID: fakeCustomerID });
+
+    this.logService.updateCustomerDetailsLog(
+      managerName,
+      originalCustomer.name,
+    );
 
     return null;
   }
@@ -72,6 +83,7 @@ export class CustomerService {
   async update(
     customerID: string,
     { name, phoneNumbers, location, note }: UpdateCustomerDto,
+    managerName: string,
   ) {
     let customer: any = await this.customerRepository.findOneBy({ customerID });
     if (!customer)
@@ -86,6 +98,7 @@ export class CustomerService {
     await this.customerRepository.save(customer);
     customer = this.handlePhoneNumbers(customer);
     this.adminService.updateCustomer(customer);
+    this.logService.updateCustomerDetailsLog(managerName, customer.name);
     return null;
   }
 

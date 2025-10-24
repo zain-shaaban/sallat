@@ -7,16 +7,22 @@ import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { AdminService } from 'src/sockets/admin/admin.service';
 import { Trip } from 'src/trip/entities/trip.entity';
+import { LogService } from 'src/sockets/logs/logs.service';
 
 @Injectable()
 export class VendorService {
   constructor(
     @InjectRepository(Vendor) private vendorRepository: Repository<Vendor>,
     @InjectRepository(Trip) private tripRepository: Repository<Trip>,
-    @Inject() private readonly adminService: AdminService,
+    private readonly adminService: AdminService,
+    private readonly logService: LogService,
   ) {}
 
-  async mergeVendors(originalVendorID: string, fakeVendorID: string) {
+  async mergeVendors(
+    originalVendorID: string,
+    fakeVendorID: string,
+    managerName: string,
+  ) {
     const originalVendor = await this.vendorRepository.findOneBy({
       vendorID: originalVendorID,
     });
@@ -35,6 +41,7 @@ export class VendorService {
 
     this.vendorRepository.delete({ vendorID: fakeVendorID });
 
+    this.logService.updateVendorDetailsLog(managerName, originalVendor.name);
     return null;
   }
 
@@ -77,7 +84,11 @@ export class VendorService {
     return plainToInstance(Vendor, vendor);
   }
 
-  async update(vendorID: string, updateVendorDto: UpdateVendorDto) {
+  async update(
+    vendorID: string,
+    updateVendorDto: UpdateVendorDto,
+    managerName: string,
+  ) {
     let { name, phoneNumber, location, password, partner, note } =
       updateVendorDto;
     if (partner === false) password = null;
@@ -99,6 +110,7 @@ export class VendorService {
 
     this.adminService.updateVendor(updatedVendor);
 
+    this.logService.updateVendorDetailsLog(managerName, updatedVendor.name);
     return null;
   }
 

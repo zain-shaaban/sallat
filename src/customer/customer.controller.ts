@@ -9,6 +9,7 @@ import {
   HttpStatus,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import {
@@ -41,10 +42,11 @@ export class CustomerController {
 
   @Roles(AccountRole.SUPERADMIN,AccountRole.MANAGER)
   @Post('merge')
-  async mergeCustomers(@Body() mergeTwoCustomersDTO: MergeTwoCustomersDTO) {
+  async mergeCustomers(@Body() mergeTwoCustomersDTO: MergeTwoCustomersDTO,@Req() req) {
     return this.customerService.mergeCustomers(
       mergeTwoCustomersDTO.originalCustomerID,
       mergeTwoCustomersDTO.fakeCustomerID,
+      req.user.name
     );
   }
 
@@ -171,8 +173,9 @@ export class CustomerController {
   async update(
     @Param('customerID') customerID: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
+    @Req() req
   ) {
-    return await this.customerService.update(customerID, updateCustomerDto);
+    return await this.customerService.update(customerID, updateCustomerDto,req.user.name);
   }
 
   @ApiOperation({
