@@ -84,7 +84,7 @@ export class StatisticsService {
     }
 
     if (tripStatisticsQuery.isSMSSend) {
-      trips.andWhere('trip.isSMSSend', {
+      trips.andWhere('trip.isSMSSend = :isSMSSend', {
         isSMSSend: tripStatisticsQuery.isSMSSend,
       });
     }
