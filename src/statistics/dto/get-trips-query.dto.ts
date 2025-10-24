@@ -193,6 +193,26 @@ export class GetTripsQueryDTO {
   timeEnd: number;
 
   @ApiProperty({
+    description: 'The start waiting time to filter trips',
+    example: 1622505600000,
+    required: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  @IsNumber()
+  waitingTimeStart: number;
+
+  @ApiProperty({
+    description: 'The end waiting time to filter trips',
+    example: 1625097600000,
+    required: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  @IsNumber()
+  waitingTimeEnd: number;
+
+  @ApiProperty({
     description: 'Filter for trips with notes',
     example: true,
     required: false,

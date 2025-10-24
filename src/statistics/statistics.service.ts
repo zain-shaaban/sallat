@@ -29,7 +29,9 @@ export class StatisticsService {
 
     if (tripStatisticsQuery.ccID) {
       tripStatisticsQuery.ccID.toLowerCase() !== 'null'
-        ? trips.andWhere('trip.ccID = :ccID', { ccID: tripStatisticsQuery.ccID })
+        ? trips.andWhere('trip.ccID = :ccID', {
+            ccID: tripStatisticsQuery.ccID,
+          })
         : trips.andWhere('trip.ccID IS NULL');
     }
 
@@ -160,6 +162,18 @@ export class StatisticsService {
     if (tripStatisticsQuery.timeEnd) {
       trips.andWhere('trip.time <= :timeEnd', {
         timeEnd: tripStatisticsQuery.timeEnd,
+      });
+    }
+
+    if (tripStatisticsQuery.waitingTimeStart) {
+      trips.andWhere('trip.waitingTime >= :waitingTimeStart', {
+        waitingTimeStart: tripStatisticsQuery.waitingTimeStart,
+      });
+    }
+
+    if (tripStatisticsQuery.waitingTimeEnd) {
+      trips.andWhere('trip.waitingTime <= :waitingTimeEnd', {
+        waitingTimeEnd: tripStatisticsQuery.waitingTimeEnd,
       });
     }
 
