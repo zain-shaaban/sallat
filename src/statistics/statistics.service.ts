@@ -21,10 +21,16 @@ export class StatisticsService {
   async getTripStatistics(tripStatisticsQuery: GetTripsQueryDTO) {
     const trips = this.tripRepository.createQueryBuilder('trip');
 
+    if (tripStatisticsQuery.tripNumber) {
+      trips.where('trip.tripNumber = :tripNumber', {
+        tripNumber: tripStatisticsQuery.tripNumber,
+      });
+    }
+
     if (tripStatisticsQuery.ccID) {
       tripStatisticsQuery.ccID.toLowerCase() !== 'null'
-        ? trips.where('trip.ccID = :ccID', { ccID: tripStatisticsQuery.ccID })
-        : trips.where('trip.ccID IS NULL');
+        ? trips.andWhere('trip.ccID = :ccID', { ccID: tripStatisticsQuery.ccID })
+        : trips.andWhere('trip.ccID IS NULL');
     }
 
     if (tripStatisticsQuery.createdAtStart) {

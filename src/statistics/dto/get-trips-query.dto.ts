@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -10,6 +9,16 @@ import {
 } from 'class-validator';
 
 export class GetTripsQueryDTO {
+  @ApiProperty({
+    description: 'The trip number to filter trips',
+    example: 12345,
+    required: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  @IsNumber()
+  tripNumber: number;
+
   @ApiProperty({
     description: 'The CC ID to filter trips',
     example: 'cc12345',
