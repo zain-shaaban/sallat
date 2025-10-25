@@ -265,8 +265,6 @@ export class DriverService {
 
     if (!trip) throw new WsException(`Trip with ID ${tripID} not found`);
 
-    this.adminService.sendTripsToAdmins();
-
     if (stateName === 'onVendor') {
       this.telegramBotService.sendMessageToCustomer(
         trip.customer.customerID,
@@ -293,6 +291,9 @@ export class DriverService {
       trip.tripState.onVendor = stateData;
 
       trip.rawPath.push(stateData.location.coords);
+
+      this.adminService.sendTripsToAdmins();
+
       return;
     }
     this.telegramBotService.sendMessageToCustomer(
@@ -307,6 +308,8 @@ export class DriverService {
       trip.vendor.name,
       trip.tripNumber,
     );
+    
+    this.adminService.sendTripsToAdmins();
   }
 
   async handleFailedTrip(
