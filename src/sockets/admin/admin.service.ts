@@ -23,12 +23,13 @@ export class AdminService {
   constructor(
     @Inject(forwardRef(() => TripService))
     private readonly tripService: TripService,
-    @Inject() private readonly onlineDrivers: OnlineDrivers,
-    @Inject() private readonly notificationService: NotificationService,
-    @Inject() private readonly logService: LogService,
-    @Inject() private readonly partnerService: PartnerService,
+    private readonly onlineDrivers: OnlineDrivers,
+    private readonly notificationService: NotificationService,
+    private readonly logService: LogService,
+    private readonly partnerService: PartnerService,
     @InjectRepository(DriverMetadata)
     private readonly driverRepository: Repository<DriverMetadata>,
+    @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
   ) {}
 
   handleAdminConnection(client: Socket) {
@@ -235,7 +236,7 @@ export class AdminService {
 
         arr.splice(index, 1);
 
-        this.tripService.updateTrip(tripID, { status: 'cancelled' }, ccName);
+        this.tripRepository.update({ tripID }, { status: 'cancelled' });
 
         this.sendDriversArrayToAdmins();
 
