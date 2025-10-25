@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  IsArray,
   IsInt,
   IsNumber,
   IsOptional,
@@ -19,15 +20,11 @@ export class GetTripsQueryDTO {
   @IsNumber()
   tripNumber: number;
 
-  @ApiProperty({
-    description: 'The CC ID to filter trips',
-    example: 'cc12345',
-    required: false,
-  })
+  @ApiProperty({})
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  ccID?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @IsString({ each: true })
+  ccIDs?: string[];
 
   @ApiProperty({
     description: 'The start date to filter trips',
@@ -53,9 +50,9 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  vendorID?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @IsString({ each: true })
+  vendorIDs?: string;
 
   @ApiProperty({
     description: 'The customer ID to filter trips',
@@ -63,9 +60,9 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  customerID?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @IsString({ each: true })
+  customerIDs?: string;
 
   @ApiProperty({
     description: 'The driver ID to filter trips',
@@ -73,9 +70,9 @@ export class GetTripsQueryDTO {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  driverID?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @IsString({ each: true })
+  driverIDs?: string;
 
   @ApiProperty({
     description: 'Filter for alternative trips',

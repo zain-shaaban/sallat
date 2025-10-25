@@ -17,7 +17,6 @@ import { DriverMetadata } from 'src/account/entities/driverMetadata.entity';
 import { AddNoteDto } from './dto/add-note.dto';
 import { AccountRole } from 'src/account/enums/account-role.enum';
 import { ModerateTripDto } from './dto/moderate-trip.dto';
-import { ConfigService } from '@nestjs/config';
 import { UpdateTripDto } from './dto/update-trip.dto';
 
 @Injectable()
@@ -40,7 +39,6 @@ export class TripService {
     @Inject() private readonly userBotService: TelegramUserService,
     @InjectRepository(DriverMetadata)
     private readonly driverRepository: Repository<DriverMetadata>,
-    private configService: ConfigService,
   ) {}
 
   async createNewTrip(

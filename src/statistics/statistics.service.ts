@@ -27,12 +27,10 @@ export class StatisticsService {
       });
     }
 
-    if (tripStatisticsQuery.ccID) {
-      tripStatisticsQuery.ccID.toLowerCase() !== 'null'
-        ? trips.andWhere('trip.ccID = :ccID', {
-            ccID: tripStatisticsQuery.ccID,
-          })
-        : trips.andWhere('trip.ccID IS NULL');
+    if (tripStatisticsQuery.ccIDs?.length > 0) {
+      trips.andWhere('trip.ccID IN (:...ccIDs)', {
+        ccIDs: tripStatisticsQuery.ccIDs,
+      });
     }
 
     if (tripStatisticsQuery.createdAtStart) {
@@ -47,28 +45,22 @@ export class StatisticsService {
       });
     }
 
-    if (tripStatisticsQuery.vendorID) {
-      tripStatisticsQuery.vendorID.toLowerCase() !== 'null'
-        ? trips.andWhere('trip.vendorID = :vendorID', {
-            vendorID: tripStatisticsQuery.vendorID,
-          })
-        : trips.andWhere('trip.vendorID IS NULL');
+    if (tripStatisticsQuery.vendorIDs?.length > 0) {
+      trips.andWhere('trip.vendorID IN (:...vendorIDs)', {
+        vendorIDs: tripStatisticsQuery.vendorIDs,
+      });
     }
 
-    if (tripStatisticsQuery.customerID) {
-      tripStatisticsQuery.customerID.toLowerCase() !== 'null'
-        ? trips.andWhere('trip.customerID = :customerID', {
-            customerID: tripStatisticsQuery.customerID,
-          })
-        : trips.andWhere('trip.customerID IS NULL');
+    if (tripStatisticsQuery.customerIDs?.length > 0) {
+      trips.andWhere('trip.customerID IN (:...customerIDs)', {
+        customerIDs: tripStatisticsQuery.customerIDs,
+      });
     }
 
-    if (tripStatisticsQuery.driverID) {
-      tripStatisticsQuery.driverID.toLowerCase() !== 'null'
-        ? trips.andWhere('trip.driverID = :driverID', {
-            driverID: tripStatisticsQuery.driverID,
-          })
-        : trips.andWhere('trip.driverID IS NULL');
+    if (tripStatisticsQuery.driverIDs?.length > 0) {
+      trips.andWhere('trip.driverID IN (:...driverIDs)', {
+        driverIDs: tripStatisticsQuery.driverIDs,
+      });
     }
 
     if (tripStatisticsQuery.alternative) {
