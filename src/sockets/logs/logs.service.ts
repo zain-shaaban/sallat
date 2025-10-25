@@ -279,7 +279,7 @@ export class LogService {
     driverName: string,
     tripNumber: number,
   ) {
-    const message = `قام السائق ${driverName} بتغيير الرحلة رقم${tripNumber} الى النمط البديل.`;
+    const message = `قام السائق ${driverName} بتغيير الرحلة رقم ${tripNumber} الى النمط البديل.`;
 
     this.sendMessageToAdmins(message, 'changeToAlternative', driverID);
 
